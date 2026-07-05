@@ -380,7 +380,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
           <div class="rounded-3xl border border-slate-100 bg-white p-5"><h5 class="font-black text-slate-900"><i class="fas fa-bell text-amber-500 mr-2"></i><span data-i18n="notifications">${esc(t('notifications'))}</span></h5><p class="text-sm text-slate-500 leading-7 mt-2" data-i18n="notificationsDescription">${esc(t('notificationsDescription'))}</p></div>
         </div>
       </div>
-      <div id="schoolhub-tour-settings-host" data-schoolhub-always-allowed="1"></div>`;
+      `;
   }
 
   function bindGeneralPanelEvents(){
@@ -935,16 +935,14 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
       if (typeof createGeneralPanelHTML === 'function') {
         panel.innerHTML = createGeneralPanelHTML();
       } else {
-        panel.innerHTML = '<div class="rounded-3xl border border-indigo-100 bg-indigo-50 p-5"><h3 class="text-xl font-black">โปรไฟล์ผู้ใช้งาน</h3><p class="text-slate-500 mt-1">แก้ไขข้อมูลแสดงผลของบัญชีได้ตรงนี้</p></div><div id="schoolhub-settings-profile-host" class="schoolhub-settings-inline-profile" data-schoolhub-always-allowed="1"></div><div class="bg-white rounded-3xl border border-slate-100 p-5"><h3 class="font-black">ข้อมูลบัญชี</h3><div id="schoolhub-settings-account-summary" class="text-slate-600 mt-3"></div></div><div id="schoolhub-tour-settings-host" data-schoolhub-always-allowed="1"></div>';
+        panel.innerHTML = '<div class="rounded-3xl border border-indigo-100 bg-indigo-50 p-5"><h3 class="text-xl font-black">โปรไฟล์ผู้ใช้งาน</h3><p class="text-slate-500 mt-1">แก้ไขข้อมูลแสดงผลของบัญชีได้ตรงนี้</p></div><div id="schoolhub-settings-profile-host" class="schoolhub-settings-inline-profile" data-schoolhub-always-allowed="1"></div><div class="bg-white rounded-3xl border border-slate-100 p-5"><h3 class="font-black">ข้อมูลบัญชี</h3><div id="schoolhub-settings-account-summary" class="text-slate-600 mt-3"></div></div>';
       }
 
       if (typeof bindGeneralPanelEvents === 'function') bindGeneralPanelEvents();
       if (typeof fillSettingsProfileData === 'function') fillSettingsProfileData();
       if (typeof unlockSettingsControls === 'function') unlockSettingsControls();
       if (typeof forceSettingsContentVisible === 'function') forceSettingsContentVisible();
-      if (window.schoolhubTour && typeof window.schoolhubTour.renderSettingsCard === 'function') {
-        try { window.schoolhubTour.renderSettingsCard(); } catch (e) { console.warn('SchoolHub tour: renderSettingsCard failed', e); }
-      }
+      /* tour card อยู่ในแท็บ "วิธีใช้งาน" (learn) แล้ว ไม่ต้อง render ที่ general */
       return panel;
     }
 
