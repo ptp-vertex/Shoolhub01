@@ -476,7 +476,16 @@
 
     function showCurrent(pending) {
         ensureUi();
-        el_scrollIntoView(current.el);
+        var el = current.el;
+        var r = el.getBoundingClientRect();
+        var margin = 40;
+        // ถ้าปุ่ม/เมนูที่จะสอนอยู่ในจอที่มองเห็นอยู่แล้ว (เช่น เพิ่งกดปุ่มนั้นเอง) ไม่ต้อง
+        // รอ scroll เลย โชว์การ์ดได้เกือบทันที ส่วนกรณีที่ต้อง scroll ไปหา ค่อยรอให้ scroll
+        // แบบ smooth เสร็จก่อนค่อยคำนวณตำแหน่งการ์ด (กันการ์ดไปโผล่ผิดที่)
+        var alreadyVisible = r.top >= margin && r.bottom <= (window.innerHeight - margin) &&
+            r.left >= 0 && r.right <= window.innerWidth;
+        if (!alreadyVisible) el_scrollIntoView(el);
+        var waitMs = alreadyVisible ? 60 : 320;
         setTimeout(function () {
             renderCard(pending);
             positionAll();
@@ -484,7 +493,7 @@
             spotlightEl.classList.add('sh-tour-show');
             cardEl.classList.add('sh-tour-show');
             attachResizeHandlers();
-        }, 220);
+        }, waitMs);
     }
 
     function el_scrollIntoView(el) {
@@ -540,7 +549,7 @@
             checkTimer = null;
             checkAccountChanged();
             if (!running) runTourCheck();
-        }, delay || 400);
+        }, delay || 150);
     }
 
     function wrapGlobalFn(name, delay) {
@@ -550,7 +559,12 @@
             if (orig.__shTourWrapped) return;
             var wrapped = function () {
                 var ret = orig.apply(this, arguments);
-                scheduleCheck(delay || 450);
+                scheduleCheck(delay || 150);
+                // สำรอง เผื่อตอนกระทำเสร็จ (เช่น กดเข้ารายวิชา) เนื้อหาบนจอยังโหลดไม่ครบ
+                // (เช่น รอข้อมูลจาก Firestore) ทำให้รอบตรวจแรกยังไม่เจอปุ่ม/เมนูที่จะสอน — เช็คซ้ำ
+                // อีกครั้งแบบไม่บล็อกอะไร ถ้ารอบแรกยังไม่ได้แสดงอะไรเลย (runTourCheck มี guard
+                // running อยู่แล้ว จึงไม่ทำให้เด้งซ้อนกับที่แสดงไปแล้วจากรอบแรก)
+                setTimeout(function () { if (!running) runTourCheck(); }, 900);
                 return ret;
             };
             wrapped.__shTourWrapped = true;
@@ -562,8 +576,9 @@
         ['switchView', 'goToHome', 'openStudentsManager', 'openUserPlanSelector',
             'openSchoolHubSettings', 'schoolhubOpenSettingsTab', 'toggleMobileMenu',
             'switchCourseTab', 'openCourseModal', 'openMultiStudentModal',
-            'openAttendanceCalendarPopup', 'closeSettingsModal'].forEach(function (fn) {
-            wrapGlobalFn(fn, 500);
+            'openAttendanceCalendarPopup', 'closeSettingsModal',
+            'enterCourse', 'openSettingsModal'].forEach(function (fn) {
+            wrapGlobalFn(fn, 150);
         });
     }
 
@@ -578,7 +593,7 @@
     function startObserving() {
         if (mutationObserver || !document.body) return;
         mutationObserver = new MutationObserver(function () {
-            if (!running) scheduleCheck(600);
+            if (!running) scheduleCheck(350);
         });
         mutationObserver.observe(document.body, { childList: true, subtree: true });
     }
@@ -677,7 +692,7 @@
         var k = accountKey();
         if (k !== lastKnownAccountKey) {
             lastKnownAccountKey = k;
-            if (k !== 'guest') fetchRemoteAndMerge(function () { scheduleCheck(250); });
+            if (k !== 'guest') fetchRemoteAndMerge(function () { scheduleCheck(150); });
         }
     }
 
@@ -686,19 +701,27 @@
         observeSettingsPanel();
         startObserving();
         tryHookLoop();
+        // เดิม: รอ fetchRemoteAndMerge (network + dynamic import Firebase — อาจกินเวลา 1-3
+        // วินาทีในการโหลดครั้งแรก) ให้เสร็จก่อน ค่อยตรวจจุดสอนครั้งแรก ทำให้บับเบิลแรกโผล่ช้าเกินจำเป็น
+        // ทั้งที่ส่วนใหญ่ข้อมูล "เคยสอนแล้ว" ในเครื่อง (localStorage) ก็เพียงพอสำหรับตัดสินใจได้ทันที
+        // ใหม่: ตรวจจากข้อมูลในเครื่องก่อนเลย ส่วนข้อมูลจากคลาวด์ให้ดึงมาผสานแบบขนานกันอยู่เบื้องหลัง
+        // (ถ้าพบว่าจุดไหนถูกสอนไปแล้วจากอุปกรณ์ประเภทเดียวกันเครื่องอื่น จะไม่ถูกสอนซ้ำตั้งแต่รอบถัดไป)
+        scheduleCheck(150);
         fetchRemoteAndMerge(function () {
             lastKnownAccountKey = accountKey();
-            scheduleCheck(1200);
+            if (!running) scheduleCheck(150);
         });
-        setTimeout(function () { scheduleCheck(300); }, 2500);
-        // เผื่อกรณี login ไม่ได้ทำให้ DOM เปลี่ยนแบบที่ MutationObserver จับได้ทัน
-        // ตรวจซ้ำเป็นระยะสั้นๆ ในช่วงแรกหลังโหลดหน้าเว็บเพื่อจับตอนล็อกอินสำเร็จ
+        // เผื่อกรณี login ไม่ได้ทำให้ DOM เปลี่ยนแบบที่ MutationObserver จับได้ทัน หรือกรณีที่หน้าเว็บ
+        // โหลดข้อมูลอื่นช้าอยู่ตอนบูต — เช็คสำรองอีกครั้งไม่นานหลังจากนั้น
+        setTimeout(function () { if (!running) scheduleCheck(300); }, 1200);
+        // ตรวจซ้ำเป็นระยะสั้นๆ ในช่วงแรกหลังโหลดหน้าเว็บ เพื่อจับตอนล็อกอินสำเร็จให้ไวขึ้น
+        // (สำรองคู่กับการ hook ฟังก์ชัน goToHome/enterCourse ด้านล่าง)
         var accountPollCount = 0;
         var accountPoll = setInterval(function () {
             accountPollCount++;
             checkAccountChanged();
-            if (accountPollCount >= 30) clearInterval(accountPoll);
-        }, 1500);
+            if (accountPollCount >= 90) clearInterval(accountPoll);
+        }, 500);
     }
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
