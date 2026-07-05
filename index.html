@@ -2380,7 +2380,7 @@ document.addEventListener('paste', function(e){
 <script id="schoolhub-force-remove-global-stats-panel-final" src="js1/048_schoolhub-force-remove-global-stats-panel-final.js"></script>
 
 <link id="schoolhub-team-plan-current-box-style" rel="stylesheet" href="css/050_schoolhub-team-plan-current-box-style.css">
-<script id="schoolhub-team-plan-current-box-patch" type="module" src="js1/049_schoolhub-team-plan-current-box-patch.js"></script>
+<script type="module" id="schoolhub-team-plan-current-box-patch" src="js1/049_schoolhub-team-plan-current-box-patch.js"></script>
 
 
 
@@ -2410,7 +2410,7 @@ document.addEventListener('paste', function(e){
 
 
 
-<script id="schoolhub-admin-permissions-delete-user-only-patch" type="module" src="js1/054_schoolhub-admin-permissions-delete-user-only-patch.js"></script>
+<script type="module" id="schoolhub-admin-permissions-delete-user-only-patch" src="js1/054_schoolhub-admin-permissions-delete-user-only-patch.js"></script>
 
 
 <script src="js1/055.js"></script>
@@ -2420,7 +2420,7 @@ document.addEventListener('paste', function(e){
 <!-- Patch: make calculated grade available to Excel export -->
 <script id="schoolhub-excel-grade-calc-fix" src="js1/056_schoolhub-excel-grade-calc-fix.js"></script>
 
-<script id="schoolhub-public-user-real-cleanup-fix" type="module" src="js1/057_schoolhub-public-user-real-cleanup-fix.js"></script>
+<script type="module" id="schoolhub-public-user-real-cleanup-fix" src="js1/057_schoolhub-public-user-real-cleanup-fix.js"></script>
 
 
 
@@ -2465,7 +2465,7 @@ document.addEventListener('paste', function(e){
      - กำหนดได้ว่าแผนใดเห็นเมนูนี้
      ========================================================= -->
 <link id="schoolhub-custom-menu-system-style" rel="stylesheet" href="css/056_schoolhub-custom-menu-system-style.css">
-<script id="schoolhub-custom-menu-system-script" type="module" src="js1/064_schoolhub-custom-menu-system-script.js"></script>
+<script type="module" id="schoolhub-custom-menu-system-script" src="js1/064_schoolhub-custom-menu-system-script.js"></script>
 
 
 <!-- =========================================================
@@ -2705,7 +2705,7 @@ document.addEventListener('paste', function(e){
      - Current plan renders from cache first, latest data loads behind it
      - Stable signatures prevent repeated innerHTML flicker/loading lock
      ========================================================= -->
-<script id="schoolhub-plan-selector-stable-canonical-script" type="module" src="js1/091_schoolhub-plan-selector-stable-canonical-script.js"></script>
+<script type="module" id="schoolhub-plan-selector-stable-canonical-script" src="js1/091_schoolhub-plan-selector-stable-canonical-script.js"></script>
 
 
 <!-- =========================================================
@@ -2750,7 +2750,7 @@ document.addEventListener('paste', function(e){
 <link id="schoolhub-canonical-12-rights-style" rel="stylesheet" href="css/082_schoolhub-canonical-12-rights-style.css">
 
 <link id="schoolhub-edit-delete-permission-style" rel="stylesheet" href="css/083_schoolhub-edit-delete-permission-style.css">
-<script id="schoolhub-canonical-12-rights-script" type="module" src="js1/096_schoolhub-canonical-12-rights-script.js"></script>
+<script type="module" id="schoolhub-canonical-12-rights-script" src="js1/096_schoolhub-canonical-12-rights-script.js"></script>
 
 
 <!-- SchoolHub PATCH: withdrawn score/grade null guard (เฉพาะคะแนน/เกรดนักเรียนลาออก) -->
@@ -2785,7 +2785,7 @@ document.addEventListener('paste', function(e){
 
 
 <link id="schoolhub-settings-mobile-content-visible-hard-fix" rel="stylesheet" href="css/089_schoolhub-settings-mobile-content-visible-hard-fix.css">
-<script id="schoolhub-settings-single-modal-final-script" type="module" src="js2/102_schoolhub-settings-single-modal-final-script.js"></script>
+<script type="module" id="schoolhub-settings-single-modal-final-script" src="js2/102_schoolhub-settings-single-modal-final-script.js"></script>
 
 
 
@@ -3133,7 +3133,7 @@ document.addEventListener('paste', function(e){
        Firestore (public_users_directory / admin_settings) เหมือนวิธีเก็บสลิปโอนเงิน
      - ไม่มีการใช้ Firebase Storage (ตรงกับที่ระบบสลิปทำอยู่เดิม)
      ========================================================= -->
-<script id="schoolhub-profile-avatar-upload-patch" type="module" src="js2/115_schoolhub-profile-avatar-upload-patch.js"></script>
+<script type="module" id="schoolhub-profile-avatar-upload-patch" src="js2/115_schoolhub-profile-avatar-upload-patch.js"></script>
 
 <!-- Mobile fix: ensure overview score cards are visible on phone -->
 <link id="schoolhub-mobile-overview-cards-final-fix" rel="stylesheet" href="css/098_schoolhub-mobile-overview-cards-final-fix.css">
@@ -3207,12 +3207,6 @@ document.addEventListener('paste', function(e){
      และย้าย modal ไปไว้ท้ายสุดของ <body> พร้อมตั้ง z-index สูงสุดทุกครั้งที่เปิด เพื่อไม่ให้ไปซ้อนอยู่ด้านหลังอะไรอีก ===== -->
 <script id="schoolhub-final-v4-att-patch" src="js2/123_schoolhub-final-v4-att-patch.js"></script>
 <!-- ===== END FINAL PATCH v4 ===== -->
-
-<!-- ===== PATCH: การ์ดรายชื่อหน้า "ภาพรวม" ไม่ขึ้นบนมือถือจริง =====
-     สาเหตุ: การสร้างการ์ดผูกกับ event 'resize' หรือ setTimeout เวลาคงที่ ซึ่งบนคอม
-     ทดสอบผ่านเพราะข้อมูลโหลดเสร็จก่อน resize จะยิง แต่มือถือจริงไม่มี resize เกิดขึ้น
-     เลย และถ้าเน็ตช้ากว่าที่ patch เดาไว้ การ์ดจะถูกสร้างตอนข้อมูลยังไม่มา แล้วไม่มีอะไร
-     สั่งให้สร้างใหม่อีก Patch นี้คอยเช็คเป็นระยะ+เฝ้าดูตารางด้วย MutationObserver แล้ว
-     สั่ง renderCourseOverview() ใหม่ทันทีที่ข้อมูลมาจริง ไม่ว่าเน็ตจะช้าแค่ไหนก็ตาม ===== -->
-<script id="schoolhub-overview-mobile-cards-watchdog" src="js2/124_schoolhub-overview-mobile-cards-watchdog.js"></script>
-<!-- ===== END PATCH: Overview Mobile Cards Watchdog ===== -->
+<!-- ===== SCHOOLHUB OVERVIEW MOBILE-CARDS WATCHDOG (แก้ปัญหาการ์ดไม่ขึ้นบนมือถือจริง) ===== -->
+<script id="schoolhub-mobile-overview-cards-watchdog" src="js2/124_schoolhub-mobile-overview-cards-watchdog.js"></script>
+<!-- ===== END SCHOOLHUB OVERVIEW MOBILE-CARDS WATCHDOG ===== -->
