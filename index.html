@@ -1394,6 +1394,7 @@ document.addEventListener('paste', function(e){
 
                             <div class="settings-tabs-list" id="schoolhub-settings-tabs" data-schoolhub-always-allowed="1">
                                 <button type="button" data-settings-tab="general" onclick="schoolhubOpenSettingsTab('general')" data-schoolhub-always-allowed="1" class="settings-tab schoolhub-settings-tab active"><i class="fas fa-home mr-2"></i><span data-i18n="general">ทั่วไป</span></button>
+                                <button type="button" data-settings-tab="learn" onclick="schoolhubOpenSettingsTab('learn')" data-schoolhub-always-allowed="1" class="settings-tab schoolhub-settings-tab"><i class="fas fa-graduation-cap mr-2 text-indigo-500"></i><span>วิธีใช้งาน</span></button>
                                 <button type="button" data-settings-tab="plans" onclick="schoolhubOpenSettingsTab('plans')" data-schoolhub-always-allowed="1" class="settings-tab schoolhub-settings-tab"><i class="fas fa-layer-group mr-2"></i><span data-i18n="plans">แผนการใช้งาน</span></button>
                                 <button type="button" data-settings-tab="language" onclick="schoolhubOpenSettingsTab('language')" data-schoolhub-always-allowed="1" class="settings-tab schoolhub-settings-tab"><i class="fas fa-language mr-2"></i><span data-i18n="language">ภาษา</span></button>
                                 <button type="button" data-settings-tab="contact-admin" onclick="schoolhubOpenSettingsTab('contact-admin')" data-schoolhub-always-allowed="1" class="settings-tab schoolhub-settings-tab"><i class="fas fa-headset mr-2"></i><span data-i18n="contactAdmin">ติดต่อผู้ดูแลระบบ</span></button>
@@ -1438,10 +1439,15 @@ document.addEventListener('paste', function(e){
                                             <h5 class="font-black text-slate-900"><i class="fas fa-bell text-amber-500 mr-2"></i><span data-i18n="notifications">การแจ้งเตือน</span></h5>
                                             <p class="text-sm text-slate-500 leading-7 mt-2" data-i18n="notificationsDescription">ใช้การแจ้งเตือนเดิมของระบบและแสดงผลในหน้าต่างเดียวกัน</p>
                                         </div>
-                                        <div id="schoolhub-tour-settings-host"></div>
                                     </div>
                                 </div>
                             </section>
+
+                            <!-- ===== แท็บ วิธีใช้งาน / เรียนรู้เพิ่มเติม ===== -->
+                            <section id="schoolhub-settings-panel-learn" class="schoolhub-settings-panel hidden space-y-5" data-schoolhub-always-allowed="1">
+                                <div id="schoolhub-tour-settings-host" data-schoolhub-always-allowed="1"></div>
+                            </section>
+                            <!-- ===== END แท็บ วิธีใช้งาน ===== -->
 
                             <section id="schoolhub-settings-panel-backup-restore" class="schoolhub-settings-panel hidden space-y-5">
                                 <div class="rounded-3xl border border-amber-100 bg-amber-50/50 p-5">
