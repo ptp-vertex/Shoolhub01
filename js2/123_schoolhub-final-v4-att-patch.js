@@ -42,6 +42,54 @@
     return { studentId: studentId, cid: cid, name: name };
   }
 
+  /* ── กันพื้นหลังไม่มืด/ยังเลื่อนได้ตอนเปิด popup มา/สาย/ขาด/ลา:
+     สร้าง backdrop สีเข้มคลุมทั้งจอ + ล็อกสกอลล์ของพื้นที่เนื้อหาไว้ชั่วคราว
+     แล้วคืนสภาพให้ตรงทุกครั้งที่ปิด (กันไม่ให้เกิดปัญหาค้างแบบปุ่ม X เดิม) ── */
+  function getScrollHost(){
+    var hdr = document.getElementById('main-header');
+    if(hdr && hdr.nextElementSibling && hdr.nextElementSibling.classList.contains('overflow-y-auto')){
+      return hdr.nextElementSibling;
+    }
+    /* สำรอง: หา .flex-1.overflow-y-auto ที่อยู่ใน <main> เท่านั้น (กัน match ผิดตัวกับแถบเมนูด้านข้าง) */
+    var main = document.querySelector('main');
+    return main ? main.querySelector('.flex-1.overflow-y-auto') : null;
+  }
+
+  function ensureBackdrop(){
+    var bd = document.getElementById('teacher-att-stat-backdrop');
+    if(!bd){
+      bd = document.createElement('div');
+      bd.id = 'teacher-att-stat-backdrop';
+      bd.style.position = 'fixed';
+      bd.style.inset = '0';
+      bd.style.background = 'rgba(15,23,42,.55)';
+      bd.style.zIndex = '2147483646';
+      bd.style.display = 'none';
+      bd.addEventListener('click', function(){ window.closeTeacherAttStatModal && window.closeTeacherAttStatModal(); });
+      document.body.appendChild(bd);
+    }
+    return bd;
+  }
+
+  function lockBackgroundScroll(){
+    var host = getScrollHost();
+    if(host && !host.__shAttScrollLocked){
+      host.__shAttScrollLocked = true;
+      host.__shPrevOverflow = host.style.overflow;
+      host.__shPrevTouchAction = host.style.touchAction;
+      host.style.overflow = 'hidden';
+      host.style.touchAction = 'none';
+    }
+  }
+  function unlockBackgroundScroll(){
+    var host = getScrollHost();
+    if(host && host.__shAttScrollLocked){
+      host.__shAttScrollLocked = false;
+      host.style.overflow = host.__shPrevOverflow || '';
+      host.style.touchAction = host.__shPrevTouchAction || '';
+    }
+  }
+
   function openPopup(studentId, cid, type, name){
     if(!studentId || !cid || !type) return;
     var cfg = {
@@ -91,11 +139,18 @@
     modal.style.left = '50%';
     modal.style.top = '30%';
     modal.style.transform = 'translateX(-50%)';
+
+    var backdrop = ensureBackdrop();
+    backdrop.style.display = 'block';
+    lockBackgroundScroll();
   }
 
   window.closeTeacherAttStatModal = function(){
     var m = document.getElementById('teacher-att-stat-modal');
     if(m) m.style.display = 'none';
+    var backdrop = document.getElementById('teacher-att-stat-backdrop');
+    if(backdrop) backdrop.style.display = 'none';
+    unlockBackgroundScroll();
   };
 
   /* Capture phase = ทำงานก่อนเสมอ ไม่ว่า patch เก่าตัวไหนจะดักคลิกไว้ก่อน */
