@@ -1,0 +1,28 @@
+
+.schoolhub-seq-text{
+  color:#2563eb!important;
+  font-weight:800!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+  padding:0!important;
+  border-radius:0!important;
+  display:block!important;
+  line-height:1.25!important;
+}
+#course-summary-mobile-cards .summary-mobile-card-no,
+#course-summary-mobile-cards .summary-mobile-seq-text{
+  color:#2563eb!important;
+  font-weight:800!important;
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  outline:0!important;
+  padding:0!important;
+  border-radius:0!important;
+  display:block!important;
+  line-height:1.25!important;
+}
+/* หมายเหตุ: เดิมซ่อน .summary-mobile-card-code เพราะมีบรรทัดรหัสนักเรียนแบบใหม่มาแทนที่จากตัวสร้างการ์ดที่ถูกปิดไปแล้ว
+   ตอนนี้เปิดกลับมาให้ใช้ปุ่ม "เปิด/ปิดรหัสนักเรียน" แบบเดิมแทน เพื่อไม่ให้รหัสนักเรียนหายไปจากการ์ด */

@@ -1,0 +1,114 @@
+
+/* ── Bonus / Star overview columns ─────────────────────────────────── */
+#course-summary-table .sh-bonus-col {
+  width:34px!important; min-width:34px!important; max-width:38px!important;
+  font-size:10px!important; padding:2px 1px!important;
+}
+#course-summary-table thead .sh-bonus-col {
+  background:#059669!important; color:#fff!important; cursor:pointer!important;
+}
+#course-summary-table .sh-star-col {
+  width:34px!important; min-width:34px!important; max-width:38px!important;
+  font-size:10px!important; padding:2px 1px!important;
+}
+#course-summary-table thead .sh-star-col {
+  background:#d97706!important; color:#fff!important;
+}
+/* ── Plan-list desktop buttons always on top ────────────────────────── */
+#plan-list tr td:last-child { position:relative!important; z-index:12!important; pointer-events:auto!important; }
+#plan-list tr td:last-child button { pointer-events:auto!important; z-index:13!important; cursor:pointer!important; position:relative!important; }
+
+/* ── Generic overlay/modal shared styles ────────────────────────────── */
+.sh-overlay {
+  position:fixed; inset:0; background:rgba(15,23,42,.5);
+  backdrop-filter:blur(4px); z-index:1000010;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+}
+.sh-overlay.hidden { display:none!important; }
+.sh-modal-box {
+  background:#fff; border-radius:24px; width:100%; max-width:500px;
+  overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,.25);
+  max-height:90vh; display:flex; flex-direction:column;
+}
+.sh-modal-header {
+  padding:18px 22px 14px; border-bottom:1px solid #f1f5f9;
+  background:#f8fafc; display:flex; justify-content:space-between; align-items:center; flex-shrink:0;
+}
+.sh-modal-header h3 { font-size:17px; font-weight:800; color:#1e293b; margin:0; }
+.sh-modal-close {
+  width:32px; height:32px; border-radius:50%; border:1px solid #e2e8f0;
+  background:#fff; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; color:#64748b; font-size:14px; flex-shrink:0;
+}
+.sh-modal-close:hover { background:#fee2e2; color:#ef4444; }
+.sh-modal-body { padding:18px 22px; overflow-y:auto; flex:1; }
+.sh-modal-footer { padding:14px 22px; border-top:1px solid #f1f5f9; display:flex; gap:10px; flex-shrink:0; }
+.sh-modal-footer button { flex:1; padding:11px; border-radius:12px; font-weight:700; cursor:pointer; border:none; font-size:14px; }
+.sh-btn-cancel { background:#f1f5f9; color:#475569; }
+.sh-btn-cancel:hover { background:#e2e8f0; }
+.sh-btn-green { background:#059669; color:#fff; }
+.sh-btn-green:hover { background:#047857; }
+.sh-btn-amber { background:#d97706; color:#fff; }
+.sh-btn-amber:hover { background:#b45309; }
+.sh-btn-purple { background:#7c3aed; color:#fff; }
+.sh-btn-purple:hover { background:#6d28d9; }
+
+/* ── Week/bonus/star inputs ─────────────────────────────────────────── */
+.sh-week-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.sh-week-row label { font-weight:700; color:#475569; font-size:14px; }
+.sh-week-row input, .sh-week-row select {
+  padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; background:#f8fafc;
+}
+.sh-bonus-table { width:100%; border-collapse:collapse; font-size:14px; }
+.sh-bonus-table th { background:#f1f5f9; padding:8px 10px; font-weight:700; color:#475569; text-align:left; }
+.sh-bonus-table td { padding:8px 10px; border-bottom:1px solid #f8fafc; }
+.sh-bonus-table tbody tr:hover td { background:#f8fafc; }
+.sh-bonus-input {
+  width:72px; padding:5px 8px; border:1px solid #e2e8f0; border-radius:8px;
+  font-size:14px; text-align:center; background:#fff;
+}
+.sh-bonus-input:focus { outline:none; border-color:#059669; }
+
+/* ── Star group UI ─────────────────────────────────────────────────── */
+.sh-group-card { background:#fffbeb; border:1.5px solid #fde68a; border-radius:14px; padding:12px 14px; margin-bottom:10px; }
+.sh-group-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.sh-group-name { font-weight:800; color:#92400e; font-size:15px; }
+.sh-stars-row { display:flex; gap:4px; flex-wrap:wrap; margin-top:8px; }
+.sh-star-btn {
+  width:30px; height:30px; border-radius:7px; cursor:pointer; font-size:15px;
+  border:1px solid #fde68a; background:#fff; display:flex; align-items:center;
+  justify-content:center; transition:background .12s, transform .1s;
+}
+.sh-star-btn:hover { background:#fef9c3; transform:scale(1.15); }
+.sh-star-btn.filled { background:#fef08a; }
+.sh-group-star-count { font-size:12px; font-weight:800; color:#92400e; background:#fef3c7; border-radius:8px; padding:2px 8px; }
+.sh-rank-pts { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+.sh-rank-pts label { font-size:13px; font-weight:700; color:#475569; }
+.sh-rank-pts input { width:52px; padding:5px 6px; border:1px solid #e2e8f0; border-radius:8px; text-align:center; font-size:14px; background:#f8fafc; }
+.sh-add-group { display:flex; gap:8px; margin-top:10px; }
+.sh-add-group input { flex:1; padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:10px; font-size:14px; background:#f8fafc; }
+.sh-add-group input:focus { outline:none; border-color:#d97706; }
+.sh-add-group button { padding:8px 14px; border-radius:10px; background:#d97706; color:#fff; font-weight:700; border:none; cursor:pointer; font-size:14px; }
+.sh-add-group button:hover { background:#b45309; }
+.sh-del-group { background:#fee2e2; border:none; color:#ef4444; border-radius:8px; padding:3px 9px; cursor:pointer; font-size:12px; font-weight:700; }
+.sh-del-group:hover { background:#fecaca; }
+.sh-apply-stars-btn { width:100%; padding:9px; border-radius:10px; background:#d97706; color:#fff; font-weight:700; border:none; cursor:pointer; font-size:13px; margin-top:8px; }
+.sh-apply-stars-btn:hover { background:#b45309; }
+
+/* ── Members list in group ─────────────────────────────────────────── */
+.sh-member-chips { display:flex; flex-wrap:wrap; gap:4px; margin-top:6px; }
+.sh-member-chip {
+  font-size:11px; padding:2px 8px; background:#fef9c3; border:1px solid #fde68a;
+  border-radius:999px; color:#92400e; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:4px;
+}
+.sh-member-chip:hover { background:#fef08a; }
+.sh-member-chip .rm { color:#ef4444; font-size:10px; }
+.sh-add-member-row { display:flex; gap:6px; margin-top:8px; }
+.sh-add-member-row select { flex:1; padding:6px 8px; border:1px solid #e2e8f0; border-radius:8px; font-size:13px; background:#f8fafc; }
+.sh-add-member-row button { padding:6px 12px; background:#d97706; color:#fff; border:none; border-radius:8px; font-weight:700; cursor:pointer; font-size:13px; }
+
+/* ── Breakdown popup ───────────────────────────────────────────────── */
+.sh-breakdown-row { display:flex; justify-content:space-between; padding:6px 0; border-bottom:1px solid #f1f5f9; font-size:14px; }
+.sh-breakdown-row:last-child { border-bottom:none; }
+.sh-breakdown-label { color:#475569; font-weight:600; }
+.sh-breakdown-val { font-weight:800; color:#1e293b; }

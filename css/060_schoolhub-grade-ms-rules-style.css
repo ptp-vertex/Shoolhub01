@@ -1,0 +1,25 @@
+
+#grade-criteria-modal > div{max-width:44rem!important;}
+#schoolhub-grade-extra-rules{
+  border:1px solid #e2e8f0;
+  background:#f8fafc;
+  border-radius:1.25rem;
+  padding:1rem;
+  margin-bottom:1rem;
+}
+#schoolhub-grade-extra-rules .sgr-title{
+  font-weight:900;color:#0f172a;margin-bottom:.75rem;display:flex;align-items:center;gap:.5rem;
+}
+#schoolhub-grade-extra-rules .sgr-grid{
+  display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.75rem;
+}
+#schoolhub-grade-extra-rules label{display:block;font-size:.78rem;font-weight:800;color:#64748b;margin-bottom:.25rem;}
+#schoolhub-grade-extra-rules input,#schoolhub-grade-extra-rules select{
+  width:100%;border:1px solid #e2e8f0;border-radius:.9rem;padding:.7rem .85rem;background:white;outline:none;font-weight:800;color:#334155;
+}
+#schoolhub-grade-extra-rules input:focus,#schoolhub-grade-extra-rules select:focus{
+  border-color:#4f46e5;box-shadow:0 0 0 4px rgba(79,70,229,.12);
+}
+#schoolhub-grade-extra-rules .sgr-hint{font-size:.74rem;color:#64748b;line-height:1.5;margin-top:.65rem;}
+@media(max-width:767px){#schoolhub-grade-extra-rules .sgr-grid{grid-template-columns:1fr;}}
+.schoolhub-grade-ms{color:#dc2626!important;font-weight:900!important;}

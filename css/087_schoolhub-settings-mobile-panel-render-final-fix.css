@@ -1,0 +1,35 @@
+
+/* Settings mobile panel render fix: keep modal content visible and scrollable */
+@media (max-width:768px) {
+  #settings-modal {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  #settings-modal.hidden,
+  #settings-modal.settings-modal.hidden {
+    display: none !important;
+  }
+  #settings-modal .settings-dialog {
+    display: flex !important;
+    flex-direction: column !important;
+    height: 100dvh !important;
+    min-height: 100dvh !important;
+    max-height: 100dvh !important;
+  }
+  #settings-modal .settings-content {
+    display: block !important;
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    height: auto !important;
+    overflow-y: auto !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    padding-bottom: 120px !important;
+    -webkit-overflow-scrolling: touch !important;
+  }
+  #settings-modal .schoolhub-settings-panel:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+  }
+}

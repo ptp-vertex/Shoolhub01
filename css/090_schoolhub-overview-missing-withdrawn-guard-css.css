@@ -1,0 +1,16 @@
+
+  .schoolhub-missing-score-clickable,
+  [data-missing-score="1"]{ cursor:pointer!important; user-select:none!important; }
+  .schoolhub-missing-score-clickable:hover,
+  [data-missing-score="1"]:hover{ text-decoration:underline!important; }
+  .withdrawn-score-cell,
+  .withdrawn-grade-cell,
+  #course-summary-table .withdrawn-score-cell,
+  #course-summary-table .withdrawn-grade-cell{
+    color:#94a3b8!important;
+    font-weight:900!important;
+    text-decoration:none!important;
+    cursor:default!important;
+    white-space:nowrap!important;
+  }
+  #course-summary-table tr.schoolhub-withdrawn-row [data-missing-score="1"]{ pointer-events:none!important; cursor:default!important; }

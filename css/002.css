@@ -1,0 +1,73 @@
+
+/* SchoolHub Admin Plans Popup Color + Click Fix */
+#admin-plan-edit-panel {
+    display: none !important;
+    pointer-events: none !important;
+    visibility: hidden !important;
+}
+
+#admin-plan-cards,
+#admin-plan-cards * {
+    pointer-events: auto !important;
+}
+
+#admin-plan-popup-backdrop.hidden {
+    display: none !important;
+    pointer-events: none !important;
+}
+
+#admin-plan-popup-backdrop:not(.hidden) {
+    display: flex !important;
+    pointer-events: auto !important;
+}
+
+#admin-plan-popup {
+    pointer-events: auto !important;
+    box-shadow: 0 30px 90px rgba(15,23,42,.24) !important;
+}
+
+/* เพิ่ม = สีเขียว */
+#admin-plan-popup.popup-add {
+    border: 3px solid #22c55e !important;
+}
+
+#admin-plan-popup.popup-add .popup-header {
+    background: rgba(220, 252, 231, .92) !important;
+    border-color: #bbf7d0 !important;
+}
+
+#admin-plan-popup.popup-add input,
+#admin-plan-popup.popup-add textarea,
+#admin-plan-popup.popup-add select {
+    border-color: #86efac !important;
+}
+
+#admin-plan-popup.popup-add input:focus,
+#admin-plan-popup.popup-add textarea:focus,
+#admin-plan-popup.popup-add select:focus {
+    box-shadow: 0 0 0 3px rgba(34,197,94,.22) !important;
+    border-color: #22c55e !important;
+}
+
+/* แก้ไข = สีเหลือง */
+#admin-plan-popup.popup-edit {
+    border: 3px solid #facc15 !important;
+}
+
+#admin-plan-popup.popup-edit .popup-header {
+    background: rgba(254, 249, 195, .95) !important;
+    border-color: #fde68a !important;
+}
+
+#admin-plan-popup.popup-edit input,
+#admin-plan-popup.popup-edit textarea,
+#admin-plan-popup.popup-edit select {
+    border-color: #fde68a !important;
+}
+
+#admin-plan-popup.popup-edit input:focus,
+#admin-plan-popup.popup-edit textarea:focus,
+#admin-plan-popup.popup-edit select:focus {
+    box-shadow: 0 0 0 3px rgba(250,204,21,.25) !important;
+    border-color: #facc15 !important;
+}

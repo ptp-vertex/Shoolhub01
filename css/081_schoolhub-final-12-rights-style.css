@@ -1,0 +1,14 @@
+
+.schoolhub-plan-right-locked,
+.schoolhub-plan-right-locked *{
+  cursor:not-allowed!important;
+}
+.schoolhub-plan-right-locked{
+  opacity:.48!important;
+  filter:grayscale(.25)!important;
+}
+.schoolhub-plan-right-locked input,
+.schoolhub-plan-right-locked select,
+.schoolhub-plan-right-locked textarea{
+  pointer-events:none!important;
+}

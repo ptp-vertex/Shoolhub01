@@ -1,0 +1,16 @@
+
+  .schoolhub-missing-score-clickable{cursor:pointer!important; user-select:none!important; border-radius:.55rem; padding:.08rem .38rem;}
+  .schoolhub-missing-score-clickable:hover{background:#fee2e2!important;}
+  #schoolhub-missing-score-popup{position:fixed; inset:0; z-index:2147483200; display:flex; align-items:center; justify-content:center; padding:1rem; background:rgba(15,23,42,.42); backdrop-filter:blur(4px);}
+  #schoolhub-missing-score-popup.hidden{display:none!important;}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-box{width:100%; max-width:24rem; background:#fff; border-radius:1.5rem; box-shadow:0 24px 70px rgba(15,23,42,.25); overflow:hidden; border:1px solid #e2e8f0;}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-head{padding:1rem 1.1rem; background:#fff1f2; border-bottom:1px solid #ffe4e6; display:flex; align-items:flex-start; justify-content:space-between; gap:.75rem;}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-title{font-weight:900; color:#9f1239; font-size:1.05rem; line-height:1.25;}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-body{padding:1rem 1.1rem;}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-info{display:grid; grid-template-columns:5.2rem 1fr; gap:.45rem .65rem; font-size:.86rem; margin-bottom:1rem;}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-info b{color:#64748b; font-weight:900;}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-info span{color:#0f172a; font-weight:800; min-width:0; overflow-wrap:anywhere;}
+  #schoolhub-missing-score-popup input{width:100%; border:1px solid #cbd5e1; border-radius:1rem; padding:.8rem 1rem; font-weight:900; font-size:1.1rem; text-align:center; color:#4f46e5; outline:none;}
+  #schoolhub-missing-score-popup input:focus{border-color:#6366f1; box-shadow:0 0 0 4px rgba(99,102,241,.14);}
+  #schoolhub-missing-score-popup .schoolhub-missing-score-actions{display:grid; grid-template-columns:1fr 1fr; gap:.65rem; margin-top:1rem;}
+  #schoolhub-missing-score-popup button{border:0; border-radius:1rem; padding:.78rem 1rem; font-weight:900;}

@@ -1,0 +1,118 @@
+
+/* Profile flow + Settings mobile top-layer fix: scoped to Settings/Profile only */
+#settings-modal-backdrop{
+  z-index:999990!important;
+}
+#settings-modal.settings-modal{
+  position:fixed!important;
+  inset:0!important;
+  z-index:999991!important;
+  isolation:isolate!important;
+  pointer-events:auto!important;
+}
+#settings-modal .settings-dialog{
+  position:relative!important;
+  z-index:999991!important;
+}
+body.schoolhub-settings-modal-open{
+  overflow:hidden!important;
+}
+#settings-modal .settings-content{
+  flex:1 1 auto!important;
+  overflow-y:auto!important;
+  -webkit-overflow-scrolling:touch!important;
+  min-height:0!important;
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+#settings-modal .schoolhub-settings-panel:not(.hidden){
+  display:block!important;
+  visibility:visible!important;
+  opacity:1!important;
+  pointer-events:auto!important;
+}
+@media (max-width:768px){
+  #settings-modal.settings-modal{
+    position:fixed!important;
+    inset:0!important;
+    width:100vw!important;
+    height:100dvh!important;
+    max-width:none!important;
+    max-height:none!important;
+    margin:0!important;
+    border-radius:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    align-items:stretch!important;
+    justify-content:stretch!important;
+    padding:env(safe-area-inset-top) 0 env(safe-area-inset-bottom) 0!important;
+    background:#fff!important;
+  }
+  #settings-modal.settings-modal.hidden{display:none!important;}
+  #settings-modal .settings-dialog{
+    width:100vw!important;
+    height:100%!important;
+    max-width:none!important;
+    max-height:100%!important;
+    min-height:0!important;
+    margin:0!important;
+    border-radius:0!important;
+    display:flex!important;
+    flex-direction:column!important;
+    overflow:hidden!important;
+  }
+  #settings-modal .settings-sidebar{
+    flex:0 0 auto!important;
+    width:100%!important;
+    max-height:none!important;
+    overflow:hidden!important;
+    border-right:0!important;
+    border-bottom:1px solid #e5e7eb!important;
+    padding:10px 12px 8px!important;
+  }
+  #settings-modal .settings-sidebar-header{
+    flex-direction:row!important;
+    align-items:center!important;
+    gap:10px!important;
+    padding:0 0 8px!important;
+    margin-bottom:8px!important;
+  }
+  #settings-modal .settings-tabs-list{
+    display:flex!important;
+    flex-direction:row!important;
+    flex-wrap:nowrap!important;
+    gap:8px!important;
+    overflow-x:auto!important;
+    overflow-y:hidden!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:0 2px 4px!important;
+    scrollbar-width:none!important;
+  }
+  #settings-modal .settings-tabs-list::-webkit-scrollbar{display:none!important;}
+  #settings-modal .settings-tab{
+    flex:0 0 auto!important;
+    width:auto!important;
+    white-space:nowrap!important;
+    text-align:center!important;
+    padding:10px 13px!important;
+    border-radius:999px!important;
+  }
+  #settings-modal .settings-tab .admin-message-badge{
+    margin-left:6px!important;
+  }
+  #settings-modal .settings-content{
+    flex:1 1 auto!important;
+    height:auto!important;
+    max-height:none!important;
+    min-height:0!important;
+    overflow-y:auto!important;
+    -webkit-overflow-scrolling:touch!important;
+    padding:14px 14px calc(24px + env(safe-area-inset-bottom))!important;
+    display:block!important;
+    visibility:visible!important;
+    opacity:1!important;
+    pointer-events:auto!important;
+  }
+}
