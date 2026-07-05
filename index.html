@@ -608,7 +608,7 @@ document.addEventListener('paste', function(e){
         <!-- Mobile Header -->
         <div class="md:hidden fixed top-0 w-full bg-white/95 border-b border-slate-200 z-30 flex justify-between items-center px-4 h-16">
             <div class="text-xl font-bold flex items-center gap-2 text-slate-800"><div class="bg-indigo-50 text-primary w-8 h-8 rounded-lg flex items-center justify-center text-sm"><i class="fas fa-graduation-cap"></i></div> SchoolHub</div>
-            <button onclick="toggleMobileMenu()" class="text-slate-600 focus:outline-none p-2 bg-slate-50 rounded-lg border"><i class="fas fa-bars"></i></button>
+            <button id="mobile-hamburger-btn" onclick="toggleMobileMenu()" class="text-slate-600 focus:outline-none p-2 bg-slate-50 rounded-lg border"><i class="fas fa-bars"></i></button>
         </div>
 
         <div id="mobile-menu" class="hidden fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-40 flex items-center justify-center p-4">
@@ -1438,6 +1438,7 @@ document.addEventListener('paste', function(e){
                                             <h5 class="font-black text-slate-900"><i class="fas fa-bell text-amber-500 mr-2"></i><span data-i18n="notifications">การแจ้งเตือน</span></h5>
                                             <p class="text-sm text-slate-500 leading-7 mt-2" data-i18n="notificationsDescription">ใช้การแจ้งเตือนเดิมของระบบและแสดงผลในหน้าต่างเดียวกัน</p>
                                         </div>
+                                        <div id="schoolhub-tour-settings-host"></div>
                                     </div>
                                 </div>
                             </section>
@@ -3192,6 +3193,7 @@ document.addEventListener('paste', function(e){
 
 <!-- Mobile fix: ensure overview score cards are visible on phone -->
 <link id="schoolhub-mobile-overview-cards-final-fix" rel="stylesheet" href="css/098_schoolhub-mobile-overview-cards-final-fix.css">
+<link id="schoolhub-onboarding-tour-style" rel="stylesheet" href="css/099_schoolhub-onboarding-tour-style.css">
 
 <script id="schoolhub-mobile-cards-force-display" src="js2/116_schoolhub-mobile-cards-force-display.js"></script>
 
@@ -3266,3 +3268,10 @@ document.addEventListener('paste', function(e){
 <!-- ===== PATCH: เมนูด้านซ้าย (เดสก์ท็อป) แบบย่อ/ขยายได้ + กันเมนูหายตอนย่อ-ขยายจอ ===== -->
 <script id="schoolhub-desktop-sidebar-collapse-toggle" src="js2/124_schoolhub-desktop-sidebar-collapse-toggle.js"></script>
 <!-- ===== END PATCH ===== -->
+
+<!-- ===== PATCH: ระบบสอนการใช้งาน (Onboarding Tour) =====
+     สอนผู้ใช้ทีละจุดแบบ 1 ครั้งต่อบัญชี แยกกันระหว่างคอมพิวเตอร์ / มือถือ
+     บัญชีเดิมที่ใช้งานอยู่จะได้รับการสอนทันทีที่เพิ่มระบบนี้ (เพราะยังไม่มี
+     ประวัติว่าเคยเรียน) และขอสอนซ้ำได้จากตั้งค่า > ทั่วไป > เรียนรู้เพิ่มเติม ===== -->
+<script id="schoolhub-onboarding-tour-engine" src="js2/125_schoolhub-onboarding-tour-engine.js"></script>
+<!-- ===== END PATCH: Onboarding Tour ===== -->
