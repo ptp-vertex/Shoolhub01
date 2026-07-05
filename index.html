@@ -232,9 +232,25 @@ document.addEventListener('paste', function(e){
         </div>
     </div>
 
+    <style>
+        /* แถบโหลดเปอร์เซ็นต์: แสดงเฉพาะจอมือถือ ที่ด้านล่างของ global-loader */
+        #sh-loader-progress-wrap { display: none; }
+        @media (max-width: 767px) {
+            #sh-loader-progress-wrap.sh-loader-progress-active { display: block !important; }
+        }
+    </style>
     <div id="global-loader" class="fixed inset-0 bg-white/90 backdrop-blur-md z-[200] flex flex-col items-center justify-center">
         <div class="loader mb-6"></div>
-        <p class="text-slate-600 font-semibold tracking-wide">กำลังเชื่อมต่อข้อมูล...</p>
+        <p id="sh-loader-progress-label" class="text-slate-600 font-semibold tracking-wide">กำลังเชื่อมต่อข้อมูล...</p>
+        <div id="sh-loader-progress-wrap" class="fixed left-0 right-0 bottom-0 px-4 pb-4 pt-3 bg-white/95" style="z-index:210">
+            <div class="flex items-center justify-between mb-1.5">
+                <span class="text-xs font-semibold text-slate-500">กำลังโหลดข้อมูล...</span>
+                <span id="sh-loader-progress-pct" class="text-xs font-bold text-primary">0%</span>
+            </div>
+            <div class="w-full h-2 rounded-full bg-slate-200 overflow-hidden">
+                <div id="sh-loader-progress-bar" class="h-full rounded-full bg-primary" style="width:0%;transition:width .25s ease"></div>
+            </div>
+        </div>
     </div>
 
     <script src="js1/006.js"></script>
