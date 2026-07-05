@@ -11,6 +11,13 @@
    - ผู้ใช้สามารถ "ขอเรียนซ้ำ" ได้เองที่ ตั้งค่า > ทั่วไป > หัวข้อ
      "วิธีใช้งาน / เรียนรู้เพิ่มเติม" ทั้งแบบเลือกสอนซ้ำเฉพาะจุด หรือสอนซ้ำ
      ทั้งหมดในคลิกเดียว
+   - สถานะ "เคยสอนแล้ว" ของแต่ละบัญชี ถูกบันทึกไว้ 2 ชั้น:
+       1) localStorage ของเบราว์เซอร์นั้น (ตอบสนองไว ใช้ได้ทันทีแม้ออฟไลน์)
+       2) Firestore คอลเลกชัน "onboarding_tour_progress" เอกสารต่อ 1 บัญชี
+          (id เอกสาร = อีเมล/ชื่อบัญชีที่ normalize แล้ว) มีฟิลด์ desktop / mobile
+          แยกกัน เมื่อบัญชีเดิมไปเข้าเว็บจากเครื่อง/เบราว์เซอร์อื่นที่เป็นอุปกรณ์
+          ประเภทเดียวกัน (คอม หรือ มือถือ) ระบบจะดึงค่านี้มาผสานกับของในเครื่อง
+          ก่อนตัดสินใจว่าจุดไหนต้องสอนอีก จึงไม่สอนซ้ำแม้เปลี่ยนเครื่อง
 
    วิธีเพิ่มจุดสอนใหม่ในอนาคต: เพิ่ม object ใหม่ลงใน SH_TOUR_STEPS ด้านล่าง
    ระบุ selector / title / text แยก desktop กับ mobile ให้ครบ
@@ -185,17 +192,27 @@
     }
     function deviceKey() { return isMobile() ? 'mobile' : 'desktop'; }
 
+    /* อ่านอีเมล/ชื่อบัญชีจากป้ายที่หน้าเว็บแสดงจริง (ตั้งค่าแล้วทุก path การล็อกอิน
+       ทั้งผู้ใช้ทั่วไป / แอดมิน bypass / กู้ session — เชื่อถือได้มากกว่าตัวแปร
+       currentUser ที่อยู่ใน scope ของ module อื่นซึ่งสคริปต์นี้มองไม่เห็น) */
+    function readIdentityFromDom() {
+        try {
+            var el = document.getElementById('user-display-email');
+            if (!el) return null;
+            var txt = (el.textContent || '').trim();
+            if (!txt || txt === '...' || txt === 'ไม่ระบุ') return null;
+            return txt;
+        } catch (e) { return null; }
+    }
+
     function accountKey() {
         try {
-            var u = (typeof currentUser !== 'undefined' && currentUser) ||
-                (window.auth && window.auth.currentUser) ||
-                window.currentUser || null;
-            var id = (u && (u.email || u.uid)) || window.currentUserEmail || null;
+            var id = readIdentityFromDom();
             if (!id) {
-                try {
-                    var saved = JSON.parse(localStorage.getItem('schoolhub_admin_bypass') || 'null');
-                    if (saved && saved.email) id = saved.email;
-                } catch (e2) {}
+                var u = (typeof currentUser !== 'undefined' && currentUser) ||
+                    (window.auth && window.auth.currentUser) ||
+                    window.currentUser || null;
+                id = (u && (u.email || u.uid)) || window.currentUserEmail || null;
             }
             return id ? String(id).trim().toLowerCase() : 'guest';
         } catch (e) { return 'guest'; }
@@ -217,14 +234,111 @@
         var m = loadSeen(devOverride);
         m[id] = Date.now();
         saveSeen(m, devOverride);
+        syncDeviceMapToRemote();
     }
     function unmarkSeen(id, devOverride) {
         var m = loadSeen(devOverride);
         delete m[id];
         saveSeen(m, devOverride);
+        syncDeviceMapToRemote();
     }
     function resetAllSeen(devOverride) {
         try { localStorage.removeItem(storeKey(devOverride)); } catch (e) {}
+        syncDeviceMapToRemote();
+    }
+
+    /* ---------------------------------------------------------------- */
+    /* 2.1) ซิงค์สถานะ "เคยสอนแล้ว" ขึ้น Firestore ต่อบัญชี แยกเก็บเป็น       */
+    /*      คนละฟิลด์ระหว่าง desktop / mobile ในเอกสารเดียวกันของบัญชีนั้น    */
+    /*      (ใช้ dynamic import + Firebase app หลักที่แอปนี้ initializeApp   */
+    /*      ไว้อยู่แล้ว จึงไม่ต้องผูก config ซ้ำ และไม่กระทบสคริปต์อื่น)         */
+    /* ---------------------------------------------------------------- */
+    var FIREBASE_APP_URL = 'https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js';
+    var FIREBASE_FS_URL = 'https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js';
+    // ใช้เฉพาะกรณีสำรอง หากยังไม่มีแอป Firebase ตัวใดถูก initializeApp ไว้เลย
+    // (ปกติแล้ว index.html โหลดสคริปต์หลักที่ initializeApp ไปก่อนหน้านี้แล้วเสมอ)
+    var FALLBACK_FIREBASE_CONFIG = {
+        apiKey: "AIzaSyADAbTJEWivV1Nn-au7tXofStx4ADYTCM8",
+        authDomain: "shoolhub-5677e.firebaseapp.com",
+        projectId: "shoolhub-5677e",
+        storageBucket: "shoolhub-5677e.firebasestorage.app",
+        messagingSenderId: "630487358153",
+        appId: "1:630487358153:web:1866add5d4a29b74abcb18",
+        measurementId: "G-2Q6R46DC38"
+    };
+    var TOUR_COLLECTION = 'onboarding_tour_progress';
+
+    var fsReadyPromise = null;
+    function getFirestoreApi() {
+        if (fsReadyPromise) return fsReadyPromise;
+        fsReadyPromise = Promise.all([import(FIREBASE_APP_URL), import(FIREBASE_FS_URL)]).then(function (mods) {
+            var appMod = mods[0], fsMod = mods[1];
+            var app = appMod.getApps().length ? appMod.getApp() : appMod.initializeApp(FALLBACK_FIREBASE_CONFIG);
+            var db = fsMod.getFirestore(app);
+            return { db: db, doc: fsMod.doc, getDoc: fsMod.getDoc, setDoc: fsMod.setDoc, serverTimestamp: fsMod.serverTimestamp };
+        }).catch(function (e) { console.warn('SchoolHub tour: Firestore ใช้งานไม่ได้ (ทำงานแบบเก็บในเครื่องอย่างเดียว)', e); return null; });
+        return fsReadyPromise;
+    }
+
+    function safeDocId(key) {
+        var k = String(key || 'guest').trim().toLowerCase().replace(/[\/#\?\[\]\*\s]+/g, '_');
+        return k || 'guest';
+    }
+
+    function canSyncRemote() {
+        var k = accountKey();
+        return !!k && k !== 'guest';
+    }
+
+    // ดึงสถานะ "เคยสอนแล้ว" ของบัญชีนี้ (เฉพาะอุปกรณ์ปัจจุบัน คอม/มือถือ) จาก Firestore
+    // มารวมกับของในเครื่อง เผื่อบัญชีนี้เคยเรียนจากเครื่อง/เบราว์เซอร์อื่นที่เป็น
+    // อุปกรณ์ประเภทเดียวกันมาก่อนแล้ว จะได้ไม่ต้องสอนซ้ำอีก
+    function fetchRemoteAndMerge(cb) {
+        if (!canSyncRemote()) { if (cb) cb(); return; }
+        getFirestoreApi().then(function (api) {
+            if (!api) { if (cb) cb(); return; }
+            var ref = api.doc(api.db, TOUR_COLLECTION, safeDocId(accountKey()));
+            api.getDoc(ref).then(function (snap) {
+                if (snap && snap.exists && snap.exists()) {
+                    var data = snap.data() || {};
+                    var dev = deviceKey();
+                    var remoteMap = data[dev] || {};
+                    var local = loadSeen();
+                    var changed = false;
+                    Object.keys(remoteMap).forEach(function (id) {
+                        if (!local[id]) { local[id] = remoteMap[id]; changed = true; }
+                    });
+                    if (changed) saveSeen(local);
+                }
+                if (cb) cb();
+            }).catch(function (e) { console.warn('SchoolHub tour: โหลดสถานะจาก Firestore ไม่สำเร็จ', e); if (cb) cb(); });
+        });
+    }
+
+    // อัปโหลดสถานะปัจจุบันของบัญชีนี้ (ทั้ง desktop และ mobile ที่มีในเครื่อง) ขึ้น
+    // Firestore ทับของเดิม เพื่อให้เอกสารในคลาวด์ตรงกับความจริงเสมอ ไม่ว่าจะเป็น
+    // การสอนจุดใหม่, ขอเรียนซ้ำเฉพาะจุด หรือขอเรียนซ้ำทั้งหมด
+    function syncDeviceMapToRemote() {
+        if (!canSyncRemote()) return;
+        getFirestoreApi().then(function (api) {
+            if (!api) return;
+            var ref = api.doc(api.db, TOUR_COLLECTION, safeDocId(accountKey()));
+            // เขียนทับทั้งฟิลด์ desktop/mobile ด้วยค่าล่าสุดในเครื่องเสมอ (ไม่ใช้
+            // merge ระดับลึกของ Firestore) เพราะกรณี "ขอเรียนซ้ำเฉพาะจุด/ทั้งหมด"
+            // ต้องให้ค่าที่ถูกลบออกในเครื่องหายไปจากคลาวด์ด้วย ไม่ใช่ถูก merge กลับมา
+            api.getDoc(ref).then(function (snap) {
+                var data = (snap && snap.exists && snap.exists() && snap.data()) || {};
+                data.desktop = loadSeen('desktop');
+                data.mobile = loadSeen('mobile');
+                data.accountKey = accountKey();
+                data.updatedAt = api.serverTimestamp ? api.serverTimestamp() : Date.now();
+                api.setDoc(ref, data).catch(function (e) {
+                    console.warn('SchoolHub tour: บันทึกสถานะขึ้น Firestore ไม่สำเร็จ', e);
+                });
+            }).catch(function (e) {
+                console.warn('SchoolHub tour: อ่านสถานะเดิมก่อนบันทึกไม่สำเร็จ', e);
+            });
+        });
     }
 
     /* ---------------------------------------------------------------- */
@@ -424,6 +538,7 @@
         if (checkTimer) clearTimeout(checkTimer);
         checkTimer = setTimeout(function () {
             checkTimer = null;
+            checkAccountChanged();
             if (!running) runTourCheck();
         }, delay || 400);
     }
@@ -506,7 +621,7 @@
         host.innerHTML =
             '<div class="sh-tour-settings-card">' +
             '<h5 class="font-black text-slate-900"><i class="fas fa-graduation-cap text-indigo-500 mr-2"></i>วิธีใช้งาน / เรียนรู้เพิ่มเติม</h5>' +
-            '<p class="text-sm text-slate-500 leading-7 mt-2">ระบบจะสอนการใช้งานอัตโนมัติทีละจุดในครั้งแรกที่คุณเจอปุ่มหรือเมนูนั้น (แยกกันระหว่างคอมพิวเตอร์และมือถือ) ถ้าต้องการดูคำแนะนำอีกครั้ง เลือกสอนซ้ำเฉพาะจุด หรือกดสอนซ้ำทั้งหมดด้านล่าง</p>' +
+            '<p class="text-sm text-slate-500 leading-7 mt-2">ระบบจะสอนการใช้งานอัตโนมัติทีละจุดในครั้งแรกที่คุณเจอปุ่มหรือเมนูนั้น (แยกกันระหว่างคอมพิวเตอร์และมือถือ) สถานะการสอนของบัญชีนี้ถูกบันทึกไว้บนระบบคลาวด์ ดังนั้นแม้เปลี่ยนเครื่อง/เบราว์เซอร์ (แต่ยังเป็นอุปกรณ์ประเภทเดียวกัน) ก็จะไม่ถูกสอนซ้ำอีก ถ้าต้องการดูคำแนะนำอีกครั้ง เลือกสอนซ้ำเฉพาะจุด หรือกดสอนซ้ำทั้งหมดด้านล่าง</p>' +
             '<div class="sh-tour-settings-list">' + listHtml + '</div>' +
             '<button type="button" class="sh-tour-replay-all-btn" id="sh-tour-replay-all"><i class="fas fa-rotate-right"></i> เรียนรู้เพิ่มเติม (สอนอีกครั้งทั้งหมด)</button>' +
             '</div>';
@@ -548,16 +663,42 @@
         resetAll: function () { resetAllSeen(); },
         resetOne: function (id) { unmarkSeen(id); },
         isSeen: isSeen,
+        renderSettingsCard: renderSettingsCard,
         steps: SH_TOUR_STEPS
     };
+
+    /* ---------------------------------------------------------------- */
+    /* 9) ตรวจจับว่า "บัญชี" เปลี่ยนไปหรือเพิ่งล็อกอินสำเร็จ (เช่น หน้าเว็บ    */
+    /*    เพิ่งโหลด ยังไม่รู้ว่าใครล็อกอินอยู่ พอ auth เสร็จค่อยรู้ทีหลัง) เพื่อ */
+    /*    ดึงสถานะจาก Firestore มาก่อนเช็คว่าจุดไหนต้องสอนบ้าง                */
+    /* ---------------------------------------------------------------- */
+    var lastKnownAccountKey = null;
+    function checkAccountChanged() {
+        var k = accountKey();
+        if (k !== lastKnownAccountKey) {
+            lastKnownAccountKey = k;
+            if (k !== 'guest') fetchRemoteAndMerge(function () { scheduleCheck(250); });
+        }
+    }
 
     function boot() {
         renderSettingsCard();
         observeSettingsPanel();
         startObserving();
         tryHookLoop();
-        scheduleCheck(1200);
+        fetchRemoteAndMerge(function () {
+            lastKnownAccountKey = accountKey();
+            scheduleCheck(1200);
+        });
         setTimeout(function () { scheduleCheck(300); }, 2500);
+        // เผื่อกรณี login ไม่ได้ทำให้ DOM เปลี่ยนแบบที่ MutationObserver จับได้ทัน
+        // ตรวจซ้ำเป็นระยะสั้นๆ ในช่วงแรกหลังโหลดหน้าเว็บเพื่อจับตอนล็อกอินสำเร็จ
+        var accountPollCount = 0;
+        var accountPoll = setInterval(function () {
+            accountPollCount++;
+            checkAccountChanged();
+            if (accountPollCount >= 30) clearInterval(accountPoll);
+        }, 1500);
     }
 
     if (document.readyState === 'complete' || document.readyState === 'interactive') {
