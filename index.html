@@ -478,11 +478,50 @@ document.addEventListener('paste', function(e){
     <!-- Main App Layout -->
     <div id="main-app" class="flex h-screen bg-slate-50 hidden">
 
-        <!-- Sidebar Navigation (Desktop) -->
-        <aside class="w-72 bg-white border-r border-slate-200 flex flex-col transition-all z-20 hidden md:flex shadow-sm">
+    <style>
+        /* โหมดย่อเมนูด้านซ้าย (เดสก์ท็อป): แสดงแค่ไอคอน + รูปโปรไฟล์ มีปุ่มขยายกลับเป็นแบบเต็ม */
+        #sh-sidebar.sh-sidebar-collapsed { width: 5.5rem !important; }
+        #sh-sidebar.sh-sidebar-collapsed #sh-sidebar-logo-text,
+        #sh-sidebar.sh-sidebar-collapsed #sh-sidebar-profile-text,
+        #sh-sidebar.sh-sidebar-collapsed #sh-sidebar-toggle-label,
+        #sh-sidebar.sh-sidebar-collapsed nav p,
+        #sh-sidebar.sh-sidebar-collapsed nav button span,
+        #sh-sidebar.sh-sidebar-collapsed .p-4.border-t button span {
+            display: none !important;
+        }
+        #sh-sidebar.sh-sidebar-collapsed .p-6.flex.items-center.gap-4 { justify-content: center; padding-left: .5rem; padding-right: .5rem; }
+        #sh-sidebar.sh-sidebar-collapsed .p-6.border-b.border-slate-100 { display: flex; justify-content: center; padding-left: .5rem; padding-right: .5rem; }
+        #sh-sidebar.sh-sidebar-collapsed .p-6.border-b.border-slate-100 .flex.items-center.gap-3 { gap: 0; }
+        #sh-sidebar.sh-sidebar-collapsed nav button,
+        #sh-sidebar.sh-sidebar-collapsed .p-4.border-t button {
+            justify-content: center;
+            padding-left: 0;
+            padding-right: 0;
+            gap: 0;
+        }
+        /* ข้อความในปุ่มเมนูเดิมเป็น text node เปล่าๆ ต่อจากไอคอน ไม่ได้ห่อด้วย tag: ใช้ font-size:0
+           กับปุ่ม แล้วคืนขนาดไอคอนกลับ เพื่อซ่อนข้อความโดยไม่ต้องแก้โครงสร้าง HTML เดิมทุกปุ่ม */
+        #sh-sidebar.sh-sidebar-collapsed nav button,
+        #sh-sidebar.sh-sidebar-collapsed .p-4.border-t button { font-size: 0; }
+        #sh-sidebar.sh-sidebar-collapsed nav button i,
+        #sh-sidebar.sh-sidebar-collapsed .p-4.border-t button i { font-size: 1rem; }
+        #sh-sidebar.sh-sidebar-collapsed #course-context-menu,
+        #sh-sidebar.sh-sidebar-collapsed #admin-menu-group { border-top: 1px solid #f1f5f9; margin-top: 1rem; padding-top: 1rem; }
+        #sh-sidebar-toggle-icon.sh-flip { transform: scaleX(-1); }
+    </style>
+
+
+        <aside id="sh-sidebar" class="w-72 bg-white border-r border-slate-200 flex flex-col transition-all duration-200 z-20 hidden md:flex shadow-sm relative">
             <div class="p-6 flex items-center gap-4 h-20 border-b border-slate-100">
-                <div class="bg-indigo-50 text-primary w-10 h-10 rounded-xl flex items-center justify-center text-xl"><i class="fas fa-graduation-cap"></i></div>
-                <span class="text-2xl font-bold text-slate-800 tracking-tight">School<span class="text-primary">Hub</span></span>
+                <div class="bg-indigo-50 text-primary w-10 h-10 rounded-xl flex items-center justify-center text-xl shrink-0"><i class="fas fa-graduation-cap"></i></div>
+                <span id="sh-sidebar-logo-text" class="text-2xl font-bold text-slate-800 tracking-tight">School<span class="text-primary">Hub</span></span>
+            </div>
+
+            <div class="hidden md:block px-3 pt-3">
+                <button id="sh-sidebar-toggle-btn" type="button" onclick="window.toggleSchoolHubSidebar && window.toggleSchoolHubSidebar()" title="ย่อเมนู" class="w-full flex items-center justify-center gap-2 py-2 rounded-xl border border-slate-200 text-slate-500 hover:text-primary hover:border-indigo-200 text-xs font-bold transition">
+                    <i class="fas fa-angle-left text-xs" id="sh-sidebar-toggle-icon"></i>
+                    <span id="sh-sidebar-toggle-label">ย่อเมนู</span>
+                </button>
             </div>
 
             <!-- User Profile Area in Sidebar -->
@@ -492,7 +531,7 @@ document.addEventListener('paste', function(e){
                         <div class="w-12 h-12 rounded-full bg-gradient-to-tr from-primary to-purple-500 text-white flex items-center justify-center text-xl font-bold shadow-md" id="user-avatar-initial">U</div>
                         <img id="user-avatar-photo" class="hidden absolute inset-0 w-12 h-12 rounded-full object-cover border-2 border-white shadow-md" alt="">
                     </div>
-                    <div class="overflow-hidden">
+                    <div id="sh-sidebar-profile-text" class="overflow-hidden">
                         <div id="user-display-name" class="font-bold text-slate-800 truncate">กำลังโหลด...</div>
                         <div id="user-display-email" class="text-xs font-medium text-slate-500 truncate">...</div>
                     </div>
@@ -3223,3 +3262,7 @@ document.addEventListener('paste', function(e){
      และย้าย modal ไปไว้ท้ายสุดของ <body> พร้อมตั้ง z-index สูงสุดทุกครั้งที่เปิด เพื่อไม่ให้ไปซ้อนอยู่ด้านหลังอะไรอีก ===== -->
 <script id="schoolhub-final-v4-att-patch" src="js2/123_schoolhub-final-v4-att-patch.js"></script>
 <!-- ===== END FINAL PATCH v4 ===== -->
+
+<!-- ===== PATCH: เมนูด้านซ้าย (เดสก์ท็อป) แบบย่อ/ขยายได้ + กันเมนูหายตอนย่อ-ขยายจอ ===== -->
+<script id="schoolhub-desktop-sidebar-collapse-toggle" src="js2/124_schoolhub-desktop-sidebar-collapse-toggle.js"></script>
+<!-- ===== END PATCH ===== -->
