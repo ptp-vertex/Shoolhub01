@@ -1,21 +1,16 @@
 /*
   PATCH: เมนูด้านซ้าย (เดสก์ท็อป) แบบย่อ/ขยายได้ + แก้ปัญหาเมนูหายตอนย่อจอเป็นแนวตั้งแล้วขยายกลับมาเต็มจอ
-
-  ปัญหาเดิม: ถ้าย่อหน้าต่างเบราว์เซอร์บนคอมให้แคบลง (เข้าสู่โหมดมือถือ) แล้วขยายกลับมาเต็มจอ
-  เมนูด้านซ้าย (aside) บางครั้งไม่กลับมาแสดงผล
-
-  พฤติกรรมใหม่ที่ต้องการ:
-  - โหมดปกติบนคอม: เมนูเต็มแบบเดิม มีปุ่ม "ย่อเมนู" ให้กดย่อเป็นไอคอนอย่างเดียว (โปรไฟล์เหลือแค่รูป)
-  - กดปุ่มเดิมซ้ำ (ตอนนี้จะเป็น "ขยายเมนู") กลับมาเป็นเมนูเต็มแบบปกติได้
-  - ถ้าย่อจอลงจนเป็นโหมดมือถือ (แสดงปุ่มแฮมเบอร์เกอร์แบบเดิม) แล้วขยายจอกลับมาเป็นเดสก์ท็อปอีกครั้ง
-    ระบบจะเปิดเมนูมาเป็น "แบบย่อ (ไอคอน)" ให้เองก่อนเสมอ กันปัญหาเมนูเต็มโผล่มาผิดจังหวะ/หายไป
-    ผู้ใช้กดปุ่มขยายเพื่อดูเมนูแบบเต็มได้ตามต้องการ
+  
+  พฤติกรรมใหม่:
+  1. เมื่อรีเฟรชหน้าจอ: แสดงเมนูเต็ม 5 วินาที แล้วย่ออัตโนมัติ (ยกเว้นผู้ใช้กดเองก่อน)
+  2. เมื่อขยายจอกลับมาจากโหมดมือถือ: แสดงเมนูทันทีโดยไม่ต้องรีเฟรช
 */
 (function () {
     if (window.__schoolhubSidebarCollapseInit) return;
     window.__schoolhubSidebarCollapseInit = true;
 
     var STORAGE_KEY = 'schoolhub_sidebar_collapsed';
+    var userInteracted = false; 
 
     function isMobileWidth() {
         return window.matchMedia && window.matchMedia('(max-width:767px)').matches;
@@ -43,7 +38,8 @@
     }
 
     window.toggleSchoolHubSidebar = function () {
-        if (isMobileWidth()) return; // บนมือถือใช้เมนูแบบ hamburger เดิม ไม่เกี่ยวกับปุ่มนี้
+        if (isMobileWidth()) return;
+        userInteracted = true; // ผู้ใช้กดเองแล้ว ยกเลิก Auto-collapse
         var aside = getSidebar();
         if (!aside) return;
         var nextCollapsed = !aside.classList.contains('sh-sidebar-collapsed');
@@ -59,18 +55,13 @@
         
         var aside = getSidebar();
         if (nowMode === 'desktop') {
-            // เพิ่งขยายจอกลับมาจากโหมดมือถือ: 
-            // 1. บังคับให้แสดง Sidebar ก่อน (เพราะโหมดมือถืออาจจะซ่อนไว้)
             if (aside) {
                 aside.classList.remove('hidden');
-                aside.style.display = 'flex'; // บังคับให้เป็น flex สำหรับ desktop
-                aside.style.removeProperty('display'); // ปล่อยให้ CSS จัดการต่อ
+                aside.classList.add('md:flex');
+                aside.style.setProperty('display', 'flex', 'important');
             }
-            // 2. ตั้งค่าเป็นเมนูย่อ (ไอคอน) เพื่อความปลอดภัยของพื้นที่หน้าจอ
-            applyCollapsedState(true);
-            setCollapsedPref(true);
+            applyCollapsedState(getCollapsedPref());
         } else {
-            // เข้าสู่โหมดมือถือ: ซ่อน Sidebar แบบปกติ
             if (aside) {
                 aside.classList.add('hidden');
                 aside.style.removeProperty('display');
@@ -85,13 +76,24 @@
         if (aside) {
             aside.classList.remove('hidden');
             aside.classList.add('md:flex');
+            aside.style.setProperty('display', 'flex', 'important');
         }
-        applyCollapsedState(getCollapsedPref());
+        
+        // ตอนโหลดหน้าจอใหม่ (Refresh): แสดงเมนูเต็มก่อน
+        applyCollapsedState(false);
+        
+        // ตั้งเวลา 5 วินาทีเพื่อย่ออัตโนมัติ (เฉพาะตอนโหลดครั้งแรก)
+        setTimeout(function() {
+            if (!userInteracted && !isMobileWidth()) {
+                applyCollapsedState(true);
+                setCollapsedPref(true);
+            }
+        }, 5000);
     }
 
     document.addEventListener('DOMContentLoaded', function () {
         initSidebarState();
-        setTimeout(initSidebarState, 300);
+        setTimeout(function(){ if(!userInteracted) initSidebarState(); }, 300);
     });
     window.addEventListener('resize', function () { setTimeout(handleModeTransition, 60); });
     window.addEventListener('orientationchange', function () { setTimeout(handleModeTransition, 150); });
