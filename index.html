@@ -3010,16 +3010,25 @@ document.addEventListener('paste', function(e){
 </div>
 
 <!-- ═════════════════════════════════════════════════════════════════
-     MODAL: Star → Score Conversion Settings (double-click ⭐ดาว header)
+     MODAL: จัดการแปลงดาวเป็นคะแนน (คลิกที่หัวคอลัมน์ ⭐ดาว)
+     รวมส่วนตั้งค่า + ประวัติการแปลงไว้ในป็อปอัพเดียว
      ═════════════════════════════════════════════════════════════════ -->
 <div id="sh-starconv-modal" class="sh-overlay hidden">
   <div class="sh-modal-box" style="max-width:640px">
     <div class="sh-modal-header">
-      <h3><i class="fas fa-star" style="color:#d97706;margin-right:8px"></i>แปลงดาวเป็นคะแนน</h3>
+      <h3><i class="fas fa-star" style="color:#d97706;margin-right:8px"></i>จัดการแปลงดาวเป็นคะแนน</h3>
       <button class="sh-modal-close" onclick="shStarConvertClose()"><i class="fas fa-times"></i></button>
     </div>
     <div class="sh-modal-body">
       <input type="hidden" id="sh-starconv-cid">
+
+      <div style="background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:10px 12px;margin-bottom:14px;font-size:12.5px;color:#92400e;line-height:1.6">
+        <i class="fas fa-circle-info mr-1"></i>
+        บันทึกดาวรายสัปดาห์ตามปกติ แล้วมาแปลงดาวเป็นคะแนนได้ที่นี่ — เลือกแปลง <b>"ดาวรวมทั้งหมด"</b> หรือ <b>"ดาวเฉพาะสัปดาห์"</b>
+        จากนั้นเลือกว่าจะเพิ่มคะแนนเข้าไปใน<b>งานที่มีอยู่</b> (กรอกได้ไม่เกินคะแนนเต็มของงานนั้น) หรือสร้างเป็น<b>คะแนนโบนัสใหม่ (+คะแนนรวม)</b>
+        คะแนนที่แปลงเข้างานจะแสดงเป็นตัวเลข<b style="color:#b45309">สีเหลือง</b>ในตาราง ชี้เมาส์เพื่อดูที่มา และดูประวัติการแปลงทั้งหมดพร้อมลบได้ด้านล่างสุด
+      </div>
+
       <div class="sh-week-row" style="margin-bottom:10px">
         <label style="font-weight:800;color:#334155">ดาวที่จะแปลง</label>
         <div style="display:flex;gap:14px;align-items:center;margin-top:6px;flex-wrap:wrap">
@@ -3037,7 +3046,7 @@ document.addEventListener('paste', function(e){
         <select id="sh-starconv-target" style="width:100%;margin-top:6px;font-size:14px;padding:8px;border-radius:10px;border:1px solid #cbd5e1" onchange="shStarConvertRefresh()"></select>
       </div>
       <div id="sh-starconv-maxinfo" style="display:none;background:#fffbeb;border:1.5px solid #fde68a;border-radius:10px;padding:8px 12px;margin-bottom:10px;font-size:12.5px;color:#92400e;font-weight:700"></div>
-      <div style="max-height:340px;overflow:auto;border:1px solid #e2e8f0;border-radius:12px">
+      <div style="max-height:280px;overflow:auto;border:1px solid #e2e8f0;border-radius:12px">
         <table style="width:100%;border-collapse:collapse;font-size:13px">
           <thead><tr style="background:#f8fafc;position:sticky;top:0">
             <th style="text-align:left;padding:8px">นักเรียน</th>
@@ -3047,26 +3056,17 @@ document.addEventListener('paste', function(e){
           <tbody id="sh-starconv-rows"></tbody>
         </table>
       </div>
+
+      <div style="margin-top:18px;padding-top:14px;border-top:2px dashed #e2e8f0">
+        <div style="font-weight:800;color:#334155;margin-bottom:8px">
+          <i class="fas fa-clock-rotate-left" style="color:#d97706;margin-right:6px"></i>ประวัติการแปลงคะแนน
+        </div>
+        <div id="sh-starconv-history-body" style="max-height:220px;overflow:auto"></div>
+      </div>
     </div>
     <div class="sh-modal-footer">
       <button class="sh-btn-cancel" onclick="shStarConvertClose()">ยกเลิก</button>
       <button class="sh-btn-save-amber" onclick="shStarConvertConfirm()"><i class="fas fa-magic mr-1"></i>ยืนยันแปลงคะแนน</button>
-    </div>
-  </div>
-</div>
-
-<!-- ═════════════════════════════════════════════════════════════════
-     MODAL: Star → Score Conversion History (click ⭐ดาว header)
-     ═════════════════════════════════════════════════════════════════ -->
-<div id="sh-starconv-history-modal" class="sh-overlay hidden">
-  <div class="sh-modal-box" style="max-width:460px">
-    <div class="sh-modal-header">
-      <h3><i class="fas fa-clock-rotate-left" style="color:#d97706;margin-right:8px"></i>ประวัติการแปลงดาวเป็นคะแนน</h3>
-      <button class="sh-modal-close" onclick="document.getElementById('sh-starconv-history-modal').classList.add('hidden')"><i class="fas fa-times"></i></button>
-    </div>
-    <div class="sh-modal-body" id="sh-starconv-history-body"></div>
-    <div class="sh-modal-footer">
-      <button class="sh-btn-cancel" onclick="document.getElementById('sh-starconv-history-modal').classList.add('hidden')">ปิด</button>
     </div>
   </div>
 </div>
