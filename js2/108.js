@@ -359,40 +359,14 @@ W.shStarRemoveMember=function(gid,mid){
   grp.members=(grp.members||[]).filter(function(x){ return x!==mid; });
   shStarRender();
 };
+// NOTE: the old rank-based "แปลงดาวเป็นโบนัส" feature (r1/r2/r3 inputs inside
+// the star-group modal) has been retired and replaced by the new
+// "แปลงดาวเป็นคะแนน" feature accessible via double-click on the ⭐ดาว column
+// header in the course overview table (see shStarConvertOpen). Kept as a
+// harmless redirect in case any old markup still calls it.
 W.shStarApplyBonus=function(){
   const cid=getCid(); if(!cid) return;
-  const week=parseInt(eid('sh-star-week').value)||1;
-  const weekKey='w'+week;
-  const r1=Number(eid('sh-r1').value)||0;
-  const r2=Number(eid('sh-r2').value)||0;
-  const r3=Number(eid('sh-r3').value)||0;
-  const cd=starCD(cid);
-  const groups=cd.groups||[];
-  if(!groups.length){ shAlert('ไม่มีกลุ่ม','กรุณาเพิ่มกลุ่มก่อน'); return; }
-  const weekStars=(cd.weekStars&&cd.weekStars[weekKey])||{};
-  const ranked=[...groups].map(function(g){ return Object.assign({},g,{stars:weekStars[g.id]||0}); }).sort(function(a,b){ return b.stars-a.stars; });
-  initFields();
-  ensureField(st().bonusScores,cid,{});
-  if(!st().bonusScores[cid][weekKey]) st().bonusScores[cid][weekKey]={};
-  ensureField(cd,'rankScores',{});
-  cd.rankScores[weekKey]={r1,r2,r3};
-  const courseStudents=getStudents(cid);
-  const sidSet=new Set(courseStudents.map(function(s){ return s.id; }));
-  let applied=0;
-  ranked.forEach(function(g,idx){
-    const pts=idx===0?r1:idx===1?r2:idx===2?r3:0;
-    if(!pts) return;
-    (g.members||[]).forEach(function(mid){
-      if(!sidSet.has(mid)) return;
-      const cur=st().bonusScores[cid][weekKey][mid];
-      st().bonusScores[cid][weekKey][mid]=(cur!==undefined&&cur!==''?Number(cur):0)+pts;
-      applied++;
-    });
-  });
-  dbSave();
-  shAlert('แปลงดาวเป็นโบนัสสำเร็จ',
-    'สัปดาห์ที่ '+week+'\n🥇 อันดับ 1: +'+r1+' คะแนน\n🥈 อันดับ 2: +'+r2+' คะแนน\n🥉 อันดับ 3: +'+r3+' คะแนน'
-    +(applied>0?'\n\n✅ อัปเดตคะแนนโบนัสให้ '+applied+' คน':'\n\n⚠️ ยังไม่มีสมาชิกในกลุ่ม — เพิ่มสมาชิกในกลุ่มก่อน'));
+  if(typeof W.shStarConvertOpen==='function'){ W.shStarClose(); W.shStarConvertOpen(cid); }
 };
 W.shStarSave=async function(){
   const ok=await dbSave();
