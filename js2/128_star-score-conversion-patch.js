@@ -24,9 +24,15 @@
         thead.insertBefore(bonusTh, target);
 
         var starTh = document.createElement('th');
-        starTh.className = 'text-center bg-amber-50 text-amber-700 font-bold sh-star-col border-r cursor-pointer hover:bg-amber-100 transition';
-        starTh.onclick = function(e){ e.stopPropagation(); window.openStarConversionPopup(); };
-        starTh.innerHTML = '<div class="flex flex-col items-center gap-1"><span>ดาวกลุ่ม</span><button type="button" class="text-[10px] bg-white border border-amber-200 px-1 rounded shadow-sm text-amber-600 font-black"><i class="fas fa-calculator mr-1"></i>แปลงคะแนน</button></div>';
+        starTh.className = 'text-center bg-amber-50 text-amber-700 font-bold sh-star-col border-r cursor-pointer hover:bg-amber-100 transition select-none';
+        starTh.title = 'ดับเบิลคลิกเพื่อแปลงคะแนนดาวกลุ่ม';
+        // เปลี่ยนเป็น Double Click
+        starTh.ondblclick = function(e){ 
+          e.preventDefault();
+          e.stopPropagation(); 
+          window.openStarConversionPopup(); 
+        };
+        starTh.innerHTML = '<div class="flex flex-col items-center gap-1"><span>ดาวกลุ่ม</span><div class="text-[9px] bg-white/50 px-1 rounded opacity-60 font-medium">Double Click</div></div>';
         thead.insertBefore(starTh, target);
       }
     }
@@ -49,7 +55,6 @@
           if (val !== undefined && val !== '' && !isNaN(Number(val))) totalBonus += Number(val);
         });
 
-        // คำนวณดาวจากทุกเซต
         var totalStars = 0;
         starSets.forEach(function(s){
           var groups = s.groups || [];
@@ -83,7 +88,6 @@
     var starCourseData = (state.starGroups && state.starGroups[cid]) || {};
     var starSets = starCourseData.sets || [];
     
-    // ถ้าไม่มีเซตเลย ให้สร้างเซตเริ่มต้นจากข้อมูลเก่า (ถ้ามี)
     if (starSets.length === 0 && starCourseData.groups) {
       starSets = [{ id: 'set_1', name: 'เซตที่ 1', groups: starCourseData.groups, weekStars: starCourseData.weekStars || {} }];
       state.starGroups[cid].sets = starSets;
@@ -129,9 +133,7 @@
             </div>
           </div>
 
-          <div id="conversion-preview-list" class="space-y-2">
-            <!-- พรีวิวจะขึ้นตรงนี้ -->
-          </div>
+          <div id="conversion-preview-list" class="space-y-2"></div>
         </div>
         <div class="p-6 border-t border-slate-100 flex gap-3">
           <button onclick="document.getElementById('star-conversion-popup').classList.add('hidden')" class="flex-1 py-3 bg-slate-100 text-slate-600 font-bold rounded-2xl hover:bg-slate-200 transition">ยกเลิก</button>
@@ -158,17 +160,14 @@
     var groups = currentSet.groups || [];
     var weekStars = currentSet.weekStars || {};
     
-    // คำนวณดาวรวมของแต่ละกลุ่มในเซตนี้
     var groupData = groups.map(g => {
       var stars = 0;
       Object.keys(weekStars).forEach(wk => { stars += (weekStars[wk][g.id] || 0); });
       return { id: g.id, name: g.name, stars: stars };
     });
 
-    // เรียงตามดาวมากไปน้อย
     groupData.sort((a, b) => b.stars - a.stars);
 
-    // หาอันดับ (Rank) โดยถ้าดาวเท่ากันให้อันดับเดียวกัน
     var currentRank = 0;
     var lastStars = -1;
     groupData.forEach((g, i) => {
@@ -179,8 +178,6 @@
       g.rank = currentRank;
     });
 
-    // คำนวณคะแนนเฉลี่ยตามลำดับ (ไม่ใช่ตามจำนวนดาว)
-    // สูตร: Score = Max - ((Rank - 1) * (Max - Min) / (TotalUniqueRanks - 1))
     var uniqueRanks = Array.from(new Set(groupData.map(g => g.rank))).sort((a,b) => a-b);
     var totalUnique = uniqueRanks.length;
 
@@ -191,7 +188,7 @@
         var rankIdx = uniqueRanks.indexOf(g.rank);
         g.scaledScore = maxS - (rankIdx * (maxS - minS) / (totalUnique - 1));
       }
-      g.scaledScore = Math.round(g.scaledScore * 100) / 100; // ทศนิยม 2 ตำแหน่ง
+      g.scaledScore = Math.round(g.scaledScore * 100) / 100;
     });
 
     var previewHtml = `<div class="text-[10px] font-black text-slate-400 mb-2 uppercase">พรีวิวการแปลงคะแนน (เฉลี่ยตามลำดับกลุ่ม)</div>`;
@@ -212,7 +209,7 @@
     `).join('');
 
     document.getElementById('conversion-preview-list').innerHTML = previewHtml;
-    window.__currentGroupData = groupData; // เก็บไว้ใช้ตอนบันทึก
+    window.__currentGroupData = groupData;
   };
 
   window.applyStarConversion = async function(){
@@ -225,8 +222,7 @@
     var currentSet = (starCourseData.sets || []).find(s => s.id === setId);
     if (!currentSet) return;
 
-    // บันทึกลงใน bonusScores โดยใช้ "สัปดาห์ล่าสุด" หรือสร้างสัปดาห์ใหม่สำหรับคะแนนแปลง
-    var week = 'Bonus-Stars';
+    var week = 'Bonus-Stars-' + setId; // แยกสัปดาห์ตามเซต
     if (!state.bonusScores) state.bonusScores = {};
     if (!state.bonusScores[cid]) state.bonusScores[cid] = {};
     if (!state.bonusScores[cid][week]) state.bonusScores[cid][week] = {};
