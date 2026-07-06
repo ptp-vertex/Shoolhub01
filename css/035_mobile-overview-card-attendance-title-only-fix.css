@@ -1,9 +1,0 @@
-
-@media (max-width:767px){
-  .summary-mobile-plan-title{
-    white-space:normal !important;
-    overflow:visible !important;
-    text-overflow:clip !important;
-    line-height:1.25 !important;
-  }
-}

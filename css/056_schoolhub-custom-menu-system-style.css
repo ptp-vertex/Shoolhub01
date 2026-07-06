@@ -1,5 +1,0 @@
-
-    #schoolhub-custom-menu-admin-view .shcm-field{width:100%;border:1px solid #e2e8f0;border-radius:1rem;padding:.85rem 1rem;outline:none;background:white;}
-    #schoolhub-custom-menu-admin-view .shcm-field:focus{border-color:#4f46e5;box-shadow:0 0 0 4px rgba(79,70,229,.12);}
-    #schoolhub-custom-menu-user-view iframe{width:100%;height:calc(100dvh - 190px);min-height:520px;border:0;border-radius:1.5rem;background:white;}
-    @media(max-width:767px){#schoolhub-custom-menu-user-view iframe{height:calc(100dvh - 145px);min-height:420px;border-radius:1rem;}#schoolhub-custom-menu-admin-view .shcm-admin-grid{grid-template-columns:1fr!important;}}

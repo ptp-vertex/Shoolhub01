@@ -1,6 +1,0 @@
-
-  #overview-room-filter:empty{display:none!important; margin:0!important; padding:0!important;}
-  #overview-room-filter.hidden{display:none!important; margin:0!important; padding:0!important;}
-  .schoolhub-course-room-preview{font-size:.78rem;font-weight:800;color:#64748b;margin-top:.35rem;line-height:1.35;display:flex;align-items:flex-start;gap:.35rem;}
-  .schoolhub-course-room-preview i{color:#4f46e5;margin-top:.15rem;}
-  .schoolhub-course-room-preview span{display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden;}
