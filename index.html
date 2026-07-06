@@ -540,23 +540,21 @@ document.addEventListener('paste', function(e){
 
             <nav class="flex-1 p-4 space-y-1 overflow-y-auto font-medium">
                 <p id="nav-main-label" class="px-4 text-xs font-bold text-slate-400 uppercase tracking-wider mb-2 mt-2">เมนูหลัก</p>
-                <div id="main-menu-wrapper" class="space-y-1">
-                    <button id="nav-dashboard" onclick="goToHome()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all bg-indigo-50 text-primary" data-target="dashboard">
-                        <i class="fas fa-border-all w-5 text-center"></i> ห้องเรียนของฉัน
-                    </button>
-                    <button id="nav-students" onclick="openStudentsManager()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all" data-target="students-master">
-                        <i class="fas fa-users w-5 text-center"></i> ฐานข้อมูลนักเรียน
-                    </button>
-                    <button id="nav-import-excel" onclick="openImportExcel()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900 transition-all hidden" data-target="import-excel">
-                        <i class="fas fa-file-import w-5 text-center"></i> นำเข้าข้อมูล Excel
-                    </button>
-                    <button id="nav-user-plans" onclick="openUserPlanSelector()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all" data-target="user-plans">
-                        <i class="fas fa-layer-group w-5 text-center"></i> เลือก / เปลี่ยนแผน
-                    </button>
-                    <button id="nav-settings" type="button" data-open-settings="1" onclick="openSchoolHubSettings('general')" data-schoolhub-always-allowed="1" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all" data-target="settings">
-                        <i class="fas fa-sliders-h w-5 text-center"></i> ตั้งค่า
-                    </button>
-                </div>
+                <button id="nav-dashboard" onclick="goToHome()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left transition-all bg-indigo-50 text-primary" data-target="dashboard">
+                    <i class="fas fa-border-all w-5 text-center"></i> ห้องเรียนของฉัน
+                </button>
+                <button id="nav-students" onclick="openStudentsManager()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all" data-target="students-master">
+                    <i class="fas fa-users w-5 text-center"></i> ฐานข้อมูลนักเรียน
+                </button>
+                <button id="nav-import-excel" onclick="openImportExcel()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-emerald-700 hover:bg-emerald-50 hover:text-emerald-900 transition-all hidden" data-target="import-excel">
+                    <i class="fas fa-file-import w-5 text-center"></i> นำเข้าข้อมูล Excel
+                </button>
+                <button id="nav-user-plans" onclick="openUserPlanSelector()" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all" data-target="user-plans">
+                    <i class="fas fa-layer-group w-5 text-center"></i> เลือก / เปลี่ยนแผน
+                </button>
+                <button id="nav-settings" type="button" data-open-settings="1" onclick="openSchoolHubSettings('general')" data-schoolhub-always-allowed="1" class="nav-btn w-full flex items-center gap-3 px-4 py-3 rounded-xl text-left text-slate-600 hover:bg-slate-50 hover:text-slate-900 transition-all" data-target="settings">
+                    <i class="fas fa-sliders-h w-5 text-center"></i> ตั้งค่า
+                </button>
 
                 <div id="course-context-menu" class="hidden mt-6 animate-fadeIn">
                     <p class="px-4 text-xs font-bold text-indigo-400 uppercase tracking-wider mb-2 mt-6 border-t pt-6" id="sidebar-course-name">เมนูประจำวิชา</p>
