@@ -1,12 +1,13 @@
 
 /*
-  ULTIMATE SIDEBAR & MENU CONTROLLER (v14 - Relocation Method)
+  ULTIMATE SIDEBAR & MENU CONTROLLER (v15 - Sibling Selector Method)
   - จัดการ Sidebar แนวนอน (10 วิย่ออัตโนมัติ)
-  - จัดการเมนูหลัก (Accordion): ย้ายเมนูที่ฝังเพิ่มมาไปไว้ใต้กลุ่มเมนูหลัก เพื่อให้พับ/กางได้ 100%
+  - จัดการเมนูหลัก (Accordion): ใช้ CSS Sibling Selector ซ่อนทุกอย่างที่อยู่ระหว่าง "เมนูหลัก" และ "เมนูวิชา"
+  - นี่คือวิธีที่เสถียรที่สุด เพราะครอบคลุมเมนูที่ฝังมาทุกรูปแบบ 100%
 */
 (function () {
-    if (window.__schoolhubSidebarUnifiedInitV14Enhanced) return;
-    window.__schoolhubSidebarUnifiedInitV14Enhanced = true;
+    if (window.__schoolhubSidebarUnifiedInitV15) return;
+    window.__schoolhubSidebarUnifiedInitV15 = true;
 
     var STORAGE_KEY = 'schoolhub_sidebar_collapsed';
     var userInteractedWithSidebar = false; 
@@ -16,27 +17,11 @@
     function isMobile() { return window.innerWidth < 768; }
     function getSidebar() { return document.getElementById('sh-sidebar'); }
 
-    // ฟังก์ชันย้ายเมนูที่ฝังเพิ่มมาไปไว้ในกลุ่มเมนูหลัก
-    function relocateEmbeddedMenus() {
-        var label = document.getElementById('nav-main-label');
-        if (!label) return;
-
-        // ค้นหาเมนูที่ถูกฝัง (ใช้ class ที่ระบบเมนูเสริมใช้)
-        var embeddedButtons = document.querySelectorAll('.shcm-user-nav-btn');
-        embeddedButtons.forEach(function(btn) {
-            // ถ้าปุ่มนี้ยังไม่ได้ถูกย้ายมาอยู่หลัง label (หรืออยู่ในตำแหน่งที่ถูกต้อง)
-            // เราจะย้ายมันมาต่อท้ายกลุ่มเมนูหลัก
-            if (btn.parentElement !== label.parentElement || btn.previousElementSibling === null) {
-                // หาจุดแทรก: แทรกก่อนเมนูประจำวิชา หรือแทรกต่อจากตัวสุดท้ายในกลุ่มเมนูหลัก
-                var courseMenu = document.getElementById('course-context-menu');
-                if (courseMenu) {
-                    label.parentElement.insertBefore(btn, courseMenu);
-                } else {
-                    label.parentElement.appendChild(btn);
-                }
-            }
-        });
-    }
+    // ฉีด CSS กฎเหล็ก: เมื่อสั่งพับเมนูหลัก ให้ซ่อนทุกอย่างที่เป็น sibling ต่อจาก #nav-main-label 
+    // ยกเว้น #course-context-menu และ #admin-menu-group
+    var accordionStyle = document.createElement('style');
+    accordionStyle.id = 'sh-accordion-v15-style';
+    document.head.appendChild(accordionStyle);
 
     function applySidebarWidth(collapsed) {
         var aside = getSidebar();
@@ -50,7 +35,6 @@
         if (icon) icon.classList.toggle('sh-flip', !!collapsed);
     }
 
-    // ฟังก์ชันย่อ/กาง เมนูหลัก (รวมเมนูที่ถูกย้ายมาแล้ว)
     window.schoolhubSetMainMenuAccordionState = function(collapsed, fromUserInteraction = false) {
         if (fromUserInteraction) {
             userInteractedWithMainMenu = true;
@@ -59,42 +43,32 @@
         var label = document.getElementById('nav-main-label');
         if (!label) return;
 
-        // ย้ายเมนูก่อนจัดการสถานะ เพื่อให้ครอบคลุมตัวที่เพิ่งโหลดมา
-        relocateEmbeddedMenus();
-
-        // รายการ ID เมนูหลักพื้นฐาน
-        var baseMenuIds = ['nav-dashboard', 'nav-students', 'nav-import-excel', 'nav-user-plans', 'nav-settings'];
+        if (collapsed) {
+            // ใช้ Sibling Selector (~) เพื่อกวาดทุกอย่างที่ตามหลัง label มา
+            // แต่ยกเว้นตัวที่เราต้องการให้แสดงเสมอ
+            accordionStyle.innerHTML = `
+                #nav-main-label ~ *:not(#course-context-menu):not(#admin-menu-group) { 
+                    display: none !important; 
+                }
+            `;
+        } else {
+            accordionStyle.innerHTML = '';
+        }
         
-        // 1. จัดการเมนูพื้นฐาน
-        baseMenuIds.forEach(function(id) {
-            var el = document.getElementById(id);
-            if (el) {
-                if (collapsed) el.style.setProperty('display', 'none', 'important');
-                else if (!el.classList.contains('hidden')) el.style.setProperty('display', 'flex', 'important');
-            }
-        });
-
-        // 2. จัดการเมนูที่ถูกฝัง (ที่ย้ายมาแล้ว)
-        document.querySelectorAll('.shcm-user-nav-btn').forEach(function(btn) {
-            if (collapsed) btn.style.setProperty('display', 'none', 'important');
-            else btn.style.setProperty('display', 'flex', 'important');
-        });
-        
-        // 3. อัปเดตหัวข้อเมนูหลัก
+        // อัปเดต UI หัวข้อ
         label.style.cursor = 'pointer';
         label.style.setProperty('display', 'block', 'important');
-        label.innerHTML = `<div class="flex items-center justify-between w-full">
+        label.innerHTML = `<div class="flex items-center justify-between w-full pointer-events-none">
             <span>เมนูหลัก</span>
             <i class="fas ${collapsed ? 'fa-chevron-down' : 'fa-chevron-up'} text-[10px] opacity-50"></i>
         </div>`;
+        
         label.onclick = function(e) {
-            e.preventDefault();
-            var firstEl = document.getElementById(baseMenuIds[0]);
-            var isCurrentlyCollapsed = firstEl && firstEl.style.display === 'none';
+            var isCurrentlyCollapsed = accordionStyle.innerHTML !== '';
             window.schoolhubSetMainMenuAccordionState(!isCurrentlyCollapsed, true);
         };
 
-        // 4. ปรับแต่งเมนูประจำวิชา
+        // ปรับ UI เมนูวิชาให้ชิดขอบบนเมื่อพับเมนูหลัก
         var courseMenu = document.getElementById('course-context-menu');
         if (courseMenu) {
             if (collapsed) {
@@ -117,38 +91,32 @@
         }
     };
 
-    // ใช้ MutationObserver ดักจับการเพิ่มเมนูใหม่ และสถานะเมนูวิชา
-    var observer = new MutationObserver(function(mutations) {
-        // ย้ายเมนูทันทีที่มีการเปลี่ยนแปลงใน DOM
-        relocateEmbeddedMenus();
-
-        mutations.forEach(function(mutation) {
-            if (mutation.attributeName === 'class' && mutation.target.id === 'course-context-menu') {
-                var courseMenu = document.getElementById('course-context-menu');
-                if (courseMenu && !courseMenu.classList.contains('hidden')) {
-                    if (!userInteractedWithMainMenu) window.schoolhubSetMainMenuAccordionState(true);
-                } else {
-                    if (!userInteractedWithMainMenu) window.schoolhubSetMainMenuAccordionState(false);
-                }
-            }
-        });
-    });
+    // ตรวจสอบสถานะเมนูวิชาตลอดเวลา
+    function checkCourseMenuState() {
+        var courseMenu = document.getElementById('course-context-menu');
+        if (!courseMenu || userInteractedWithMainMenu) return;
+        
+        var isCourseVisible = !courseMenu.classList.contains('hidden');
+        var isCurrentlyCollapsed = accordionStyle.innerHTML !== '';
+        
+        if (isCourseVisible && !isCurrentlyCollapsed) {
+            window.schoolhubSetMainMenuAccordionState(true);
+        } else if (!isCourseVisible && isCurrentlyCollapsed) {
+            window.schoolhubSetMainMenuAccordionState(false);
+        }
+    }
 
     function init() {
         if (isMobile()) return;
         
+        // เริ่มต้นตรวจสอบสถานะ
+        checkCourseMenuState();
+
+        // ดักจับการเปลี่ยนแปลงของ Sidebar Nav เพื่อรองรับเมนูที่โหลดช้า
         var sidebarNav = document.querySelector('#sh-sidebar nav');
         if (sidebarNav) {
-            observer.observe(sidebarNav, { childList: true, subtree: true, attributes: true });
-        }
-
-        var courseMenu = document.getElementById('course-context-menu');
-        if (courseMenu) {
-            if (!courseMenu.classList.contains('hidden')) {
-                window.schoolhubSetMainMenuAccordionState(true);
-            } else {
-                window.schoolhubSetMainMenuAccordionState(false);
-            }
+            var observer = new MutationObserver(checkCourseMenuState);
+            observer.observe(sidebarNav, { attributes: true, childList: true, subtree: true });
         }
 
         applySidebarWidth(false);
@@ -171,18 +139,19 @@
         localStorage.setItem(STORAGE_KEY, next ? '1' : '0');
     };
 
+    // Hook เข้ากับฟังก์ชันเปลี่ยนหน้าของระบบ
     var _oldEnter = window.enterCourse;
     window.enterCourse = function(id) {
         if (typeof _oldEnter === 'function') _oldEnter(id);
         userInteractedWithMainMenu = false;
-        setTimeout(function() { window.schoolhubSetMainMenuAccordionState(true); }, 50);
+        setTimeout(checkCourseMenuState, 100);
     };
 
     var _oldHome = window.goToHome;
     window.goToHome = function() {
         if (typeof _oldHome === 'function') _oldHome();
         userInteractedWithMainMenu = false;
-        setTimeout(function() { window.schoolhubSetMainMenuAccordionState(false); }, 50);
+        setTimeout(checkCourseMenuState, 100);
     };
 
     init();
@@ -192,18 +161,9 @@
             applySidebarWidth(false);
             localStorage.setItem(STORAGE_KEY, '0');
             userInteractedWithSidebar = false;
-        } else {
-            var aside = getSidebar();
-            if (aside) aside.classList.add('hidden');
         }
     });
 
-    setInterval(function() {
-        relocateEmbeddedMenus();
-        var aside = getSidebar();
-        if (aside && !isMobile()) {
-            aside.classList.remove('hidden');
-            aside.style.setProperty('display', 'flex', 'important');
-        }
-    }, 1000);
+    // ตรวจสอบความถูกต้องทุก 1 วินาที (กันเหนียว)
+    setInterval(checkCourseMenuState, 1000);
 })();
