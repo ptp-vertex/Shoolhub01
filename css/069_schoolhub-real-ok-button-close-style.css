@@ -1,0 +1,8 @@
+
+#custom-alert.hidden{display:none!important;}
+#custom-alert:not(.hidden){display:flex!important;}
+#custom-alert button{
+  pointer-events:auto!important;
+  opacity:1!important;
+  cursor:pointer!important;
+}

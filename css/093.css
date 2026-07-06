@@ -1,0 +1,17 @@
+
+.sh-backup-item{
+    border:1.5px solid #e2e8f0;border-radius:1rem;padding:.85rem 1rem;
+    display:flex;align-items:center;justify-content:space-between;gap:1rem;
+    transition:background .15s;
+}
+.sh-backup-item:hover{background:#fafafa;}
+.sh-backup-item-info{flex:1;min-width:0;}
+.sh-backup-item-time{font-weight:900;color:#1e293b;font-size:.9rem;}
+.sh-backup-item-detail{font-size:.75rem;color:#64748b;margin-top:.2rem;}
+.sh-backup-restore-btn{
+    background:#f59e0b;color:#fff;border:none;border-radius:.75rem;
+    padding:.5rem 1rem;font-weight:900;font-size:.8rem;cursor:pointer;
+    white-space:nowrap;transition:background .15s;display:flex;align-items:center;gap:.4rem;
+}
+.sh-backup-restore-btn:hover{background:#d97706;}
+.sh-backup-restore-btn:disabled{background:#d1d5db;cursor:not-allowed;}

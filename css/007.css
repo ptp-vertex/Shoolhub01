@@ -1,0 +1,8 @@
+
+/* SchoolHub Admin Email Login Patch */
+#central-admin-change-modal.hidden {
+    display: none !important;
+}
+#central-admin-change-modal:not(.hidden) {
+    display: flex !important;
+}

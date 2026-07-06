@@ -1,0 +1,25 @@
+
+.schoolhub-withdrawn-text { text-decoration: line-through !important; text-decoration-thickness: 2px !important; text-decoration-color: #ef4444 !important; color: #94a3b8 !important; }
+.schoolhub-withdrawn-row { opacity: .72; }
+.schoolhub-withdrawn-badge { display:inline-flex; align-items:center; gap:.25rem; font-size:.68rem; font-weight:800; color:#be123c; background:#fff1f2; border:1px solid #fecdd3; border-radius:9999px; padding:.18rem .5rem; margin-left:.35rem; white-space:nowrap; }
+.schoolhub-withdrawn-control { opacity:.55 !important; pointer-events:none !important; cursor:not-allowed !important; }
+.withdrawn-score-cell,
+.withdrawn-grade,
+.withdrawn-grade-cell,
+.score-cell.withdrawn,
+.grade-cell.withdrawn,
+.summary-score-col.withdrawn,
+.summary-total-col.withdrawn,
+.summary-grade-col.withdrawn,
+.summary-mobile-plan.withdrawn {
+  background:#f1f5f9 !important;
+  color:#94a3b8 !important;
+  font-weight:600 !important;
+  cursor:not-allowed !important;
+  pointer-events:none !important;
+}
+.summary-score-col.withdrawn .summary-score-cell-content,
+.summary-total-col.withdrawn .withdrawn-score-cell,
+.summary-grade-col.withdrawn .withdrawn-grade-cell,
+.summary-mobile-plan.withdrawn span { color:#94a3b8 !important; }
+.withdrawn-grade{color:#94a3b8!important;background:#f1f5f9!important;font-weight:700!important;}

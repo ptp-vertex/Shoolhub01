@@ -1,0 +1,57 @@
+
+.schoolhub-current-plan-card {
+  width: 100%;
+  background: #eef2ff;
+  border: 1px solid #dbe3ff;
+  border-radius: 24px;
+  padding: 26px 28px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 18px;
+  box-shadow: none;
+}
+.schoolhub-current-plan-info {
+  min-width: 0;
+}
+.schoolhub-current-plan-label {
+  color: #4f46e5;
+  font-weight: 800;
+  font-size: 15px;
+  margin-bottom: 6px;
+}
+.schoolhub-current-plan-name {
+  color: #0f172a;
+  font-weight: 900;
+  font-size: 22px;
+  line-height: 1.25;
+  word-break: break-word;
+}
+.schoolhub-current-plan-price {
+  color: #4f46e5;
+  font-weight: 700;
+  margin-top: 4px;
+}
+.schoolhub-current-plan-meta {
+  color: #475569;
+  font-weight: 700;
+  font-size: 13px;
+  margin-top: 3px;
+}
+.schoolhub-current-plan-icon {
+  color: #4f46e5;
+  font-size: 32px;
+  flex: 0 0 auto;
+}
+#schoolhub-current-plan-team-limit-text {
+  display: none !important;
+}
+@media (max-width: 768px) {
+  .schoolhub-current-plan-card {
+    padding: 20px;
+    border-radius: 20px;
+  }
+  .schoolhub-current-plan-icon {
+    font-size: 28px;
+  }
+}

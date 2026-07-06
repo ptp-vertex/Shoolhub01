@@ -1,0 +1,41 @@
+
+@media (max-width: 767px){
+  #course-tab-overview .overflow-x-auto{ overflow: visible !important; }
+  #course-summary-table{ display:none !important; }
+  #course-summary-mobile-cards{
+    display:grid !important;
+    grid-template-columns:1fr !important;
+    gap:.85rem !important;
+    padding:1rem !important;
+    background:#f8fafc !important;
+  }
+  #course-summary-mobile-cards:empty{ display:none !important; }
+  .summary-mobile-card{
+    background:rgba(255,255,255,.98) !important;
+    border:1px solid #e2e8f0 !important;
+    border-radius:1.25rem !important;
+    padding:.95rem !important;
+    box-shadow:0 8px 24px rgba(15,23,42,.055) !important;
+  }
+  .summary-mobile-card-name{ font-size:.98rem !important; font-weight:900 !important; color:#0f172a !important; line-height:1.35 !important; }
+  .summary-mobile-card-room{ font-size:.76rem !important; font-weight:800 !important; color:#64748b !important; margin-top:.2rem !important; }
+  .summary-mobile-card-no{ font-size:.72rem !important; font-weight:900 !important; color:#4f46e5 !important; background:#eef2ff !important; border-radius:999px !important; padding:.25rem .65rem !important; white-space:nowrap !important; }
+  .summary-mobile-card-code{ margin-top:.5rem !important; }
+  .summary-mobile-card-code summary{ cursor:pointer !important; list-style:none !important; color:#4f46e5 !important; font-size:.76rem !important; font-weight:900 !important; }
+  .summary-mobile-card-code summary::-webkit-details-marker{ display:none !important; }
+  .summary-mobile-card-code div{ margin-top:.4rem !important; font-family:ui-monospace,SFMono-Regular,Menlo,Monaco,Consolas,monospace !important; color:#64748b !important; background:#f8fafc !important; border:1px dashed #cbd5e1 !important; border-radius:.85rem !important; padding:.55rem .7rem !important; font-size:.78rem !important; }
+  .summary-mobile-stats{ display:grid !important; grid-template-columns:repeat(4,minmax(0,1fr)) !important; gap:.45rem !important; margin-top:.8rem !important; }
+  .summary-mobile-stat{ border-radius:.9rem !important; padding:.58rem .35rem !important; text-align:center !important; font-size:.72rem !important; font-weight:900 !important; background:#f8fafc !important; }
+  .summary-mobile-stat b{ display:block !important; font-size:1rem !important; line-height:1 !important; margin-bottom:.18rem !important; }
+  .summary-mobile-plans{ display:grid !important; grid-template-columns:repeat(2,minmax(0,1fr)) !important; gap:.45rem !important; margin-top:.75rem !important; }
+  .summary-mobile-plan{ border:1px solid #e0e7ff !important; background:#eef2ff !important; color:#3730a3 !important; border-radius:.9rem !important; padding:.55rem .6rem !important; min-width:0 !important; }
+  .summary-mobile-plan-top{ display:flex !important; justify-content:space-between !important; gap:.5rem !important; align-items:center !important; font-size:.72rem !important; font-weight:900 !important; }
+  .summary-mobile-plan-title{ font-size:.68rem !important; color:#64748b !important; margin-top:.22rem !important; white-space:nowrap !important; overflow:hidden !important; text-overflow:ellipsis !important; }
+  .summary-mobile-total{ margin-top:.8rem !important; display:flex !important; align-items:center !important; justify-content:space-between !important; gap:.75rem !important; border-radius:1rem !important; background:#0f172a !important; color:white !important; padding:.75rem .85rem !important; font-weight:900 !important; }
+  .summary-mobile-bonus-star{ display:flex !important; gap:.45rem !important; margin-top:.75rem !important; }
+  .summary-mobile-bonus-cell{ flex:1 !important; display:flex !important; align-items:center !important; justify-content:space-between !important; background:#ecfdf5 !important; border:1px solid #6ee7b7 !important; border-radius:.9rem !important; padding:.5rem .75rem !important; font-size:.72rem !important; font-weight:900 !important; color:#059669 !important; cursor:pointer !important; }
+  .summary-mobile-bonus-cell b{ font-size:1rem !important; }
+  .summary-mobile-star-cell{ flex:1 !important; display:flex !important; align-items:center !important; justify-content:space-between !important; background:#fffbeb !important; border:1px solid #fcd34d !important; border-radius:.9rem !important; padding:.5rem .75rem !important; font-size:.72rem !important; font-weight:900 !important; color:#d97706 !important; }
+  .summary-mobile-star-cell b{ font-size:1rem !important; }
+}
+@media (min-width:768px){ #course-summary-mobile-cards{ display:none !important; } }

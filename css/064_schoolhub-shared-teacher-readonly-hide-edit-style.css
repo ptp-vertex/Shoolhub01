@@ -1,0 +1,21 @@
+
+.schoolhub-readonly-shared-course .schoolhub-edit-action,
+.schoolhub-readonly-shared-course button[data-edit-action="true"],
+.schoolhub-readonly-shared-course a[data-edit-action="true"]{
+  display:none!important;
+}
+.schoolhub-readonly-shared-course .readonly-badge{
+  display:inline-flex!important;
+}
+.readonly-badge{
+  display:none;
+  align-items:center;
+  gap:.35rem;
+  border:1px solid #bfdbfe;
+  background:#eff6ff;
+  color:#1d4ed8;
+  border-radius:999px;
+  padding:.25rem .55rem;
+  font-size:.72rem;
+  font-weight:900;
+}

@@ -1,0 +1,76 @@
+
+/* Final fix: ปฏิทินเช็คชื่อต้องเป็น popup ระดับ body ครอบทั้งหน้าจอ รวม sidebar/header */
+#attendance-calendar-popup{
+    position:fixed !important;
+    inset:0 !important;
+    left:0 !important;
+    top:0 !important;
+    right:0 !important;
+    bottom:0 !important;
+    width:100vw !important;
+    height:100vh !important;
+    height:100dvh !important;
+    z-index:2147483647 !important;
+    background:rgba(15,23,42,.68) !important;
+    backdrop-filter:blur(6px) !important;
+    -webkit-backdrop-filter:blur(6px) !important;
+    align-items:center !important;
+    justify-content:center !important;
+    padding:1rem !important;
+    margin:0 !important;
+    overflow:hidden !important;
+}
+#attendance-calendar-popup.hidden{
+    display:none !important;
+}
+#attendance-calendar-popup:not(.hidden){
+    display:flex !important;
+}
+#attendance-calendar-popup > div{
+    position:relative !important;
+    z-index:2147483647 !important;
+    width:min(560px, calc(100vw - 2rem)) !important;
+    max-width:min(560px, calc(100vw - 2rem)) !important;
+    max-height:calc(100dvh - 2rem) !important;
+    margin:0 auto !important;
+    border-radius:1.75rem !important;
+    overflow:hidden !important;
+}
+#attendance-calendar-popup #calendar-container{
+    max-height:calc(100dvh - 9rem) !important;
+    overflow-y:auto !important;
+    -webkit-overflow-scrolling:touch !important;
+}
+@media (max-width:767px){
+    #attendance-calendar-popup{
+        padding:.75rem !important;
+        align-items:center !important;
+        justify-content:center !important;
+    }
+    #attendance-calendar-popup > div{
+        width:min(340px, calc(100vw - 1.5rem)) !important;
+        max-width:min(340px, calc(100vw - 1.5rem)) !important;
+        border-radius:1.35rem !important;
+    }
+    #attendance-calendar-popup #calendar-container{
+        padding:.8rem !important;
+        max-height:calc(100dvh - 7rem) !important;
+    }
+    #attendance-calendar-popup .cal-day{
+        height:34px !important;
+        min-height:34px !important;
+        width:34px !important;
+        padding:.15rem !important;
+        border-radius:.65rem !important;
+        font-size:.82rem !important;
+    }
+    #attendance-calendar-popup .cal-day span{
+        font-size:.82rem !important;
+    }
+    #attendance-calendar-popup #cal-month-year{
+        font-size:1rem !important;
+    }
+    #attendance-calendar-popup button{
+        min-height:34px !important;
+    }
+}

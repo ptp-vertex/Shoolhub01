@@ -1,0 +1,13 @@
+
+/* SchoolHub calendar popup top-layer fix: ให้ปฏิทินอยู่หน้าสุดและพื้นหลังมืดขึ้น */
+#attendance-calendar-popup,
+#schoolhub-mini-calendar-backdrop {
+    z-index: 1000000 !important;
+}
+#attendance-calendar-popup {
+    background-color: rgba(15, 23, 42, 0.60) !important;
+}
+#schoolhub-mini-calendar-backdrop {
+    background-color: rgba(15, 23, 42, 0.55) !important;
+    backdrop-filter: blur(4px) !important;
+}

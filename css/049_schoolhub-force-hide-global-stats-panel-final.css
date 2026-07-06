@@ -1,0 +1,17 @@
+
+  /* SchoolHub final: ซ่อนสถิติรวมทั้งระบบทุกหน้า เพื่อไม่ให้ซ้อน/ดัน UI อีก */
+  #admin-global-stats-panel,
+  #admin-global-stats-panel * {
+    display: none !important;
+    visibility: hidden !important;
+    opacity: 0 !important;
+    height: 0 !important;
+    min-height: 0 !important;
+    max-height: 0 !important;
+    overflow: hidden !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: 0 !important;
+    box-shadow: none !important;
+    pointer-events: none !important;
+  }
