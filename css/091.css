@@ -1,7 +1,25 @@
 
 /* ── Attendance: ลา option ─────────────────────────────────────── */
-.schoolhub-mobile-att-btn.leave { color:#d97706 !important; border-color:#fde68a !important; }
-.schoolhub-mobile-att-btn.leave.is-active { background:#fef3c7 !important; border-color:#f59e0b !important; }
+/* ปุ่มลา: เริ่มต้นสีเทาเหมือนปุ่มอื่น */
+#attendance-list .schoolhub-mobile-att-btn.leave {
+    background: #f8fafc !important;
+    border-color: #e5e7eb !important;
+    color: #7c3aed !important;
+}
+#attendance-list .schoolhub-mobile-att-btn.leave span {
+    color: #7c3aed !important;
+}
+
+/* ปุ่มลา: เมื่อกดเลือก (Active) ให้เป็นสีม่วง */
+#attendance-list .schoolhub-mobile-att-btn.leave.is-active,
+#attendance-list .schoolhub-mobile-att-btn.leave:has(input[type="radio"]:checked) {
+    background: #ede9fe !important;
+    border-color: #a78bfa !important;
+}
+#attendance-list .schoolhub-mobile-att-btn.leave.is-active span,
+#attendance-list .schoolhub-mobile-att-btn.leave:has(input[type="radio"]:checked) span {
+    color: #6d28d9 !important;
+}
 
 /* ── plan-list desktop buttons always clickable ─────────────────── */
 #plan-list td:last-child,
