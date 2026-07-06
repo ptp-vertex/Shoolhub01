@@ -5,6 +5,37 @@
 
   function esc(v){ try { return window.escapeHTML ? window.escapeHTML(v) : String(v||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); } catch(e){ return String(v||''); } }
 
+  // 0. ตัวจับดับเบิลคลิกแบบ delegation ที่ document (ยิงก่อนใครทั้งหมดในเฟส capture
+  //    และไม่สนใจว่า <th> ตัวเดิมจะถูกสร้างใหม่ระหว่างคลิกที่ 1 กับ 2 หรือไม่)
+  var STAR_HEADER_SELECTOR = '[data-sh-stargroup-header="1"]';
+  if (!window.__schoolhubStarHeaderDblClickInstalled) {
+    window.__schoolhubStarHeaderDblClickInstalled = true;
+    var lastStarHeaderTapAt = 0;
+    function tryOpenStarConversion(e){
+      var el = e.target && e.target.closest ? e.target.closest(STAR_HEADER_SELECTOR) : null;
+      if (!el) return;
+      e.preventDefault();
+      e.stopPropagation();
+      if (e.stopImmediatePropagation) e.stopImmediatePropagation();
+      if (typeof window.openStarConversionPopup === 'function') window.openStarConversionPopup();
+    }
+    // ทางหลัก: dblclick ของเบราว์เซอร์เอง (เร็วและตรงไปตรงมาที่สุดเมื่อทำงานได้)
+    document.addEventListener('dblclick', tryOpenStarConversion, true);
+    // ทางสำรอง: จับจังหวะคลิกสองครั้งด้วยเวลาเอง เผื่อกรณี dblclick ของเบราว์เซอร์ไม่ยิง
+    // (เช่น องค์ประกอบถูกสร้างใหม่ระหว่างคลิกที่ 1 กับ 2 ทำให้เบราว์เซอร์ไม่นับเป็นดับเบิลคลิก)
+    document.addEventListener('click', function(e){
+      var el = e.target && e.target.closest ? e.target.closest(STAR_HEADER_SELECTOR) : null;
+      if (!el) return;
+      var now = Date.now();
+      if (now - lastStarHeaderTapAt < 420) {
+        lastStarHeaderTapAt = 0;
+        tryOpenStarConversion(e);
+      } else {
+        lastStarHeaderTapAt = now;
+      }
+    }, true);
+  }
+
   // 1. ซ่อมดาวและโบนัสในหน้า Overview
   var oldRender = window.renderCourseOverview;
   window.renderCourseOverview = function(){
@@ -26,8 +57,9 @@
         var starTh = document.createElement('th');
         starTh.className = 'text-center bg-amber-50 text-amber-700 font-bold sh-stargroup-col border-r cursor-pointer hover:bg-amber-100 transition select-none';
         starTh.title = 'ดับเบิลคลิกเพื่อแปลงคะแนนดาวกลุ่ม';
-        
-        // ใช้ addEventListener แทน ondblclick เพื่อความแน่นอน
+        starTh.setAttribute('data-sh-stargroup-header', '1');
+
+        // เก็บ addEventListener ตรงตัว th ไว้ด้วยเป็นชั้นป้องกันซ้อน (เผื่อ delegation ถูกบล็อกในบางเคส)
         starTh.addEventListener('dblclick', function(e){
           e.preventDefault();
           e.stopPropagation();
@@ -39,6 +71,7 @@
         thead.insertBefore(starTh, target);
       }
     }
+
 
     var overview = window.getOverviewStudents ? window.getOverviewStudents(cid) : {students:[]};
     var courseStudents = overview.students;
@@ -85,9 +118,13 @@
 
   // 2. ป็อปอัพแปลงคะแนนดาวกลุ่ม
   window.openStarConversionPopup = function(){
+   try {
     var cid = window.currentActiveCourseId;
-    if (!cid) return;
-    
+    if (!cid) {
+      if (window.showCustomAlert) window.showCustomAlert('ไม่พบวิชาที่เลือก','กรุณาเปิดวิชาก่อนใช้งานฟีเจอร์นี้', true);
+      return;
+    }
+
     var starCourseData = (state.starGroups && state.starGroups[cid]) || {};
     var starSets = starCourseData.sets || [];
     
@@ -147,6 +184,10 @@
     
     pop.classList.remove('hidden');
     window.updateConversionPreview();
+   } catch(err) {
+    console.error('[schoolhub-star-conversion] openStarConversionPopup error:', err);
+    if (window.showCustomAlert) window.showCustomAlert('เกิดข้อผิดพลาด', 'ไม่สามารถเปิดหน้าต่างแปลงคะแนนได้ กรุณาลองใหม่หรือรีเฟรชหน้า', true);
+   }
   };
 
   window.updateConversionPreview = function(){
