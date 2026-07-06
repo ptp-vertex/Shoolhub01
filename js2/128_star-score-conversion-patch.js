@@ -26,13 +26,16 @@
         var starTh = document.createElement('th');
         starTh.className = 'text-center bg-amber-50 text-amber-700 font-bold sh-star-col border-r cursor-pointer hover:bg-amber-100 transition select-none';
         starTh.title = 'ดับเบิลคลิกเพื่อแปลงคะแนนดาวกลุ่ม';
-        // เปลี่ยนเป็น Double Click
-        starTh.ondblclick = function(e){ 
+        
+        // ใช้ addEventListener แทน ondblclick เพื่อความแน่นอน
+        starTh.addEventListener('dblclick', function(e){
           e.preventDefault();
-          e.stopPropagation(); 
-          window.openStarConversionPopup(); 
-        };
-        starTh.innerHTML = '<div class="flex flex-col items-center gap-1"><span>ดาวกลุ่ม</span><div class="text-[9px] bg-white/50 px-1 rounded opacity-60 font-medium">Double Click</div></div>';
+          e.stopPropagation();
+          window.openStarConversionPopup();
+        }, true);
+
+        // เพิ่มคำอธิบาย "Double Click" ให้ชัดเจน
+        starTh.innerHTML = '<div class="flex flex-col items-center gap-1"><span>ดาวกลุ่ม</span><div class="text-[9px] bg-amber-600 text-white px-1.5 py-0.5 rounded shadow-sm font-black uppercase tracking-tighter animate-pulse">Double Click</div></div>';
         thead.insertBefore(starTh, target);
       }
     }
@@ -222,7 +225,7 @@
     var currentSet = (starCourseData.sets || []).find(s => s.id === setId);
     if (!currentSet) return;
 
-    var week = 'Bonus-Stars-' + setId; // แยกสัปดาห์ตามเซต
+    var week = 'Bonus-Stars-' + setId;
     if (!state.bonusScores) state.bonusScores = {};
     if (!state.bonusScores[cid]) state.bonusScores[cid] = {};
     if (!state.bonusScores[cid][week]) state.bonusScores[cid][week] = {};
