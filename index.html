@@ -182,12 +182,24 @@ document.addEventListener('paste', function(e){
 <body class="bg-slate-50 text-slate-800 font-sans antialiased h-screen overflow-hidden selection:bg-indigo-100 selection:text-indigo-900">
 
     <!-- Alerts & Modals -->
-    <div id="custom-alert" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999999] hidden flex items-center justify-center p-4 fade-in">
-        <div class="bg-white rounded-3xl w-full max-w-sm p-8 text-center shadow-2xl transform transition-all" id="custom-alert-box">
-            <div id="custom-alert-icon" class="text-6xl mb-4"></div>
-            <h3 id="custom-alert-title" class="text-2xl font-bold text-slate-800 mb-2">แจ้งเตือน</h3>
-            <p id="custom-alert-message" class="text-slate-500 mb-8 font-medium whitespace-pre-line"></p>
-            <button onclick="closeCustomAlert()" class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3.5 rounded-2xl transition shadow-lg shadow-indigo-200">ตกลง</button>
+    <!-- SchoolHub top-down toast: แจ้งเตือนผลลัพธ์ (บันทึกสำเร็จ/ลบสำเร็จ/ผิดพลาด ฯลฯ) เลื่อนลงจากขอบบน แบบมินิมอล ไม่บังหน้าจอ -->
+    <div id="custom-alert" class="fixed inset-x-0 top-0 z-[999999] hidden items-start justify-center px-4 pt-4 sm:pt-6 pointer-events-none">
+        <div class="w-full max-w-sm bg-white rounded-2xl shadow-lg border border-slate-100 overflow-hidden pointer-events-auto transform transition-all duration-300 ease-out -translate-y-16 opacity-0" id="custom-alert-box">
+            <div class="flex items-start gap-3 p-4">
+                <div id="custom-alert-icon-wrap" class="w-9 h-9 rounded-full flex items-center justify-center shrink-0">
+                    <span id="custom-alert-icon" class="text-base leading-none"></span>
+                </div>
+                <div class="flex-1 min-w-0 text-left pt-0.5">
+                    <h3 id="custom-alert-title" class="text-sm font-bold text-slate-800 leading-snug">แจ้งเตือน</h3>
+                    <p id="custom-alert-message" class="text-sm text-slate-500 mt-0.5 leading-snug whitespace-pre-line"></p>
+                </div>
+                <button onclick="closeCustomAlert()" aria-label="ปิด" class="shrink-0 text-slate-300 hover:text-slate-500 transition p-1 -m-1">
+                    <i class="fas fa-times text-xs"></i>
+                </button>
+            </div>
+            <div class="h-0.5 w-full bg-slate-100">
+                <div id="custom-alert-progress" class="h-full w-full bg-slate-300"></div>
+            </div>
         </div>
     </div>
 
