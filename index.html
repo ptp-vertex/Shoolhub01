@@ -2956,7 +2956,7 @@ document.addEventListener('paste', function(e){
     <div class="sh-modal-body">
       <div class="sh-week-row">
         <label><i class="fas fa-calendar-week" style="color:#4f46e5;margin-right:4px"></i>สัปดาห์ที่</label>
-        <input type="number" id="sh-bonus-week" min="1" max="52" value="1" inputmode="numeric" pattern="[0-9]*" style="width:72px;font-size:16px" onchange="shBonusRender()">
+        <select id="sh-bonus-week" style="width:150px;font-size:16px" onchange="shBonusRender()"></select>
         <span style="font-size:12px;color:#94a3b8">ใส่คะแนนโบนัสเพิ่มของแต่ละคน (เพิ่มเข้าในคะแนนรวม)</span>
       </div>
       <table class="sh-bonus-table">
@@ -2985,7 +2985,7 @@ document.addEventListener('paste', function(e){
     <div class="sh-modal-body">
       <div class="sh-week-row">
         <label><i class="fas fa-calendar-week" style="color:#4f46e5;margin-right:4px"></i>สัปดาห์ที่</label>
-        <input type="number" id="sh-star-week" min="1" max="52" value="1" inputmode="numeric" pattern="[0-9]*" style="width:72px;font-size:16px" onchange="shStarRender()">
+        <select id="sh-star-week" style="width:150px;font-size:16px" onchange="shStarRender()"></select>
       </div>
       <div style="background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:#4338ca;font-weight:600">
         <i class="fas fa-circle-info mr-1"></i>ย้ายฟีเจอร์ "แปลงดาวเป็นคะแนน" ไปไว้ที่หัวตาราง ⭐ดาว ในหน้าคะแนนรวมแล้ว — ดับเบิลคลิกที่หัวตารางเพื่อแปลงดาว หรือคลิกเพื่อดูประวัติการแปลง
@@ -3104,7 +3104,7 @@ document.addEventListener('paste', function(e){
     <div class="sh-modal-body">
       <div class="sh-week-row">
         <label><i class="fas fa-calendar-week" style="color:#4f46e5;margin-right:4px"></i>สัปดาห์ที่</label>
-        <input type="number" id="sh-bonus-week" min="1" max="52" value="1" inputmode="numeric" pattern="[0-9]*" style="width:72px;font-size:16px" onchange="shBonusRender()">
+        <select id="sh-bonus-week" style="width:150px;font-size:16px" onchange="shBonusRender()"></select>
         <span style="font-size:12px;color:#94a3b8">คะแนนโบนัสไม่ถูกรวมอัตโนมัติ — ต้องกด "นำเข้าคะแนนรวม" ที่หน้าภาพรวม</span>
       </div>
       <table class="sh-bonus-table">
@@ -3131,7 +3131,7 @@ document.addEventListener('paste', function(e){
     <div class="sh-modal-body">
       <div class="sh-week-row">
         <label><i class="fas fa-calendar-week" style="color:#4f46e5;margin-right:4px"></i>สัปดาห์ที่</label>
-        <input type="number" id="sh-star-week" min="1" max="52" value="1" inputmode="numeric" pattern="[0-9]*" style="width:72px;font-size:16px" onchange="shStarRender()">
+        <select id="sh-star-week" style="width:150px;font-size:16px" onchange="shStarRender()"></select>
       </div>
       <div style="background:#eef2ff;border:1.5px solid #c7d2fe;border-radius:14px;padding:12px 14px;margin-bottom:14px;font-size:12.5px;color:#4338ca;font-weight:600">
         <i class="fas fa-circle-info mr-1"></i>ย้ายฟีเจอร์ "แปลงดาวเป็นคะแนน" ไปไว้ที่หัวตาราง ⭐ดาว ในหน้าคะแนนรวมแล้ว
