@@ -38,6 +38,9 @@
     var maxWeeks = getWeekLimit();
     setOptionsIfChanged(byId('plan-week'), buildWeekOptions(maxWeeks, false));
     setOptionsIfChanged(byId('score-week'), buildWeekOptions(maxWeeks, true));
+    // สัปดาห์ของ "คะแนนโบนัสรายสัปดาห์" และ "ระบบดาวกลุ่ม" (อาจมีมากกว่า 1 element ซ้ำ id ในหน้า)
+    var weekOptsNoBlank = buildWeekOptions(maxWeeks, false);
+    document.querySelectorAll('#sh-bonus-week, #sh-star-week').forEach(function(el){ setOptionsIfChanged(el, weekOptsNoBlank); });
   };
 
   function updateGradeDropdownText(){
