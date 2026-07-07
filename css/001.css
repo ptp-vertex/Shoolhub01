@@ -584,6 +584,14 @@
                 border-radius: 1.25rem !important;
             }
 
+            /* custom-alert-toast-box = toast แจ้งเตือน "บันทึกสำเร็จ/ลบสำเร็จ" จากขอบบน ให้คงเป็นการ์ดเล็กแบบมินิมอลบนมือถือด้วย ไม่ยืดเต็มจอ */
+            #custom-alert-toast-box {
+                max-width: 100% !important;
+                max-height: calc(100dvh - 2rem) !important;
+                overflow-y: auto !important;
+                border-radius: 1rem !important;
+            }
+
             #plan-modal > div,
             #multi-student-modal > div {
                 max-height: calc(100dvh - 1.5rem) !important;

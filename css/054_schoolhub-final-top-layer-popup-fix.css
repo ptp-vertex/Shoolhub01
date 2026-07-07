@@ -22,6 +22,23 @@
     box-shadow:0 35px 110px rgba(15,23,42,.42)!important;
   }
 
+  /* SchoolHub success toast (เฉพาะ "บันทึกสำเร็จ"/"ลบสำเร็จ"): ลอยลงจากขอบบน ไม่มี backdrop มืด ไม่บังหน้าจอ */
+  #custom-alert-toast{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    bottom:auto!important;
+    z-index:2147483647!important;
+    background:transparent!important;
+    backdrop-filter:none!important;
+  }
+  #custom-alert-toast-box{
+    position:relative!important;
+    z-index:2147483647!important;
+    box-shadow:0 12px 32px rgba(15,23,42,.14)!important;
+  }
+
   /* popup ดาวน์โหลด/เลือกช่วง/เลือกห้อง ให้อยู่ต่ำกว่า alert เสมอ */
   .schoolhub-export-popup,
   #schoolhub-overview-export-room-modal,
