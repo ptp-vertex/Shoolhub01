@@ -47,18 +47,19 @@
 .shdd-grid { display: grid; grid-template-columns: repeat(5, 1fr); gap: 3px; }
 .shdd-week-item {
   padding: 0.45rem 0.2rem; border-radius: 0.45rem; font-size: 0.8rem; font-weight: 600;
-  text-align: center; cursor: pointer; border: none; background: #f8fafc; color: #475569;
-  transition: background .12s, color .12s; font-family: inherit; line-height: 1;
+  text-align: center; cursor: pointer; border: 1.5px solid transparent; background: #f8fafc; color: #475569;
+  transition: background .12s, color .12s, border-color .12s; font-family: inherit; line-height: 1;
+  box-sizing: border-box;
 }
 .shdd-week-item:hover { background: #eef2ff; color: #6366f1; }
-/* มีการตั้งแผนคะแนนไว้แล้ว (ยังไม่บันทึกคะแนน) → ฟ้าอ่อน */
-.shdd-week-item.shdd-week-planned { background: #dbeafe; color: #1d4ed8; }
-.shdd-week-item.shdd-week-planned:hover { background: #bfdbfe; color: #1e40af; }
-/* มีการตั้งแผนคะแนน และบันทึกคะแนนแล้ว → ฟ้าเข้มกว่า */
-.shdd-week-item.shdd-week-scored { background: #60a5fa; color: #fff; }
-.shdd-week-item.shdd-week-scored:hover { background: #3b82f6; color: #fff; }
+/* มีการตั้งแผนคะแนนไว้แล้ว (ยังไม่บันทึกคะแนน) → ขอบฟ้า พื้นขาว (โทนฟ้า/ฟ้าอมเขียว ไม่ใช่ม่วง แยกจากสีที่เลือกอยู่ชัดเจน) */
+.shdd-week-item.shdd-week-planned { background: #f0f9ff; color: #0369a1; border-color: #7dd3fc; }
+.shdd-week-item.shdd-week-planned:hover { background: #e0f2fe; color: #0369a1; }
+/* มีการตั้งแผนคะแนน และบันทึกคะแนนแล้ว → ฟ้าอมเขียวเข้ม (cyan) ทึบ ต่างโทนจากสีม่วงของสัปดาห์ที่กำลังเลือก */
+.shdd-week-item.shdd-week-scored { background: #0891b2; color: #fff; border-color: #0891b2; }
+.shdd-week-item.shdd-week-scored:hover { background: #0e7490; color: #fff; }
 /* สัปดาห์ที่กำลังเลือกอยู่ (ตอนนี้) — สีม่วง ทับสถานะแผน/คะแนนด้านบนเสมอ */
-.shdd-week-item.shdd-selected { background: #6366f1; color: #fff; }
+.shdd-week-item.shdd-selected { background: #6366f1; color: #fff; border-color: #6366f1; }
 .shdd-week-blank {
   grid-column: 1/-1; padding: 0.35rem 0.5rem; border-radius: 0.45rem;
   font-size: 0.82rem; color: #94a3b8; font-style: italic;
