@@ -6,19 +6,17 @@
   function closeAlert(){
     var modal = document.getElementById('custom-alert');
     var box = document.getElementById('custom-alert-box');
-    if(typeof window.__schoolhubClearAlertAutoClose === 'function') window.__schoolhubClearAlertAutoClose();
     if(box){
-      box.classList.remove('translate-y-0','opacity-100');
-      box.classList.add('-translate-y-16','opacity-0');
+      box.classList.remove('scale-100','opacity-100');
+      box.classList.add('scale-95','opacity-0');
     }
-    // รอให้แอนิเมชันเลื่อนขึ้นเล่นจบก่อนค่อยซ่อนจริง จะได้ดูนุ่มนวล
-    setTimeout(function(){
-      if(modal){
-        modal.classList.add('hidden');
-        modal.style.display = 'none';
-        modal.setAttribute('aria-hidden','true');
-      }
-    }, 260);
+    if(modal){
+      modal.classList.add('hidden');
+      modal.style.display = 'none';
+      modal.setAttribute('aria-hidden','true');
+    }
+    document.body.style.overflow = '';
+    document.documentElement.style.overflow = '';
   }
 
   window.closeCustomAlert = closeAlert;

@@ -32,21 +32,6 @@
     });
   }
 
-  // ระยะเวลาที่ toast แจ้งเตือนผลลัพธ์ (บันทึกสำเร็จ/ลบสำเร็จ/ผิดพลาด ฯลฯ) จะปิดเองอัตโนมัติ
-  var ALERT_AUTO_CLOSE_MS = 3800;
-
-  function clearAlertAutoClose(){
-    if(window.__schoolhubAlertAutoCloseTimer){ clearTimeout(window.__schoolhubAlertAutoCloseTimer); window.__schoolhubAlertAutoCloseTimer = null; }
-  }
-  window.__schoolhubClearAlertAutoClose = clearAlertAutoClose;
-
-  function scheduleAlertAutoClose(){
-    clearAlertAutoClose();
-    window.__schoolhubAlertAutoCloseTimer = setTimeout(function(){
-      if(typeof window.closeCustomAlert === 'function') window.closeCustomAlert();
-    }, ALERT_AUTO_CLOSE_MS);
-  }
-
   var oldAlert = window.showCustomAlert;
   window.showCustomAlert = function(title,message,isError){
     hardCloseExportPopupsBeforeAlert();
@@ -57,43 +42,13 @@
       return alert((title||'') + (message ? '\n' + message : ''));
     }
     document.getElementById('custom-alert-title').textContent = title || 'แจ้งเตือน';
-    document.getElementById('custom-alert-title').className = 'text-sm font-bold leading-snug ' + (isError ? 'text-rose-600' : 'text-emerald-600');
+    document.getElementById('custom-alert-title').className = 'text-2xl font-bold mb-2 ' + (isError ? 'text-rose-600' : 'text-emerald-600');
     document.getElementById('custom-alert-message').textContent = message || '';
-    document.getElementById('custom-alert-icon').innerHTML = isError ? '<i class="fas fa-circle-exclamation text-rose-500"></i>' : '<i class="fas fa-circle-check text-emerald-500"></i>';
-    var iconWrap = document.getElementById('custom-alert-icon-wrap');
-    if(iconWrap) iconWrap.className = 'w-9 h-9 rounded-full flex items-center justify-center shrink-0 ' + (isError ? 'bg-rose-50' : 'bg-emerald-50');
-    var progress = document.getElementById('custom-alert-progress');
-    if(progress) progress.className = 'h-full w-full ' + (isError ? 'bg-rose-300' : 'bg-emerald-300');
-
-    // แสดงเป็น toast ลอยจากขอบบน: ไม่ล็อก inset เต็มจอเหมือน popup ยืนยัน
-    appendToBody(modal);
-    modal.style.position = 'fixed';
-    modal.style.zIndex = String(TOP_Z);
+    document.getElementById('custom-alert-icon').innerHTML = isError ? '<i class="fas fa-times-circle text-rose-500 drop-shadow-md"></i>' : '<i class="fas fa-check-circle text-emerald-500 drop-shadow-md"></i>';
+    setFixedLayer(modal, TOP_Z);
     box.style.zIndex = String(TOP_Z);
     modal.classList.remove('hidden');
-
-    // รีเซ็ตแอนิเมชันก่อนเล่นใหม่ทุกครั้ง (กรณีแจ้งเตือนซ้อนกันเร็ว ๆ)
-    box.classList.add('-translate-y-16','opacity-0');
-    box.classList.remove('translate-y-0','opacity-100');
-    if(progress){ progress.style.transition = 'none'; progress.style.width = '100%'; }
-    void box.offsetWidth; // force reflow เพื่อให้ transition เล่นใหม่ทุกครั้ง
-
-    requestAnimationFrame(function(){
-      box.classList.remove('-translate-y-16','opacity-0');
-      box.classList.add('translate-y-0','opacity-100');
-      if(progress){
-        requestAnimationFrame(function(){
-          progress.style.transition = 'width ' + (ALERT_AUTO_CLOSE_MS/1000) + 's linear';
-          progress.style.width = '0%';
-        });
-      }
-    });
-
-    scheduleAlertAutoClose();
-
-    // พักการปิดอัตโนมัติเมื่อผู้ใช้เอาเมาส์ชี้ค้างไว้ แล้วเริ่มนับใหม่เมื่อเอาเมาส์ออก
-    box.onmouseenter = function(){ clearAlertAutoClose(); if(progress) progress.style.transition = 'none'; };
-    box.onmouseleave = function(){ scheduleAlertAutoClose(); if(progress){ progress.style.width = '0%'; progress.style.transition = 'width 0.3s linear'; } };
+    setTimeout(function(){ box.classList.remove('scale-95','opacity-0'); box.classList.add('scale-100','opacity-100'); }, 10);
   };
 
   var oldConfirm = window.showCustomConfirm;
