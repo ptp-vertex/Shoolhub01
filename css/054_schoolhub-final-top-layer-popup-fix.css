@@ -2,16 +2,12 @@
   :root{ --schoolhub-top-z: 2147483647; --schoolhub-under-top-z: 2147483646; }
 
   /* ป็อปอัพแจ้งเตือน/ยืนยันต้องอยู่บนสุดเสมอ แม้มี popup ดาวน์โหลด Excel เปิดอยู่ */
-  /* custom-alert = แจ้งเตือนผลลัพธ์ (บันทึกสำเร็จ/ลบสำเร็จ ฯลฯ) แสดงเป็น toast ลงจากขอบบน ไม่บังหน้าจอ จึงไม่มี backdrop มืด */
   #custom-alert{
     position:fixed!important;
-    top:0!important;
-    left:0!important;
-    right:0!important;
-    bottom:auto!important;
+    inset:0!important;
     z-index:2147483647!important;
-    background:transparent!important;
-    backdrop-filter:none!important;
+    background:rgba(15,23,42,.72)!important;
+    backdrop-filter:blur(8px)!important;
   }
   #custom-confirm{
     position:fixed!important;
@@ -20,12 +16,7 @@
     background:rgba(15,23,42,.68)!important;
     backdrop-filter:blur(7px)!important;
   }
-  #custom-alert-box{
-    position:relative!important;
-    z-index:2147483647!important;
-    box-shadow:0 12px 32px rgba(15,23,42,.14)!important;
-  }
-  #custom-confirm-box{
+  #custom-alert-box,#custom-confirm-box{
     position:relative!important;
     z-index:2147483647!important;
     box-shadow:0 35px 110px rgba(15,23,42,.42)!important;

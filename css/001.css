@@ -575,20 +575,13 @@
             }
 
             .fixed.inset-0.z-50 > div,
+            #custom-alert-box,
             #custom-confirm-box {
                 max-width: 100% !important;
                 width: 100% !important;
                 max-height: calc(100dvh - 1.5rem) !important;
                 overflow-y: auto !important;
                 border-radius: 1.25rem !important;
-            }
-
-            /* custom-alert-box = toast แจ้งเตือนจากขอบบน ให้คงเป็นการ์ดเล็กแบบมินิมอลบนมือถือด้วย ไม่ยืดเต็มจอ */
-            #custom-alert-box {
-                max-width: 100% !important;
-                max-height: calc(100dvh - 2rem) !important;
-                overflow-y: auto !important;
-                border-radius: 1rem !important;
             }
 
             #plan-modal > div,
