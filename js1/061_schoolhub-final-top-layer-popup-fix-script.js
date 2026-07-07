@@ -32,8 +32,79 @@
     });
   }
 
+  // เฉพาะ 2 ข้อความนี้เท่านั้นที่ให้ขึ้นเป็น toast ลงจากขอบบน ตามที่ระบุ ("บันทึกสำเร็จ" / "ลบสำเร็จ")
+  // ป็อปอัพอื่น ๆ ทั้งหมด (ผิดพลาด, แจ้งเตือนสิทธิ์, ยืนยันต่าง ๆ ฯลฯ) ไม่แตะต้อง ใช้ #custom-alert แบบเดิมทุกประการ
+  var TOAST_ONLY_TITLES = ['บันทึกสำเร็จ', 'ลบสำเร็จ'];
+  var ALERT_AUTO_CLOSE_MS = 3800;
+
+  function clearAlertToastAutoClose(){
+    if(window.__schoolhubAlertToastAutoCloseTimer){ clearTimeout(window.__schoolhubAlertToastAutoCloseTimer); window.__schoolhubAlertToastAutoCloseTimer = null; }
+  }
+  window.__schoolhubClearAlertToastAutoClose = clearAlertToastAutoClose;
+
+  function scheduleAlertToastAutoClose(){
+    clearAlertToastAutoClose();
+    window.__schoolhubAlertToastAutoCloseTimer = setTimeout(function(){
+      if(typeof window.closeCustomAlertToast === 'function') window.closeCustomAlertToast();
+    }, ALERT_AUTO_CLOSE_MS);
+  }
+
+  window.closeCustomAlertToast = function(){
+    var modal = document.getElementById('custom-alert-toast');
+    var box = document.getElementById('custom-alert-toast-box');
+    clearAlertToastAutoClose();
+    if(box){
+      box.classList.remove('translate-y-0','opacity-100');
+      box.classList.add('-translate-y-16','opacity-0');
+    }
+    setTimeout(function(){
+      if(modal){ modal.classList.add('hidden'); modal.style.display = 'none'; modal.setAttribute('aria-hidden','true'); }
+    }, 260);
+  };
+
+  function showCustomAlertToast(title, message){
+    var modal = document.getElementById('custom-alert-toast');
+    var box = document.getElementById('custom-alert-toast-box');
+    if(!modal || !box) return false;
+    document.getElementById('custom-alert-toast-title').textContent = title || '';
+    document.getElementById('custom-alert-toast-message').textContent = message || '';
+    var progress = document.getElementById('custom-alert-toast-progress');
+
+    appendToBody(modal);
+    modal.style.position = 'fixed';
+    modal.style.zIndex = String(TOP_Z);
+    box.style.zIndex = String(TOP_Z);
+    modal.classList.remove('hidden');
+
+    // รีเซ็ตแอนิเมชันก่อนเล่นใหม่ทุกครั้ง (กรณีมีการแจ้งเตือนซ้อนกันเร็ว ๆ)
+    box.classList.add('-translate-y-16','opacity-0');
+    box.classList.remove('translate-y-0','opacity-100');
+    if(progress){ progress.style.transition = 'none'; progress.style.width = '100%'; }
+    void box.offsetWidth; // force reflow
+
+    requestAnimationFrame(function(){
+      box.classList.remove('-translate-y-16','opacity-0');
+      box.classList.add('translate-y-0','opacity-100');
+      if(progress){
+        requestAnimationFrame(function(){
+          progress.style.transition = 'width ' + (ALERT_AUTO_CLOSE_MS/1000) + 's linear';
+          progress.style.width = '0%';
+        });
+      }
+    });
+
+    scheduleAlertToastAutoClose();
+    box.onmouseenter = function(){ clearAlertToastAutoClose(); if(progress) progress.style.transition = 'none'; };
+    box.onmouseleave = function(){ scheduleAlertToastAutoClose(); if(progress){ progress.style.width = '0%'; progress.style.transition = 'width 0.3s linear'; } };
+    return true;
+  }
+
   var oldAlert = window.showCustomAlert;
   window.showCustomAlert = function(title,message,isError){
+    // เช็คก่อนว่าเป็น "บันทึกสำเร็จ" หรือ "ลบสำเร็จ" หรือไม่ ถ้าใช่ ให้ขึ้น toast แบบใหม่แทน ไม่แตะกรณีอื่น
+    if(!isError && TOAST_ONLY_TITLES.indexOf(title) !== -1){
+      if(showCustomAlertToast(title, message)) return;
+    }
     hardCloseExportPopupsBeforeAlert();
     var modal = document.getElementById('custom-alert');
     var box = document.getElementById('custom-alert-box');
