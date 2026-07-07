@@ -177,12 +177,13 @@ document.addEventListener('paste', function(e){
 
 
 <link id="shdd-global-css" rel="stylesheet" href="css/024_shdd-global-css.css">
+    <link rel="stylesheet" href="css/100_schoolhub-toast-notification.css">
 
 </head>
 <body class="bg-slate-50 text-slate-800 font-sans antialiased h-screen overflow-hidden selection:bg-indigo-100 selection:text-indigo-900">
 
     <!-- Alerts & Modals -->
-    <div id="custom-alert" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999999] hidden flex items-center justify-center p-4 fade-in">
+    <div id="custom-alert" class="fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999999] hidden flex items-center justify-center p-4 fade-in" style="display:none !important;">
         <div class="bg-white rounded-3xl w-full max-w-sm p-8 text-center shadow-2xl transform transition-all" id="custom-alert-box">
             <div id="custom-alert-icon" class="text-6xl mb-4"></div>
             <h3 id="custom-alert-title" class="text-2xl font-bold text-slate-800 mb-2">แจ้งเตือน</h3>
@@ -3193,6 +3194,7 @@ document.addEventListener('paste', function(e){
      IMPORT EXCEL SYSTEM v3 — ใช้ window.__sh* จากโมดูลหลัก
      ===================================================================== -->
 <script src="js2/110.js"></script>
+    <script src="js2/129_schoolhub-toast-system-override.js"></script>
 
 <!-- ===================================================================
      SchoolHub fix: prevent "เลือกไม่ได้" on grade-type-select
