@@ -32,9 +32,9 @@
     });
   }
 
-  // เฉพาะ 2 ข้อความนี้เท่านั้นที่ให้ขึ้นเป็น toast ลงจากขอบบน ตามที่ระบุ ("บันทึกสำเร็จ" / "ลบสำเร็จ")
+  // เฉพาะข้อความเหล่านี้เท่านั้นที่ให้ขึ้นเป็น toast ลงจากขอบบน ("บันทึกสำเร็จ" / "ลบสำเร็จ" / "สำเร็จ")
   // ป็อปอัพอื่น ๆ ทั้งหมด (ผิดพลาด, แจ้งเตือนสิทธิ์, ยืนยันต่าง ๆ ฯลฯ) ไม่แตะต้อง ใช้ #custom-alert แบบเดิมทุกประการ
-  var TOAST_ONLY_TITLES = ['บันทึกสำเร็จ', 'ลบสำเร็จ'];
+  var TOAST_ONLY_TITLES = ['บันทึกสำเร็จ', 'ลบสำเร็จ', 'สำเร็จ'];
   var ALERT_AUTO_CLOSE_MS = 3800;
 
   function clearAlertToastAutoClose(){
@@ -99,28 +99,39 @@
     return true;
   }
 
-  var oldAlert = window.showCustomAlert;
-  window.showCustomAlert = function(title,message,isError){
-    // เช็คก่อนว่าเป็น "บันทึกสำเร็จ" หรือ "ลบสำเร็จ" หรือไม่ ถ้าใช่ ให้ขึ้น toast แบบใหม่แทน ไม่แตะกรณีอื่น
-    if(!isError && TOAST_ONLY_TITLES.indexOf(title) !== -1){
-      if(showCustomAlertToast(title, message)) return;
-    }
-    hardCloseExportPopupsBeforeAlert();
-    var modal = document.getElementById('custom-alert');
-    var box = document.getElementById('custom-alert-box');
-    if(!modal || !box){
-      if(typeof oldAlert === 'function') return oldAlert.apply(this,arguments);
-      return alert((title||'') + (message ? '\n' + message : ''));
-    }
-    document.getElementById('custom-alert-title').textContent = title || 'แจ้งเตือน';
-    document.getElementById('custom-alert-title').className = 'text-2xl font-bold mb-2 ' + (isError ? 'text-rose-600' : 'text-emerald-600');
-    document.getElementById('custom-alert-message').textContent = message || '';
-    document.getElementById('custom-alert-icon').innerHTML = isError ? '<i class="fas fa-times-circle text-rose-500 drop-shadow-md"></i>' : '<i class="fas fa-check-circle text-emerald-500 drop-shadow-md"></i>';
-    setFixedLayer(modal, TOP_Z);
-    box.style.zIndex = String(TOP_Z);
-    modal.classList.remove('hidden');
-    setTimeout(function(){ box.classList.remove('scale-95','opacity-0'); box.classList.add('scale-100','opacity-100'); }, 10);
-  };
+  function installShowCustomAlert(){
+    var oldAlert = window.showCustomAlert;
+    if(oldAlert && oldAlert.__schoolhubToastPatched) return; // กันติดตั้งซ้ำทับตัวเอง
+    var patched = function(title,message,isError){
+      // เช็คก่อนว่าเป็น "บันทึกสำเร็จ"/"ลบสำเร็จ"/"สำเร็จ" หรือไม่ ถ้าใช่ ให้ขึ้น toast แบบใหม่แทน ไม่แตะกรณีอื่น
+      if(!isError && TOAST_ONLY_TITLES.indexOf(title) !== -1){
+        if(showCustomAlertToast(title, message)) return;
+      }
+      hardCloseExportPopupsBeforeAlert();
+      var modal = document.getElementById('custom-alert');
+      var box = document.getElementById('custom-alert-box');
+      if(!modal || !box){
+        if(typeof oldAlert === 'function') return oldAlert.apply(this,arguments);
+        return alert((title||'') + (message ? '\n' + message : ''));
+      }
+      document.getElementById('custom-alert-title').textContent = title || 'แจ้งเตือน';
+      document.getElementById('custom-alert-title').className = 'text-2xl font-bold mb-2 ' + (isError ? 'text-rose-600' : 'text-emerald-600');
+      document.getElementById('custom-alert-message').textContent = message || '';
+      document.getElementById('custom-alert-icon').innerHTML = isError ? '<i class="fas fa-times-circle text-rose-500 drop-shadow-md"></i>' : '<i class="fas fa-check-circle text-emerald-500 drop-shadow-md"></i>';
+      setFixedLayer(modal, TOP_Z);
+      box.style.zIndex = String(TOP_Z);
+      modal.classList.remove('hidden');
+      setTimeout(function(){ box.classList.remove('scale-95','opacity-0'); box.classList.add('scale-100','opacity-100'); }, 10);
+    };
+    patched.__schoolhubToastPatched = true;
+    window.showCustomAlert = patched;
+  }
+  installShowCustomAlert();
+  // สำคัญ: js1/007.js โหลดแบบ type="module" จึงทำงาน "หลัง" สคริปต์ปกติทุกตัว (รวมไฟล์นี้)
+  // และมันมีการเซ็ต window.showCustomAlert = ... ของตัวเองทับอีกที ทำให้ toast ที่ตั้งไว้หายไป
+  // ต้องติดตั้งซ้ำอีกครั้งตอน DOMContentLoaded (ซึ่งจะยิงหลังสคริปต์ type="module" ทำงานเสร็จเสมอ) เพื่อทับกลับ
+  document.addEventListener('DOMContentLoaded', installShowCustomAlert);
+  window.__schoolhubReinstallShowCustomAlert = installShowCustomAlert;
 
   var oldConfirm = window.showCustomConfirm;
   // Re-entrancy guard: prevents the "confirm asks to confirm again instead of

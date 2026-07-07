@@ -47,22 +47,33 @@
     });
   }
 
-  if(typeof window.showCustomAlert === 'function' && !window.showCustomAlert.__okButtonRealFixWrapped){
-    var oldShow = window.showCustomAlert;
-    window.showCustomAlert = function(){
-      var r = oldShow.apply(this, arguments);
-      setTimeout(function(){
-        var modal = document.getElementById('custom-alert');
-        if(modal){
-          modal.style.display = '';
-          modal.removeAttribute('aria-hidden');
-        }
-        bindOk();
-      }, 20);
-      return r;
-    };
-    window.showCustomAlert.__okButtonRealFixWrapped = true;
+  function installOkButtonWrap(){
+    if(typeof window.showCustomAlert === 'function' && !window.showCustomAlert.__okButtonRealFixWrapped){
+      var oldShow = window.showCustomAlert;
+      var wrapped = function(){
+        var r = oldShow.apply(this, arguments);
+        setTimeout(function(){
+          var modal = document.getElementById('custom-alert');
+          if(modal){
+            modal.style.display = '';
+            modal.removeAttribute('aria-hidden');
+          }
+          bindOk();
+        }, 20);
+        return r;
+      };
+      wrapped.__okButtonRealFixWrapped = true;
+      window.showCustomAlert = wrapped;
+    }
   }
+  installOkButtonWrap();
+  // js1/007.js โหลดแบบ type="module" จึงทำงาน "หลัง" ไฟล์นี้เสมอ และมันเซ็ต
+  // window.showCustomAlert ของตัวเองทับ ทำให้การ wrap ปุ่ม "ตกลง" นี้หายไปด้วย
+  // ต้องห่อซ้ำอีกครั้งตอน DOMContentLoaded ซึ่งจะยิงหลัง 007.js เสมอ
+  document.addEventListener('DOMContentLoaded', function(){
+    if(typeof window.__schoolhubReinstallShowCustomAlert === 'function') window.__schoolhubReinstallShowCustomAlert();
+    installOkButtonWrap();
+  });
 
   document.addEventListener('click', function(e){
     var btn = e.target && e.target.closest ? e.target.closest('#custom-alert button') : null;
