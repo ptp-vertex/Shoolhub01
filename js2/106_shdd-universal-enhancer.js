@@ -12,6 +12,37 @@ var CHEVRON_SVG = '<svg class="shdd-chevron" xmlns="http://www.w3.org/2000/svg" 
 function esc(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
 function getLabel(sel){ var i=sel.selectedIndex; return (i>=0&&sel.options[i])?sel.options[i].text:''; }
 
+// ── Week status (plan / scored) — used to color-code the week grid ──────────
+// 'plan-week' (ตอนตั้งแผนคะแนน) ผูกกับ #plan-course-id
+// 'score-week' (ตอนกรอกคะแนน) ผูกกับ currentActiveCourseId ของหน้าเว็บ
+function getWeekGridCourseId(sel){
+  try{
+    if(sel.id === 'plan-week'){
+      var pc = document.getElementById('plan-course-id');
+      return pc ? String(pc.value||'') : '';
+    }
+    if(sel.id === 'score-week') return String(window.currentActiveCourseId||'');
+  }catch(e){}
+  return '';
+}
+// คืนค่า: 'scored' = มีแผน+บันทึกคะแนนแล้ว, 'plan' = มีแผนแล้วแต่ยังไม่บันทึกคะแนน, 'none' = ยังไม่มีอะไรเลย
+function getWeekGridStatus(cid, week){
+  try{
+    if(!cid) return 'none';
+    var st = window.state || {};
+    var plans = (st.coursePlans && st.coursePlans[cid]) || [];
+    var hasPlan = plans.some(function(p){ return String(p.week) === String(week); });
+    if(!hasPlan) return 'none';
+    var scores = st.scores || [];
+    var hasScore = scores.some(function(s){
+      if(String(s.courseId) !== String(cid) || String(s.week) !== String(week)) return false;
+      var rec = s.records || {};
+      return Object.keys(rec).some(function(k){ var v = rec[k]; return v !== '' && v !== undefined && v !== null; });
+    });
+    return hasScore ? 'scored' : 'plan';
+  }catch(e){ return 'none'; }
+}
+
 // ── Global panel state ──────────────────────────────────────────────────────
 var _panel=null, _wrap=null, _sel=null;
 
@@ -70,12 +101,18 @@ function buildOptions(panel, wrap, sel){
   if(!inner) return;
   var isWeek = !!WEEK_GRID[sel.id];
   var cur = String(sel.value);
+  var weekCid = isWeek ? getWeekGridCourseId(sel) : '';
   var parts = [isWeek ? '<div class="shdd-grid">' : '<div class="shdd-list">'];
   Array.prototype.forEach.call(sel.options, function(opt){
     var v = String(opt.value), active = v===cur && cur!=='';
     if(isWeek){
       if(v===''){ parts.push('<button type="button" class="shdd-week-blank shdd-opt" data-val="">'+esc(opt.text)+'</button>'); }
-      else { parts.push('<button type="button" class="shdd-week-item shdd-opt'+(active?' shdd-selected':'')+'" data-val="'+esc(v)+'">'+esc(v)+'</button>'); }
+      else {
+        var status = getWeekGridStatus(weekCid, v);
+        var statusClass = status==='scored' ? ' shdd-week-scored' : (status==='plan' ? ' shdd-week-planned' : '');
+        var statusTitle = status==='scored' ? 'ตั้งแผนคะแนนและบันทึกคะแนนแล้ว' : (status==='plan' ? 'ตั้งแผนคะแนนไว้แล้ว' : '');
+        parts.push('<button type="button" class="shdd-week-item shdd-opt'+(active?' shdd-selected':'')+statusClass+'" data-val="'+esc(v)+'"'+(statusTitle?' title="'+esc(statusTitle)+'"':'')+'>'+esc(v)+'</button>');
+      }
     } else {
       parts.push('<button type="button" class="shdd-list-item shdd-opt'+(active?' shdd-selected':'')+'" data-val="'+esc(v)+'" title="'+esc(opt.text)+'">'+esc(opt.text)+'</button>');
     }
