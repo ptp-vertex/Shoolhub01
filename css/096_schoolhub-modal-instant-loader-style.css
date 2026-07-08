@@ -1,14 +1,21 @@
 
+/* สปินเนอร์นี้อยู่บนพื้นเบลอ/มืดของ backdrop (หลังป็อปอัพ) เท่านั้น
+   ไม่ใช่การ์ดทึบขาวที่ไปทับหน้าป็อปอัพที่กำลังเด้งขึ้นมา
+   เลยไม่มีพื้นหลังของตัวเอง ไม่มี blur ซ้ำ และวางไว้ "ก่อน" กล่องป็อปอัพใน DOM
+   ให้กล่องป็อปอัพ (ซึ่งมีพื้นหลังทึบของตัวเอง) มาซ้อนทับบังสปินเนอร์ไปเองตามธรรมชาติเมื่อพร้อมแสดง */
 .schoolhub-modal-mini-spinner{
   position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:.6rem; background:rgba(255,255,255,.7); backdrop-filter:blur(3px); z-index:2147483600;
-  animation: schoolhubSpinnerFadeIn .12s ease; pointer-events:none;
+  gap:.6rem; background:transparent; z-index:0; pointer-events:none;
+  animation: schoolhubSpinnerFadeIn .12s ease;
 }
 .schoolhub-modal-mini-spinner .sh-spin{
   width:34px; height:34px; border-radius:50%;
-  border:3px solid rgba(79,70,229,.18); border-top-color:#4f46e5;
+  border:3px solid rgba(255,255,255,.28); border-top-color:#fff;
   animation: schoolhubSpin .6s linear infinite;
 }
-.schoolhub-modal-mini-spinner span{ font-size:.78rem; font-weight:700; color:#64748b; }
+.schoolhub-modal-mini-spinner span{
+  font-size:.78rem; font-weight:700; color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.4);
+}
 @keyframes schoolhubSpin{ to { transform:rotate(360deg); } }
 @keyframes schoolhubSpinnerFadeIn{ from{opacity:0;} to{opacity:1;} }
