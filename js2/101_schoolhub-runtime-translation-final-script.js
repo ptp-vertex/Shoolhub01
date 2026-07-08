@@ -83,7 +83,7 @@
     "กำลังโหลดประวัติ...": "Loading history...",
     "โหลดประวัติแล้ว": "History loaded",
     "รีเฟรช": "Refresh",
-    "เริ่มเดือนถัดไป": "Next billing start",
+    "เรียกเก็บครั้งถัดไป": "Next billing start",
     "วันที่เริ่มต้นครั้งต่อไป": "Next start date",
     "เพิ่มรายวิชาได้": "Courses allowed",
     "ไม่จำกัด": "Unlimited",
