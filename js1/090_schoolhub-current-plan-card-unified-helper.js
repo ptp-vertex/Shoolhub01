@@ -119,8 +119,10 @@
       : '';
 
     // ปุ่มต่ออายุแบบง่ายๆ ตรงกล่องแผนปัจจุบันด้านบนเลย ไม่ต้องเลื่อนลงไปเลือกด้านล่าง
+    // ใช้ data-attribute + ฟังก์ชันกลาง แทนการฝัง planId ลงใน onclick ตรงๆ
+    // (เดิมฝัง JSON.stringify ที่มีเครื่องหมาย " ซ้อนกับ onclick="..." ที่เป็น " เหมือนกัน ทำให้ attribute ขาดตอนกลางคัน ปุ่มเลยกดไม่ติด)
     var renewBtn = expired
-      ? '<button type="button" class="schoolhub-current-plan-renew-btn" onclick="if(typeof requestSubscriptionPlan===\'function\'){ requestSubscriptionPlan(' + JSON.stringify(String(planId)) + '); } else if (typeof window.openModal===\'function\'){ window.openModal(\'plan-modal\'); }"><i class="fas fa-rotate mr-1"></i> ต่ออายุเลย</button>'
+      ? '<button type="button" class="schoolhub-current-plan-renew-btn" data-schoolhub-renew-plan-id="' + esc(String(planId)) + '" onclick="window.schoolhubRenewCurrentPlan &amp;&amp; window.schoolhubRenewCurrentPlan(this)"><i class="fas fa-rotate mr-1"></i> ต่ออายุเลย</button>'
       : '';
 
     return '' +
@@ -129,12 +131,28 @@
           '<div class="schoolhub-current-plan-label" data-i18n="currentPlan">' + esc(window.t ? window.t('currentPlan') : 'แผนปัจจุบัน') + '</div>' +
           '<div class="schoolhub-current-plan-name">' + esc(planName) + expiredBadge + '</div>' +
           '<div class="schoolhub-current-plan-price">' + esc(priceText) + '</div>' +
-          '<div class="schoolhub-current-plan-meta"><span data-i18n="nextBillingStart">' + esc(window.t ? window.t('nextBillingStart') : 'เริ่มเดือนถัดไป') + '</span>: ' + esc(formatThaiDateTime(nextDate)) + '</div>' +
+          '<div class="schoolhub-current-plan-meta"><span data-i18n="nextBillingStart">' + esc(window.t ? window.t('nextBillingStart') : 'เรียกเก็บครั้งถัดไป') + '</span>: ' + esc(formatThaiDateTime(nextDate)) + '</div>' +
           '<div class="schoolhub-current-plan-meta"><span data-i18n="courseLimit">' + esc(window.t ? window.t('courseLimit') : 'เพิ่มรายวิชาได้') + '</span>: ' + esc(courseLimit) + ' <span data-i18n="courseUnit">' + esc(window.t ? window.t('courseUnit') : 'วิชา') + '</span></div>' +
           renewBtn +
         '</div>' +
         '<div class="schoolhub-current-plan-icon"><i class="fa-solid fa-id-card fas fa-id-card"></i></div>' +
       '</div>';
+  };
+
+  // ฟังก์ชันกลางที่ปุ่ม "ต่ออายุเลย" เรียกใช้: ตรวจสอบแผนเดิมที่เพิ่งหมดอายุไป
+  // แล้วเรียกป็อปอัพชำระเงิน/สมัครของแผนนั้นโดยตรง (แผนเดียวกับที่ใช้อยู่ก่อนหมดอายุ)
+  window.schoolhubRenewCurrentPlan = function(btn){
+    try{
+      var planId = btn && btn.getAttribute ? btn.getAttribute('data-schoolhub-renew-plan-id') : '';
+      if (!planId) return;
+      if (typeof window.requestSubscriptionPlan === 'function') {
+        window.requestSubscriptionPlan(planId);
+      } else if (typeof window.openPlanPaymentModal === 'function') {
+        window.openPlanPaymentModal(planId);
+      } else if (typeof window.openModal === 'function') {
+        window.openModal('plan-modal');
+      }
+    }catch(e){}
   };
 
   window.schoolhubRenderCurrentPlanCardInto = function(target, plan, userDir){
