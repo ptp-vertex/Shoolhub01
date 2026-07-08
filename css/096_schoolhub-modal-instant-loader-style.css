@@ -5,8 +5,15 @@
    ให้กล่องป็อปอัพ (ซึ่งมีพื้นหลังทึบของตัวเอง) มาซ้อนทับบังสปินเนอร์ไปเองตามธรรมชาติเมื่อพร้อมแสดง */
 .schoolhub-modal-mini-spinner{
   position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:.6rem; background:transparent; z-index:0; pointer-events:none;
+  gap:.6rem; background:transparent; z-index:-1; pointer-events:none;
   animation: schoolhubSpinnerFadeIn .12s ease;
+}
+/* บังคับให้กล่องป็อปอัพจริง (ลูกที่ไม่ใช่สปินเนอร์ ตัวแรกในโมดัล) มี stacking context ของตัวเอง
+   และอยู่ "หน้า" สปินเนอร์เสมอ ไม่ว่ากล่องนั้นจะ position:static (ปกติของ .sh-modal-box และกล่อง
+   ป็อปอัพชำระเงินที่ทำด้วย Tailwind) หรือไม่ก็ตาม เพราะ element ที่ position:static จะถูก element
+   ที่ position:absolute + z-index ทับหน้าเสมอตามสเปค CSS แม้จะอยู่หลังใน DOM ก็ตาม */
+.schoolhub-modal-mini-spinner + *{
+  position:relative; z-index:1;
 }
 .schoolhub-modal-mini-spinner .sh-spin{
   width:34px; height:34px; border-radius:50%;
