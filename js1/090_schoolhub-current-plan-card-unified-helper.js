@@ -144,15 +144,33 @@
   window.schoolhubRenewCurrentPlan = function(btn){
     try{
       var planId = btn && btn.getAttribute ? btn.getAttribute('data-schoolhub-renew-plan-id') : '';
-      if (!planId) return;
+      var userDir = window.__currentUserDir || {};
+      
+      // ถ้าไม่มี planId จากปุ่ม ให้พยายามดึงจากแผนที่หมดอายุล่าสุดใน userDir
+      if (!planId) {
+        planId = userDir.planId || userDir.requestedPlanId || '';
+      }
+      
+      if (!planId) {
+        if (typeof window.showCustomAlert === 'function') {
+          window.showCustomAlert('ไม่พบข้อมูลแผน', 'ไม่พบแผนเดิมที่หมดอายุ กรุณาเลือกแผนใหม่จากรายการด้านล่าง', true);
+        }
+        return;
+      }
+      
+      // เรียกใช้ requestSubscriptionPlan เพื่อเปิดหน้าชำระเงินของแผนนั้นๆ
       if (typeof window.requestSubscriptionPlan === 'function') {
         window.requestSubscriptionPlan(planId);
       } else if (typeof window.openPlanPaymentModal === 'function') {
         window.openPlanPaymentModal(planId);
-      } else if (typeof window.openModal === 'function') {
-        window.openModal('plan-modal');
+      } else {
+        // Fallback: เปิด modal เลือกแผน
+        if (typeof window.openModal === 'function') window.openModal('plan-modal');
+        else if (document.getElementById('plan-modal')) document.getElementById('plan-modal').classList.remove('hidden');
       }
-    }catch(e){}
+    }catch(e){
+      console.error('Renew error:', e);
+    }
   };
 
   window.schoolhubRenderCurrentPlanCardInto = function(target, plan, userDir){

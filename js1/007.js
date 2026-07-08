@@ -5322,7 +5322,7 @@ async function submitPlanRequest(planId){
         }
         function formatNextBilling(dir){
             if(!dir) return '';
-            if(!dir.planNextBillingAt) return 'ไม่มีรอบเรียกเก็บถัดไป';
+            if(!dir.planNextBillingAt) return 'ไม่มีรอบเรียกเก็บเงิน';
             return new Date(Number(dir.planNextBillingAt)).toLocaleString('th-TH');
         }
         getDefaultPlans = function(){
@@ -5447,7 +5447,7 @@ async function submitPlanRequest(planId){
             sel.onchange=()=>{
                 const amount=getPlanChargeAmount(plan,sel.value);
                 const preview=document.getElementById('payment-next-billing-preview');
-                if(preview) preview.textContent=(plan.freeForever||sel.value==='forever')?'ไม่มีรอบเรียกเก็บถัดไป':`เรียกเก็บครั้งต่อไป: ${new Date(getPlanNextBillingAt(plan,Date.now(),sel.value)).toLocaleDateString('th-TH')}`;
+                if(preview) preview.textContent=(plan.freeForever||sel.value==='forever')?'ไม่มีรอบเรียกเก็บเงิน':`เรียกเก็บครั้งต่อไป: ${new Date(getPlanNextBillingAt(plan,Date.now(),sel.value)).toLocaleDateString('th-TH')}`;
                 updatePlanPaymentRequirementUI(plan, sel.value);
             };
             sel.onchange();
