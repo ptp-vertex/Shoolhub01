@@ -38,7 +38,10 @@
     var sp = document.createElement('div');
     sp.className = 'schoolhub-modal-mini-spinner';
     sp.innerHTML = '<div class="sh-spin"></div><span>กำลังโหลด...</span>';
-    modal.appendChild(sp);
+    // แทรกเป็นตัวแรกสุด (ก่อนกล่องป็อปอัพ) ให้สปินเนอร์อยู่ "หลัง" กล่องป็อปอัพเสมอ
+    // เมื่อกล่องป็อปอัพ (ซึ่งมีพื้นหลังทึบ) เด้งขึ้นมาแล้ว มันจะซ้อนทับบังสปินเนอร์ไปเองตามธรรมชาติ
+    // ไม่ใช่สปินเนอร์ไปทับบังกล่องป็อปอัพแบบเดิม
+    modal.insertBefore(sp, modal.firstChild);
 
     var shownAt = Date.now();
     var removed = false;
