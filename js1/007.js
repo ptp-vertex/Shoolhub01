@@ -1125,7 +1125,22 @@
             const x=normalizeThaiTextForMatch(a);
             const y=normalizeThaiTextForMatch(b);
             if(!x || !y) return 0;
+            // 1. Exact or partial inclusion (Smart match for "ปฏิภาณ บ" vs "ปฏิภาณ บำเรอจิต")
             if(x.includes(y) || y.includes(x)) return 1;
+            
+            // 2. Check for name prefix match (Common in slips like "Pattipan B.")
+            // If at least 5 chars match at start, it's very likely the same person
+            if(x.length >= 5 && y.length >= 5){
+                const shortLen = Math.min(x.length, y.length);
+                const prefixMatch = x.substring(0, shortLen) === y.substring(0, shortLen);
+                if(prefixMatch) return 1;
+                
+                // Case: "ปฏิภาณ บ" vs "ปฏิภาณ บำเรอจิต" -> normalize might strip spaces
+                // If the first name is fully matched and followed by a single char (initial)
+                const firstNameMatch = x.substring(0, 4) === y.substring(0, 4); // Basic Thai first name check
+                if(firstNameMatch && (x.length < 8 || y.length < 8)) return 0.95;
+            }
+
             const maxLen=Math.max(x.length,y.length);
             return maxLen ? 1-(levenshteinDistance(x,y)/maxLen) : 0;
         }
@@ -1148,18 +1163,24 @@
             return values.length ? values[0] : null;
         }
         function extractSlipReference(ocrText){
+            // Normalizing text: MAKE by KBank uses 'o' instead of '0' or mixed case in ref
             const text=String(ocrText||'').replace(/\s+/g,' ');
             const patterns=[
+                // Specific for MAKE by KBank style: 0461895o8vj144vqohmk (alphanumeric, lowercase/mixed)
+                /(?:เลขที่รายการ|เลขอ้างอิง|รหัสรายการ|ref\.?|transaction\s*id)[^\w\d]{0,12}([a-z0-9]{15,32})/i,
                 /(?:เลขที่รายการ|เลขอ้างอิง|หมายเลขอ้างอิง|เลขที่อ้างอิง|reference|ref\.?|transaction\s*id|รหัสรายการ)[^\w\d]{0,12}([A-Z0-9]{10,32})/i,
                 /\b([0-9]{12,32})\b/g,
-                /\b([A-Z0-9]{16,32})\b/g
+                /\b([A-Z0-9]{16,32})\b/g,
+                // Fallback for long alphanumeric strings that look like references
+                /\b([a-z0-9]{18,32})\b/gi
             ];
             for(const re of patterns){
                 const g=new RegExp(re.source,re.flags.includes('g')?re.flags:re.flags+'g');
                 let m;
                 while((m=g.exec(text))!==null){
-                    const ref=String(m[1]||'').replace(/[^A-Z0-9]/gi,'').toUpperCase();
-                    if(ref.length>=10) return ref;
+                    // Keep alphanumeric for MAKE by KBank
+                    const ref=String(m[1]||'').replace(/[^A-Za-z0-9]/gi,'');
+                    if(ref.length>=10) return ref.toUpperCase(); // Normalize to upper for duplicate check
                 }
             }
             return '';
@@ -1787,8 +1808,27 @@ async function submitPlanRequest(planId){
         window.scrollToLandingPlans=()=>document.getElementById('landing-plans-section')?.scrollIntoView({behavior:'smooth',block:'start'});
         function renderAdminPlans(){const tbody=document.getElementById('admin-plan-list');if(!tbody)return;const items=(subscriptionPlans||[]).sort((a,b)=>Number(a.order||0)-Number(b.order||0));if(!items.length){tbody.innerHTML='<tr><td colspan="5" class="text-center p-8 text-slate-400">ยังไม่มีแผนการใช้งาน</td></tr>';return;}tbody.innerHTML=items.map(p=>`<tr><td class="font-bold text-slate-700">${escapeHTML(p.name||'')}${p.featured?'<div class="text-xs text-primary mt-1"><i class="fas fa-star"></i> แนะนำ</div>':''}</td><td class="font-black text-primary">${escapeHTML(p.price||'')}<div class="text-xs font-normal text-slate-400">${escapeHTML(p.desc||'')}</div></td><td class="text-sm text-slate-500">${(p.features||[]).slice(0,5).map(f=>`<div>• ${escapeHTML(f)}</div>`).join('')}</td><td class="text-center"><span class="px-3 py-1 rounded-full text-xs font-bold ${p.active!==false?'bg-emerald-100 text-emerald-700':'bg-slate-100 text-slate-500'}">${p.active!==false?'แสดง':'ซ่อน'}</span></td><td class="text-right whitespace-nowrap"><button onclick="editAdminPlan('${p.id}')" class="bg-amber-50 text-amber-600 border border-amber-100 px-3 py-1.5 rounded-lg text-sm font-bold"><i class="fas fa-pen"></i></button><button onclick="deleteAdminPlan('${p.id}')" class="bg-rose-50 text-rose-600 border border-rose-100 px-3 py-1.5 rounded-lg text-sm font-bold ml-1"><i class="fas fa-trash"></i></button></td></tr>`).join('');}
         window.resetAdminPlanForm=()=>{['plan-sub-edit-id','plan-sub-name','plan-sub-price','plan-sub-promptpay','plan-sub-desc','plan-sub-features'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});document.getElementById('plan-sub-order').value='1';document.getElementById('plan-sub-featured').checked=false;document.getElementById('plan-sub-active').checked=true;};
-        window.editAdminPlan=(id)=>{const p=(subscriptionPlans||[]).find(x=>x.id===id);if(!p)return;document.getElementById('plan-sub-edit-id').value=p.id;document.getElementById('plan-sub-name').value=p.name||'';document.getElementById('plan-sub-price').value=p.price||'';document.getElementById('plan-sub-promptpay').value=p.promptpay||'';document.getElementById('plan-sub-desc').value=p.desc||'';document.getElementById('plan-sub-features').value=(p.features||[]).join('\n');document.getElementById('plan-sub-order').value=Number(p.order||1);document.getElementById('plan-sub-featured').checked=!!p.featured;document.getElementById('plan-sub-active').checked=p.active!==false;};
-        window.saveAdminPlanForm=async()=>{if(!isAdmin)return showCustomAlert('ไม่มีสิทธิ์','เฉพาะแอดมินเท่านั้น',true);const editId=document.getElementById('plan-sub-edit-id').value;const item={id:editId||`plan_${Date.now()}`,name:document.getElementById('plan-sub-name').value.trim(),price:document.getElementById('plan-sub-price').value.trim(),promptpay:document.getElementById('plan-sub-promptpay').value.trim(),desc:document.getElementById('plan-sub-desc').value.trim(),features:document.getElementById('plan-sub-features').value.split('\n').map(x=>x.trim()).filter(Boolean),order:Number(document.getElementById('plan-sub-order').value||1),featured:document.getElementById('plan-sub-featured').checked,active:document.getElementById('plan-sub-active').checked,updatedAt:Date.now()};if(!item.name||!item.price)return showCustomAlert('ข้อมูลไม่ครบ','กรุณากรอกชื่อระดับและราคา',true);subscriptionPlans=(subscriptionPlans||[]).filter(p=>p.id!==item.id);subscriptionPlans.push(item);writeLocalJSON(PLANS_CACHE_KEY,subscriptionPlans);renderAdminPlans();renderLandingPlans();if(typeof renderUserPlans==='function')renderUserPlans();resetAdminPlanForm();await new Promise(resolve=>requestAnimationFrame(resolve));const __adminPlanLoaderText=document.querySelector('#global-loader p');const __adminPlanLoaderOldText=__adminPlanLoaderText?__adminPlanLoaderText.textContent:'';if(__adminPlanLoaderText)__adminPlanLoaderText.textContent='กำลังบันทึกการตั้งค่าแผนการใช้งาน...';toggleLoader(true);try{await setDoc(getPlansDocRef(),{items:subscriptionPlans,updatedAt:Date.now()},{merge:true});toggleLoader(false);if(__adminPlanLoaderText)__adminPlanLoaderText.textContent=__adminPlanLoaderOldText;renderAdminPlans();renderLandingPlans();if(typeof renderUserPlans==='function')renderUserPlans();showCustomAlert('บันทึกแล้ว','บันทึกแผนการใช้งานขึ้น Firebase เรียบร้อย');}catch(e){toggleLoader(false);if(__adminPlanLoaderText)__adminPlanLoaderText.textContent=__adminPlanLoaderOldText;renderAdminPlans();renderLandingPlans();if(typeof renderUserPlans==='function')renderUserPlans();showCustomAlert('บันทึกในเครื่องแล้ว','แต่ยังบันทึกขึ้น Firebase ไม่ได้: '+getFirebaseErrorText(e),true);}};
+        window.editAdminPlan=(id)=>{const p=(subscriptionPlans||[]).find(x=>x.id===id);if(!p)return;document.getElementById('plan-sub-edit-id').value=p.id;document.getElementById('plan-sub-name').value=p.name||'';document.getElementById('plan-sub-price').value=p.price||'';document.getElementById('plan-sub-promptpay').value=p.promptpay||'';document.getElementById('plan-sub-desc').value=p.desc||'';document.getElementById('plan-sub-features').value=(p.features||[]).join('\n');document.getElementById('plan-sub-order').value=Number(p.order||1);document.getElementById('plan-sub-featured').checked=!!p.featured;document.getElementById('plan-sub-active').checked=p.active!==false;
+        // Sync expanded rights if available
+        if (typeof window.writeRightsToForm === 'function') {
+            window.writeRightsToForm(p, { syncPopup: true, render: true });
+        }
+        };
+        window.saveAdminPlanForm=async()=>{if(!isAdmin)return showCustomAlert('ไม่มีสิทธิ์','เฉพาะแอดมินเท่านั้น',true);const editId=document.getElementById('plan-sub-edit-id').value;
+        // Collect expanded rights if available
+        let rights = {};
+        if (typeof window.schoolhubGetRealPlanRights === 'function') {
+            try {
+                const box = document.getElementById('schoolhub-expanded-rights-box');
+                if (box) {
+                    const inputs = box.querySelectorAll('input[data-schoolhub-canonical-right]');
+                    inputs.forEach(inp => {
+                        rights[inp.getAttribute('data-schoolhub-canonical-right')] = inp.checked === true;
+                    });
+                }
+            } catch(e) { console.error('Collect rights error:', e); }
+        }
+        const item={id:editId||`plan_${Date.now()}`,name:document.getElementById('plan-sub-name').value.trim(),price:document.getElementById('plan-sub-price').value.trim(),promptpay:document.getElementById('plan-sub-promptpay').value.trim(),desc:document.getElementById('plan-sub-desc').value.trim(),features:document.getElementById('plan-sub-features').value.split('\n').map(x=>x.trim()).filter(Boolean),order:Number(document.getElementById('plan-sub-order').value||1),featured:document.getElementById('plan-sub-featured').checked,active:document.getElementById('plan-sub-active').checked,updatedAt:Date.now(),...rights};if(!item.name||!item.price)return showCustomAlert('ข้อมูลไม่ครบ','กรุณากรอกชื่อระดับและราคา',true);subscriptionPlans=(subscriptionPlans||[]).filter(p=>p.id!==item.id);subscriptionPlans.push(item);writeLocalJSON(PLANS_CACHE_KEY,subscriptionPlans);renderAdminPlans();renderLandingPlans();if(typeof renderUserPlans==='function')renderUserPlans();resetAdminPlanForm();await new Promise(resolve=>requestAnimationFrame(resolve));const __adminPlanLoaderText=document.querySelector('#global-loader p');const __adminPlanLoaderOldText=__adminPlanLoaderText?__adminPlanLoaderText.textContent:'';if(__adminPlanLoaderText)__adminPlanLoaderText.textContent='กำลังบันทึกการตั้งค่าแผนการใช้งาน...';toggleLoader(true);try{await setDoc(getPlansDocRef(),{items:subscriptionPlans,updatedAt:Date.now()},{merge:true});toggleLoader(false);if(__adminPlanLoaderText)__adminPlanLoaderText.textContent=__adminPlanLoaderOldText;renderAdminPlans();renderLandingPlans();if(typeof renderUserPlans==='function')renderUserPlans();showCustomAlert('บันทึกแล้ว','บันทึกแผนการใช้งานขึ้น Firebase เรียบร้อย');}catch(e){toggleLoader(false);if(__adminPlanLoaderText)__adminPlanLoaderText.textContent=__adminPlanLoaderOldText;renderAdminPlans();renderLandingPlans();if(typeof renderUserPlans==='function')renderUserPlans();showCustomAlert('บันทึกในเครื่องแล้ว','แต่ยังบันทึกขึ้น Firebase ไม่ได้: '+getFirebaseErrorText(e),true);}};
         window.deleteAdminPlan=(id)=>window.showCustomConfirm('ลบแผนการใช้งาน','ต้องการลบแผนนี้หรือไม่?',async()=>{subscriptionPlans=(subscriptionPlans||[]).filter(p=>p.id!==id);writeLocalJSON(PLANS_CACHE_KEY,subscriptionPlans);toggleLoader(true);try{await setDoc(getPlansDocRef(),{items:subscriptionPlans,updatedAt:Date.now()},{merge:true});renderAdminPlans();renderLandingPlans();}catch(e){renderAdminPlans();renderLandingPlans();showCustomAlert('ลบในเครื่องแล้ว','แต่ยังลบจาก Firebase ไม่ได้: '+getFirebaseErrorText(e),true);}toggleLoader(false);});
         window.seedDefaultPlans=async()=>{subscriptionPlans=getDefaultPlans();writeLocalJSON(PLANS_CACHE_KEY,subscriptionPlans);toggleLoader(true);try{await setDoc(getPlansDocRef(),{items:subscriptionPlans,updatedAt:Date.now()},{merge:true});renderAdminPlans();renderLandingPlans();showCustomAlert('สำเร็จ','สร้างแผนตัวอย่าง 3 ระดับ (มาตรฐาน / โปร / ทีม) ขึ้น Firebase แล้ว');}catch(e){renderAdminPlans();renderLandingPlans();showCustomAlert('สร้างในเครื่องแล้ว','แต่ยังบันทึกขึ้น Firebase ไม่ได้: '+getFirebaseErrorText(e),true);}toggleLoader(false);};
 

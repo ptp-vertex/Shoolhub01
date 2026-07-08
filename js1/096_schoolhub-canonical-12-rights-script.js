@@ -32,7 +32,9 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
     ['allowStudents','students','เพิ่ม/แก้ไขนักเรียน','แผนนี้ไม่รองรับการจัดการนักเรียน','กรุณาอัปเกรดแผนเพื่อเพิ่มหรือแก้ไขนักเรียน','fa-user-graduate'],
     ['allowEdit','edit','แก้ไขข้อมูล','แผนนี้ไม่รองรับการแก้ไขข้อมูล','กรุณาอัปเกรดแผนเพื่อแก้ไขข้อมูล','fa-pen-to-square'],
     ['allowDelete','delete','ลบข้อมูล','แผนนี้ไม่รองรับการลบข้อมูล','กรุณาอัปเกรดแผนเพื่อปลดล็อกการลบข้อมูล','fa-trash'],
-    ['allowReports','reports','รายงาน/ภาพรวม','แผนนี้ไม่รองรับรายงาน/ภาพรวม','กรุณาอัปเกรดแผนเพื่อดูรายงาน/ภาพรวม','fa-chart-pie']
+    ['allowReports','reports','รายงาน/ภาพรวม','แผนนี้ไม่รองรับรายงาน/ภาพรวม','กรุณาอัปเกรดแผนเพื่อดูรายงาน/ภาพรวม','fa-chart-pie'],
+    ['allowBonus','bonus','คะแนนโบนัส','แผนนี้ไม่รองรับคะแนนโบนัส','กรุณาอัปเกรดแผนเพื่อใช้ฟีเจอร์คะแนนโบนัส','fa-plus-circle'],
+    ['allowStars','stars','ระบบดาว','แผนนี้ไม่รองรับระบบดาว','กรุณาอัปเกรดแผนเพื่อใช้ฟีเจอร์ระบบดาว','fa-star']
   ];
   const DEFAULT_TRUE_FIELDS = new Set(RIGHTS.map(r => r[0]).filter(f => f !== 'allowTeam'));
   const FIELD_TO_KEY = Object.fromEntries(RIGHTS.map(r => [r[0], r[1]]));
@@ -49,7 +51,9 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
     courses:'allowCourses', course:'allowCourses', addCourse:'allowCourses', editCourse:'allowCourses',
     students:'allowStudents', student:'allowStudents', addStudent:'allowStudents', editStudent:'allowStudents',
     edit:'allowEdit', update:'allowEdit', modify:'allowEdit', editData:'allowEdit',
-    delete:'allowDelete', remove:'allowDelete', del:'allowDelete', deleteData:'allowDelete'
+    delete:'allowDelete', remove:'allowDelete', del:'allowDelete', deleteData:'allowDelete',
+    bonus:'allowBonus', bonusScore:'allowBonus', bonusScores:'allowBonus',
+    stars:'allowStars', star:'allowStars', starGroup:'allowStars', starGroups:'allowStars'
   });
   const OLD_THREE_INPUTS = {
     allowAttendance:'plan-sub-allow-attendance',
@@ -536,6 +540,9 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
   wrapGuard('openGradeCriteriaModalForCurrentCourse','gradeCriteria','ตั้งค่าเกณฑ์เกรด');
   wrapGuard('openGradeCriteria','gradeCriteria','ตั้งค่าเกณฑ์เกรด');
   wrapGuard('openShareStudentModal','studentShare','แชร์ให้นักเรียน');
+  wrapGuard('openBonusScoreModal','allowBonus','บันทึกคะแนนโบนัส');
+  wrapGuard('openStarGroupModal','allowStars','จัดการระบบดาว');
+  wrapGuard('openStarConversionPopup','allowStars','แปลงดาวเป็นคะแนน');
   wrapGuard('openCourseTeachersModal','team','จัดการครูในรายวิชา');
   const oldSwitchCourseTab = window.switchCourseTab;
   if(typeof oldSwitchCourseTab === 'function' && !oldSwitchCourseTab.__schoolhubStableRightsGuard){
