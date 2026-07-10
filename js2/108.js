@@ -125,134 +125,6 @@ W.shOvDeleteAllStarEntries = function(cid, sid){
   });
 };
 
-// ── OVERVIEW: Attendance detail popup (double-click on เช็คชื่อ cell) ─
-W.shOvShowAttendanceDetail = function(sid, name, jsonEnc){
-  const detail = JSON.parse(decodeURIComponent(jsonEnc));
-  const thMonth = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
-  function fmt(d){
-    const parts=String(d).split('-');
-    if(parts.length!==3) return d;
-    return parseInt(parts[2],10)+' '+thMonth[parseInt(parts[1],10)-1]+' '+(parseInt(parts[0],10)+543);
-  }
-  eid('sh-detail-title').innerHTML = '<div style="display:flex;flex-direction:column;gap:2px;line-height:1.35"><span><i class="fas fa-calendar-check" style="color:#0891b2;margin-right:6px"></i>การเข้าเรียน</span><span style="font-size:12.5px;font-weight:500;color:#94a3b8">' + name + '</span></div>';
-  function section(label, color, list, isLeave){
-    if(!list.length) return '<div class="sh-breakdown-row"><span class="sh-breakdown-label" style="color:'+color+';font-weight:800">'+label+' (0)</span></div>';
-    const items = list.map(function(item){
-      if(isLeave){
-        return '<div style="padding:4px 0 4px 12px;font-size:12px;color:#475569">• '+fmt(item.date)+(item.reason?' — เหตุผล: '+item.reason:' — <span style="color:#94a3b8">ไม่ได้ระบุเหตุผล</span>')+'</div>';
-      }
-      return '<div style="padding:4px 0 4px 12px;font-size:12px;color:#475569">• '+fmt(item)+'</div>';
-    }).join('');
-    return '<div class="sh-breakdown-row" style="flex-direction:column;align-items:flex-start"><span class="sh-breakdown-label" style="color:'+color+';font-weight:800">'+label+' ('+list.length+')</span>'+items+'</div>';
-  }
-  eid('sh-detail-body').innerHTML =
-    section('มา', '#059669', detail.present||[]) +
-    section('สาย', '#d97706', detail.late||[]) +
-    section('ขาด', '#e11d48', detail.absent||[]) +
-    section('ลา', '#7c3aed', detail.leave||[], true);
-  eid('sh-detail-modal').classList.remove('hidden');
-};
-
-// ── Bonus merge-into-total settings (double-click on +โบนัส header) ─
-W.shOvOpenBonusMergeSettings = function(cid){
-  cid = cid || getCid();
-  if(!cid) return;
-  if(typeof window.schoolhubAssertCanEditCourse === 'function' && !window.schoolhubAssertCanEditCourse(cid, 'ตั้งค่าการรวมคะแนนโบนัส')) return;
-  initFields();
-  const s = st();
-  ensureField(s, 'bonusMergeSettings', {});
-  const cur = s.bonusMergeSettings[cid] || { enabled:false, percent:100, mode:'all', selected:[] };
-  const students = getStudents(cid).filter(function(x){ return !window.isStudentWithdrawn(x); });
-  let modal = document.getElementById('sh-bonus-merge-modal');
-  if(!modal){
-    modal = document.createElement('div');
-    modal.id = 'sh-bonus-merge-modal';
-    modal.className = 'sh-overlay hidden';
-    document.body.appendChild(modal);
-  }
-  const studentRows = students.map(function(st2){
-    const checked = (cur.mode==='selected' && (cur.selected||[]).includes(st2.id)) ? 'checked' : '';
-    return '<label style="display:flex;align-items:center;gap:8px;padding:5px 4px;border-bottom:1px solid #f1f5f9;font-size:13px"><input type="checkbox" class="sh-bm-student" value="'+st2.id+'" '+checked+'> '+ (st2.name||st2.id) + '</label>';
-  }).join('') || '<div style="color:#94a3b8;font-size:13px;padding:8px">ไม่มีนักเรียนในรายวิชานี้</div>';
-  modal.innerHTML =
-    '<div style="background:#fff;border-radius:20px;max-width:440px;width:100%;max-height:86vh;overflow:auto;padding:22px">' +
-      '<h3 style="font-weight:900;font-size:18px;margin-bottom:4px"><i class="fas fa-plus-circle" style="color:#059669;margin-right:6px"></i>ตั้งค่าการรวมคะแนนโบนัส</h3>' +
-      '<p style="color:#64748b;font-size:12px;margin-bottom:14px">เลือกว่าจะนำคะแนนโบนัสไปรวมกับคะแนนรวมทั้งหมดหรือไม่ กี่เปอร์เซ็นต์ และรวมให้เฉพาะใคร</p>' +
-      '<label style="display:flex;align-items:center;gap:8px;font-weight:700;margin-bottom:10px"><input type="checkbox" id="sh-bm-enabled" '+(cur.enabled?'checked':'')+'> รวมคะแนนโบนัสในคะแนนรวม</label>' +
-      '<div style="display:flex;align-items:center;gap:8px;margin-bottom:12px"><label style="font-size:13px;font-weight:700;color:#475569">รวมกี่เปอร์เซ็นต์:</label><input type="number" id="sh-bm-percent" min="0" max="100" value="'+(cur.percent!=null?cur.percent:100)+'" style="width:80px;border:1px solid #cbd5e1;border-radius:8px;padding:4px 8px"> <span>%</span></div>' +
-      '<div style="margin-bottom:8px"><label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700"><input type="radio" name="sh-bm-mode" value="all" '+(cur.mode!=='selected'?'checked':'')+'> รวมให้นักเรียนทุกคน</label>' +
-      '<label style="display:flex;align-items:center;gap:6px;font-size:13px;font-weight:700;margin-top:4px"><input type="radio" name="sh-bm-mode" value="selected" '+(cur.mode==='selected'?'checked':'')+'> เลือกเฉพาะบางคน</label></div>' +
-      '<div style="border:1px solid #e2e8f0;border-radius:12px;padding:6px 10px;max-height:220px;overflow:auto;margin-bottom:16px">'+studentRows+'</div>' +
-      '<div style="display:flex;gap:10px"><button type="button" onclick="document.getElementById(\'sh-bonus-merge-modal\').classList.add(\'hidden\')" style="flex:1;background:#f1f5f9;color:#334155;border:none;border-radius:12px;padding:10px;font-weight:800;cursor:pointer">ยกเลิก</button>' +
-      '<button type="button" onclick="shOvSaveBonusMergeSettings(\''+cid+'\')" style="flex:1;background:#059669;color:#fff;border:none;border-radius:12px;padding:10px;font-weight:800;cursor:pointer">บันทึก</button></div>' +
-    '</div>';
-  modal.classList.remove('hidden');
-};
-W.shOvSaveBonusMergeSettings = async function(cid){
-  if(typeof window.schoolhubAssertCanEditCourse === 'function' && !window.schoolhubAssertCanEditCourse(cid, 'ตั้งค่าการรวมคะแนนโบนัส')) return;
-  const s = st();
-  ensureField(s, 'bonusMergeSettings', {});
-  const enabled = !!(document.getElementById('sh-bm-enabled') && document.getElementById('sh-bm-enabled').checked);
-  const percent = Number(document.getElementById('sh-bm-percent') && document.getElementById('sh-bm-percent').value) || 0;
-  const modeEl = document.querySelector('input[name="sh-bm-mode"]:checked');
-  const mode = modeEl ? modeEl.value : 'all';
-  const selected = Array.prototype.map.call(document.querySelectorAll('.sh-bm-student:checked'), function(el){ return el.value; });
-  s.bonusMergeSettings[cid] = { enabled: enabled, percent: percent, mode: mode, selected: selected };
-  await dbSave();
-  const modal = document.getElementById('sh-bonus-merge-modal');
-  if(modal) modal.classList.add('hidden');
-  if(typeof W.renderCourseOverview==='function') W.renderCourseOverview();
-  shAlert('บันทึกสำเร็จ','บันทึกการตั้งค่าคะแนนโบนัสเรียบร้อยแล้ว');
-};
-
-// ── Bonus Score Modal ────────────────────────────────────────────
-W.openBonusScoreModal = function(){
-  const cid=getCid();
-  if(!cid){ shAlert('กรุณาเลือกรายวิชา','กรุณาเปิดรายวิชาก่อนใช้งาน'); return; }
-  initFields();
-  ensureField(st().bonusScores,cid,{});
-  eid('sh-bonus-week').value=1;
-  shBonusRender();
-  eid('sh-bonus-modal').classList.remove('hidden');
-};
-W.shBonusClose = function(){ eid('sh-bonus-modal').classList.add('hidden'); };
-W.shBonusRender = function(){
-  const cid=getCid(); if(!cid) return;
-  const week=parseInt(eid('sh-bonus-week').value)||1;
-  const weekKey='w'+week;
-  initFields();
-  ensureField(st().bonusScores,cid,{});
-  const weekData=(st().bonusScores[cid][weekKey])||{};
-  const students=getStudents(cid);
-  const tbody=eid('sh-bonus-tbody'); if(!tbody) return;
-  if(!students.length){ tbody.innerHTML='<tr><td colspan="3" style="text-align:center;color:#94a3b8;padding:20px">ไม่มีนักเรียนในรายวิชานี้</td></tr>'; return; }
-  tbody.innerHTML=students.map(function(s,i){
-    const v=weekData[s.id]!==undefined?weekData[s.id]:'';
-    return '<tr><td style="text-align:center;color:#64748b;font-weight:700">'+(i+1)+'</td>'
-      +'<td style="font-weight:600;color:#1e293b">'+(s.name||s.id)+'</td>'
-      +'<td style="text-align:center"><input type="number" min="0" max="999" step="0.5" class="sh-bonus-input" data-sid="'+s.id+'" value="'+v+'" placeholder="0"></td></tr>';
-  }).join('');
-};
-W.shBonusSave = async function(){
-  const cid=getCid(); if(!cid) return;
-  const week=parseInt(eid('sh-bonus-week').value)||1;
-  const weekKey='w'+week;
-  initFields();
-  ensureField(st().bonusScores,cid,{});
-  const data={};
-  document.querySelectorAll('#sh-bonus-tbody .sh-bonus-input').forEach(function(inp){
-    const sid=inp.dataset.sid; const v=inp.value.trim();
-    data[sid]=(v!==''&&!isNaN(Number(v)))?Number(v):'';
-  });
-  st().bonusScores[cid][weekKey]=data;
-  const ok=await dbSave();
-  if(ok!==false){
-    W.shBonusClose();
-    if(typeof W.renderCourseOverview==='function') W.renderCourseOverview();
-    shAlert('บันทึกสำเร็จ','บันทึกคะแนนโบนัสสัปดาห์ที่ '+week+' เรียบร้อย');
-  }
-};
-
 // ── Star Groups ──────────────────────────────────────────────────
 function starCD(cid){
   initFields();
@@ -322,6 +194,8 @@ W.shStarSet=function(gid,count){
   const cur=cd.weekStars[weekKey][gid]||0;
   cd.weekStars[weekKey][gid]=(cur===count)?0:count;
   shStarRender();
+  // Auto-save ทันที
+  dbSave().catch(e => console.error('Auto-save star set failed:', e));
 };
 W.shStarAddGroup=function(){
   const inp=eid('sh-new-grp'); const name=(inp?inp.value.trim():'');
@@ -332,6 +206,8 @@ W.shStarAddGroup=function(){
   cd.groups.push({id:newGid,name,members:[]});
   if(inp) inp.value='';
   shStarRender();
+  // Auto-save ทันที
+  dbSave().catch(e => console.error('Auto-save add group failed:', e));
   // auto-scroll to the new group so teacher can immediately add members
   setTimeout(function(){
     var el=eid('sg-'+newGid);
@@ -340,10 +216,13 @@ W.shStarAddGroup=function(){
 };
 W.shStarDelGroup=function(gid){
   const cid=getCid(); if(!cid) return;
-  shConfirm('ยืนยันการลบ','ต้องการลบกลุ่มนี้ใช่หรือไม่?',function(){
+  shConfirm('ยืนยันการลบ','ต้องการลบกลุ่มนี้ใช่หรือไม่?',async function(){
     const cd=starCD(cid);
     cd.groups=cd.groups.filter(function(g){ return g.id!==gid; });
     shStarRender();
+    // Auto-save ทันที
+    await dbSave();
+    shAlert('ลบสำเร็จ','ลบกลุ่มเรียบร้อยแล้ว');
   });
 };
 W.shStarAddMember=function(gid){
@@ -355,6 +234,8 @@ W.shStarAddMember=function(gid){
   if(!grp.members) grp.members=[];
   if(!grp.members.includes(mid)) grp.members.push(mid);
   shStarRender();
+  // Auto-save ทันที
+  dbSave().catch(e => console.error('Auto-save add member failed:', e));
 };
 W.shStarRemoveMember=function(gid,mid){
   const cid=getCid(); if(!cid) return;
@@ -362,6 +243,8 @@ W.shStarRemoveMember=function(gid,mid){
   const grp=cd.groups.find(function(g){ return g.id===gid; }); if(!grp) return;
   grp.members=(grp.members||[]).filter(function(x){ return x!==mid; });
   shStarRender();
+  // Auto-save ทันที
+  dbSave().catch(e => console.error('Auto-save remove member failed:', e));
 };
 // NOTE: the old rank-based "แปลงดาวเป็นโบนัส" feature (r1/r2/r3 inputs inside
 // the star-group modal) has been retired and replaced by the new
@@ -379,112 +262,6 @@ W.shStarSave=async function(){
     if(typeof W.renderCourseOverview==='function') W.renderCourseOverview();
     shAlert('บันทึกสำเร็จ','บันทึกข้อมูลดาวกลุ่มเรียบร้อย');
   }
-};
-
-// ── Attendance radio change: show/hide "เหตุผลการลา" button immediately ─
-// (previously the button only appeared after saving attendance and
-// re-selecting the date; now it appears the instant "ลา" is picked)
-W.schoolhubOnAttRadioChange = function(sid, cid, date, val){
-  // 1. จัดการ UI ให้เปลี่ยนสถานะทันที (Instant UI Feedback)
-  const parentActions = document.querySelector(`input[name="att_${sid}"]`)?.closest('.schoolhub-mobile-att-actions');
-  if(parentActions){
-    parentActions.querySelectorAll('.schoolhub-mobile-att-btn').forEach(btn => {
-      btn.classList.remove('is-active');
-      const input = btn.querySelector('input');
-      if(input && input.value === val) {
-        btn.classList.add('is-active');
-        input.checked = true;
-      }
-    });
-  }
-
-  // 2. จัดการปุ่มเหตุผลการลา
-  const wrap = document.getElementById('leave-btn-wrap-' + sid);
-  if(wrap){
-    if(val === 'leave'){
-      const safeCid = String(cid).replace(/'/g,"\\'");
-      const safeDate = String(date).replace(/'/g,"\\'");
-      const safeSid = String(sid).replace(/'/g,"\\'");
-      const isMobileCardView = window.matchMedia && window.matchMedia('(max-width: 767px)').matches;
-      wrap.innerHTML = isMobileCardView
-        ? '<button type="button" onclick="openLeaveReasonView(\''+safeCid+'\',\''+safeDate+'\',\''+safeSid+'\')" style="font-size:11px;background:#ede9fe;color:#7c3aed;border:1px solid #c4b5fd;border-radius:8px;padding:4px 10px;font-weight:700;width:100%;text-align:center;cursor:pointer;margin-top:4px"><i class="fas fa-align-left mr-1"></i>เหตุผลการลา</button>'
-        : '<button type="button" onclick="openLeaveReasonView(\''+safeCid+'\',\''+safeDate+'\',\''+safeSid+'\')" class="text-xs bg-purple-100 text-purple-700 px-2 py-1 rounded-lg font-bold border border-purple-200 hover:bg-purple-200"><i class="fas fa-align-left mr-1"></i>เหตุผล</button>';
-    } else {
-      wrap.innerHTML = '';
-    }
-  }
-};
-
-// ── Leave Reason ─────────────────────────────────────────────────
-W.openLeaveReasonView = function(cid,date,sid){
-  const s=(st().students||[]).find(function(x){ return x.id===sid; });
-  eid('sh-lv-cid').value=cid; eid('sh-lv-date').value=date; eid('sh-lv-sid').value=sid;
-  eid('sh-lv-name').textContent=s?(s.name||sid):sid;
-  eid('sh-lv-dateshow').textContent='วันที่: '+date;
-  const existing=(st().attendance&&st().attendance[cid]&&st().attendance[cid][date]
-    &&st().attendance[cid][date].leaveReasons&&st().attendance[cid][date].leaveReasons[sid])||'';
-  eid('sh-lv-text').value=existing;
-  const exBox=eid('sh-lv-existing');
-  if(existing){ exBox.style.display='block'; eid('sh-lv-existing-text').textContent=existing; }
-  else exBox.style.display='none';
-  eid('sh-leave-modal').classList.remove('hidden');
-};
-W.shLeaveClose=function(){ eid('sh-leave-modal').classList.add('hidden'); };
-W.shLeaveSave=async function(){
-  const cid=eid('sh-lv-cid').value, date=eid('sh-lv-date').value, sid=eid('sh-lv-sid').value;
-  const reason=eid('sh-lv-text').value.trim();
-  if(!cid||!date||!sid) return;
-  const s=st();
-  ensureField(s,'attendance',{});
-  ensureField(s.attendance,cid,{});
-  ensureField(s.attendance[cid],date,{records:{},leaveReasons:{},updatedAt:Date.now()});
-  ensureField(s.attendance[cid][date],'leaveReasons',{});
-  s.attendance[cid][date].leaveReasons[sid]=reason;
-  const ok=await dbSave();
-  if(ok!==false){ W.shLeaveClose(); shAlert('บันทึกสำเร็จ','บันทึกเหตุผลการลาเรียบร้อย'); }
-};
-
-// ── Sidebar nav buttons (add to course context menu) ─────────────
-// Inject bonus/star buttons after grade criteria button using MutationObserver
-// (the menu might render dynamically)
-function injectSidebarButtons(){
-  // DISABLED: the static sidebar HTML already contains the "คะแนนโบนัสรายสัปดาห์"
-  // and "ระบบดาวกลุ่ม" buttons (see #course-context-menu markup). This injector
-  // used to add a second copy of those buttons, which caused the duplicated
-  // menu items reported by users. Kept as a no-op instead of being removed
-  // entirely so any other code that still calls injectSidebarButtons() does
-  // not break.
-  const menu=document.getElementById('course-context-menu');
-  if(menu) menu.dataset.shBtnsInjected='1';
-  // Clean up any previously-injected duplicate buttons from earlier sessions
-  // (defensive: in case this ran before on the same page load).
-  if(menu){
-    const dups=menu.querySelectorAll('button');
-    const seen={};
-    dups.forEach(function(btn){
-      const label=(btn.textContent||'').trim();
-      if(label==='คะแนนโบนัสรายสัปดาห์' || label==='ระบบดาวกลุ่ม'){
-        if(seen[label]){ btn.remove(); } else { seen[label]=true; }
-      }
-    });
-  }
-  return;
-}
-// Try immediately and after DOMContentLoaded, also on switchCourseTab
-setTimeout(injectSidebarButtons,500);
-setTimeout(injectSidebarButtons,1500);
-document.addEventListener('DOMContentLoaded',function(){ setTimeout(injectSidebarButtons,500); });
-
-// Patch switchCourseTab to inject buttons when course context menu appears
-const _origSwitchCourse=W.switchCourseTab;
-W.switchCourseTab=function(tabId){
-  if(typeof _origSwitchCourse==='function') _origSwitchCourse.apply(W,arguments);
-  setTimeout(injectSidebarButtons,100);
-};
-const _origSwitchView=W.switchView;
-W.switchView=function(){
-  if(typeof _origSwitchView==='function') _origSwitchView.apply(W,arguments);
-  setTimeout(injectSidebarButtons,100);
 };
 
 })(window);
