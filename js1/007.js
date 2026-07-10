@@ -2002,7 +2002,38 @@ async function submitPlanRequest(planId){
                 }
             }
 
-            return{student,course,note,expireMinutes:Number(expireMinutes||1),firstViewedAt:null,expiresAt:null,createdAt:Date.now(),teacherName:currentUser?.displayName||currentUser?.email||'ครูผู้สอน',summary:{present,late,absent,leave,totalScore:window.normalizeScoreNumber(totalScore,2),totalMax:window.normalizeScoreNumber(totalMax,2),totalBonus:window.normalizeScoreNumber(totalBonus,2),totalStars,bonusMerged:window.normalizeScoreNumber(bonusMerged,2),bonusMergeEnabled,bonusMergePercent},scoreRows,attendanceDetail,bonusDetail,starDetail};
+            // [Bonus Conversion Patch] Add converted bonus into total for student share
+            const __bonusConvsTotal = (state.bonusConversions && state.bonusConversions[cid]) || [];
+            let __convIntoTotal = 0;
+            __bonusConvsTotal.forEach(c => {
+                if (c.target === 'total') {
+                    __convIntoTotal += (c.data && c.data[student.id]) || 0;
+                }
+            });
+            if (__convIntoTotal > 0) {
+                totalScore = window.addScoreToTotal(totalScore, __convIntoTotal, 2);
+                // We add it to bonusMerged for display purposes in the badge, 
+                // but since it's orange in overview, we could handle it separately if needed.
+                // For now, let's keep it simple and just ensure the totalScore is correct.
+            }
+
+            // Add conversion into weeks for scoreRows
+            (scoreRows||[]).forEach(r => {
+                let __convIntoThisWeek = 0;
+                __bonusConvsTotal.forEach(c => { // Using the same list
+                    if (c.target === 'week' && String(c.weekNum) === String(r.week)) {
+                        __convIntoThisWeek += (c.data && c.data[student.id]) || 0;
+                    }
+                });
+                if (__convIntoThisWeek > 0) {
+                    const __base = (r.display !== null && r.display !== '-' && r.display !== '') ? parseFloat(r.display) : 0;
+                    const __newTotal = window.addScoreToTotal(__base, __convIntoThisWeek, 2);
+                    r.display = window.formatScoreDisplay(__newTotal, 2);
+                    r.isBonusConverted = true;
+                }
+            });
+
+            return{student,course,note,expireMinutes:Number(expireMinutes||1),firstViewedAt:null,expiresAt:null,createdAt:Date.now(),teacherName:currentUser?.displayName||currentUser?.email||'ครูผู้สอน',summary:{present,late,absent,leave,totalScore:window.normalizeScoreNumber(totalScore,2),totalMax:window.normalizeScoreNumber(totalMax,2),totalBonus:window.normalizeScoreNumber(totalBonus,2),totalStars,bonusMerged:window.normalizeScoreNumber(bonusMerged,2),bonusMergeEnabled,bonusMergePercent,bonusConvTotal:window.normalizeScoreNumber(__convIntoTotal,2)},scoreRows,attendanceDetail,bonusDetail,starDetail};
         }
         window.openCreateStudentShareLinkPopup = function(studentId){
             const cid = getCurrentShareCourseId();
@@ -4344,7 +4375,7 @@ async function submitPlanRequest(planId){
                 if (!isChecklist) totalMax = window.addScoreToTotal(totalMax, p.maxScore, 2);
             });
             thead += `<th class="text-center bg-slate-800 text-white font-bold summary-total-col">รวม<br><span class="text-[9px] text-slate-300">${window.formatScoreDisplay(totalMax, 2)}</span></th>`;
-            thead += `<th class="text-center bg-emerald-600 text-white font-bold sh-bonus-col" style="font-size:10px;padding:2px 1px;white-space:nowrap;cursor:pointer" title="คะแนนโบนัส — ดับเบิลคลิกเพื่อจัดการคะแนนโบนัส" ondblclick="if(typeof openBonusScoreModal==='function') openBonusScoreModal()">+โบนัส</th>`;
+            thead += `<th class="text-center bg-emerald-600 text-white font-bold sh-bonus-col" style="font-size:10px;padding:2px 1px;white-space:nowrap;cursor:pointer" title="คะแนนโบนัส — ดับเบิลคลิกเพื่อจัดการการแปลงคะแนนโบนัส" ondblclick="if(typeof openBonusConversionPopup==='function') openBonusConversionPopup()">+โบนัส</th>`;
             thead += `<th class="text-center bg-amber-500 text-white font-bold sh-star-col" style="font-size:10px;padding:2px 1px;white-space:nowrap;cursor:pointer" title="ดาวสะสม — ดับเบิลคลิกเพื่อจัดการดาวกลุ่ม" ondblclick="if(typeof openStarGroupModal==='function') openStarGroupModal()">⭐ดาว</th>`;
             thead += `<th class="text-center bg-amber-50 text-amber-700 font-bold summary-grade-col">เกรด</th></tr></thead>`;
             table.innerHTML = thead;
@@ -4381,18 +4412,30 @@ async function submitPlanRequest(planId){
                         tbody += `<td class="text-center summary-score-col">${icon}</td>`;
                     } else {
                         totalScore = window.addScoreToTotal(totalScore, rawScore, 2);
+                        
+                        // [Bonus Conversion Patch] Check for converted bonus into this week
+                        const __bonusConvs = (state.bonusConversions && state.bonusConversions[cid]) || [];
+                        let __convIntoThisWeek = 0;
+                        __bonusConvs.forEach(c => {
+                            if (c.target === 'week' && String(c.weekNum) === String(p.week)) {
+                                __convIntoThisWeek += (c.data && c.data[s.id]) || 0;
+                            }
+                        });
+                        if (__convIntoThisWeek > 0) totalScore = window.addScoreToTotal(totalScore, __convIntoThisWeek, 2);
 
                         let displayHtml = '';
-                        if (!task) {
-                            // ยังไม่มีการบันทึกสัปดาห์นี้
+                        if (!task && __convIntoThisWeek === 0) {
                             displayHtml = `<span class="summary-score-cell-content text-slate-300">-</span>`;
-                        } else if ((window.isMissingScoreValue ? window.isMissingScoreValue(rawScore) : rawScore==='')) {
-                            // มีการบันทึกแล้ว แต่ช่องของเด็กคนนี้เว้นว่างไว้ (ไม่ได้กรอก)
+                        } else if ((window.isMissingScoreValue ? window.isMissingScoreValue(rawScore) : rawScore==='') && __convIntoThisWeek === 0) {
                             displayHtml = `<span class="summary-score-cell-content text-rose-600 font-black">X</span>`;
                         } else {
                             const __convInfo = (typeof window.shStarConvGetCellInfo === 'function') ? window.shStarConvGetCellInfo(cid, p.week, p.title, s.id) : null;
                             if (__convInfo && __convInfo.amount > 0) {
                                 displayHtml = `<span class="summary-score-cell-content" style="color:#b45309;font-weight:800" title="${escapeHTML(__convInfo.tooltip)}">${window.formatScoreDisplay(rawScore, 2)} ⭐</span>`;
+                            } else if (__convIntoThisWeek > 0) {
+                                const __base = (rawScore !== null && rawScore !== '') ? parseFloat(rawScore) : 0;
+                                const __total = window.addScoreToTotal(__base, __convIntoThisWeek, 2);
+                                displayHtml = `<span class="summary-score-cell-content" style="color:#f59e0b;font-weight:800" title="คะแนนพื้นฐาน ${window.formatScoreDisplay(__base, 2)} + โบนัสแปลงเข้า ${window.formatScoreDisplay(__convIntoThisWeek, 2)}">${window.formatScoreDisplay(__total, 2)}</span>`;
                             } else {
                                 displayHtml = `<span class="summary-score-cell-content text-slate-700">${window.formatScoreDisplay(rawScore, 2)}</span>`;
                             }
@@ -4446,8 +4489,28 @@ async function submitPlanRequest(planId){
                     }
                 }
                 const __isWithdrawnForBonus = window.isStudentWithdrawn(s);
-                const __totalCellTitle = __bonusMerged ? `title="รวมคะแนนโบนัส +${window.formatScoreDisplay(__bonusMerged,2)} แล้ว (${__bmSettings.percent}%)"` : '';
-                tbody += `<td class="text-center font-bold text-primary bg-slate-50 border-r summary-total-col" style="position:relative" ${__totalCellTitle}>${window.formatScoreDisplay(totalScore, 2)}${__bonusMerged ? '<span style="position:absolute;top:2px;right:4px;font-size:9px;font-weight:800;color:#059669;line-height:1">+'+window.formatScoreDisplay(__bonusMerged,2)+'</span>' : ''}</td>`;
+                // [Bonus Conversion Patch] Check for converted bonus into total
+                const __bonusConvsTotal = (state.bonusConversions && state.bonusConversions[cid]) || [];
+                let __convIntoTotal = 0;
+                __bonusConvsTotal.forEach(c => {
+                    if (c.target === 'total') {
+                        __convIntoTotal += (c.data && c.data[s.id]) || 0;
+                    }
+                });
+                if (__convIntoTotal > 0) totalScore = window.addScoreToTotal(totalScore, __convIntoTotal, 2);
+
+                const __totalCellTitle = (__bonusMerged || __convIntoTotal) ? `title="รวมคะแนนโบนัส +${window.formatScoreDisplay(__bonusMerged + __convIntoTotal, 2)} แล้ว"` : '';
+                
+                let __bonusBadgeHtml = '';
+                if (__bonusMerged > 0) {
+                    __bonusBadgeHtml += `<span style="position:absolute;top:2px;right:4px;font-size:9px;font-weight:800;color:#059669;line-height:1">+${window.formatScoreDisplay(__bonusMerged, 2)}</span>`;
+                }
+                if (__convIntoTotal > 0) {
+                    const __topPos = __bonusMerged > 0 ? 'top:12px' : 'top:2px';
+                    __bonusBadgeHtml += `<span style="position:absolute;${__topPos};right:4px;font-size:9px;font-weight:800;color:#f59e0b;line-height:1">+${window.formatScoreDisplay(__convIntoTotal, 2)}</span>`;
+                }
+
+                tbody += `<td class="text-center font-bold text-primary bg-slate-50 border-r summary-total-col" style="position:relative" ${__totalCellTitle}>${window.formatScoreDisplay(totalScore, 2)}${__bonusBadgeHtml}</td>`;
                 if (__isWithdrawnForBonus) {
                     tbody += `<td class="text-center sh-bonus-col withdrawn-score-cell">ลาออก</td>`;
                     tbody += `<td class="text-center sh-star-col withdrawn-score-cell">ลาออก</td>`;
