@@ -1,8 +1,0 @@
-
-#attendance-calendar-popup #btn-export-attendance-excel,
-#course-tab-attendance > .grid > .bg-white:first-child #btn-export-attendance-excel{display:none!important;}
-#schoolhub-attendance-header-actions{margin-left:auto;}
-@media (max-width:768px){
-  #schoolhub-attendance-header-actions{margin-left:0;width:100%;}
-  #btn-export-attendance-excel{position:static!important;bottom:auto!important;top:auto!important;transform:none!important;}
-}

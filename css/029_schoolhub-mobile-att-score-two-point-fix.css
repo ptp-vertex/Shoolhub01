@@ -1,9 +1,0 @@
-
-@media (max-width: 767px) {
-    /* จุดที่ 1: radio fix ย้ายไปอยู่ใน schoolhub-mobile-3pages-card-only-fix แล้ว */
-
-    /* จุดที่ 2: กันสถิติรวมทั้งระบบแทรกเข้าหน้าบันทึกคะแนน เฉพาะมือถือและเฉพาะตอนอยู่หน้า scores */
-    body.schoolhub-mobile-score-card-active #admin-global-stats-panel {
-        display: none !important;
-    }
-}
