@@ -2002,28 +2002,28 @@ async function submitPlanRequest(planId){
                 }
             }
 
-            // [Bonus Conversion Patch] Add converted bonus into total for student share
+            // [Bonus & Star Conversion Patch] Add converted scores into total for student share
             const __bonusConvsTotal = (state.bonusConversions && state.bonusConversions[cid]) || [];
+            const __starConvsTotal = (state.starConversions && state.starConversions[cid]) || [];
             let __convIntoTotal = 0;
             __bonusConvsTotal.forEach(c => {
-                if (c.target === 'total') {
-                    __convIntoTotal += (c.data && c.data[student.id]) || 0;
-                }
+                if (c.target === 'total') __convIntoTotal += (c.data && c.data[student.id]) || 0;
+            });
+            __starConvsTotal.forEach(c => {
+                if (c.target === 'total') __convIntoTotal += (c.data && c.data[student.id]) || 0;
             });
             if (__convIntoTotal > 0) {
                 totalScore = window.addScoreToTotal(totalScore, __convIntoTotal, 2);
-                // We add it to bonusMerged for display purposes in the badge, 
-                // but since it's orange in overview, we could handle it separately if needed.
-                // For now, let's keep it simple and just ensure the totalScore is correct.
             }
 
             // Add conversion into weeks for scoreRows
             (scoreRows||[]).forEach(r => {
                 let __convIntoThisWeek = 0;
-                __bonusConvsTotal.forEach(c => { // Using the same list
-                    if (c.target === 'week' && String(c.weekNum) === String(r.week)) {
-                        __convIntoThisWeek += (c.data && c.data[student.id]) || 0;
-                    }
+                __bonusConvsTotal.forEach(c => {
+                    if (c.target === 'week' && String(c.weekNum) === String(r.week)) __convIntoThisWeek += (c.data && c.data[student.id]) || 0;
+                });
+                __starConvsTotal.forEach(c => {
+                    if (c.target === 'week' && String(c.weekNum) === String(r.week)) __convIntoThisWeek += (c.data && c.data[student.id]) || 0;
                 });
                 if (__convIntoThisWeek > 0) {
                     const __base = (r.display !== null && r.display !== '-' && r.display !== '') ? parseFloat(r.display) : 0;
@@ -4376,7 +4376,7 @@ async function submitPlanRequest(planId){
             });
             thead += `<th class="text-center bg-slate-800 text-white font-bold summary-total-col">รวม<br><span class="text-[9px] text-slate-300">${window.formatScoreDisplay(totalMax, 2)}</span></th>`;
             thead += `<th class="text-center bg-emerald-600 text-white font-bold sh-bonus-col" style="font-size:10px;padding:2px 1px;white-space:nowrap;cursor:pointer" title="คะแนนโบนัส — ดับเบิลคลิกเพื่อจัดการการแปลงคะแนนโบนัส" ondblclick="if(typeof openBonusConversionPopup==='function') openBonusConversionPopup()">+โบนัส</th>`;
-            thead += `<th class="text-center bg-amber-500 text-white font-bold sh-star-col" style="font-size:10px;padding:2px 1px;white-space:nowrap;cursor:pointer" title="ดาวสะสม — ดับเบิลคลิกเพื่อจัดการดาวกลุ่ม" ondblclick="if(typeof openStarGroupModal==='function') openStarGroupModal()">⭐ดาว</th>`;
+            thead += `<th class="text-center bg-amber-500 text-white font-bold sh-star-col" style="font-size:10px;padding:2px 1px;white-space:nowrap;cursor:pointer" title="ดาวสะสม — ดับเบิลคลิกเพื่อจัดการการแปลงคะแนนดาวกลุ่ม" ondblclick="if(typeof openStarConversionPopup==='function') openStarConversionPopup()">⭐ดาว</th>`;
             thead += `<th class="text-center bg-amber-50 text-amber-700 font-bold summary-grade-col">เกรด</th></tr></thead>`;
             table.innerHTML = thead;
 
@@ -4413,10 +4413,16 @@ async function submitPlanRequest(planId){
                     } else {
                         totalScore = window.addScoreToTotal(totalScore, rawScore, 2);
                         
-                        // [Bonus Conversion Patch] Check for converted bonus into this week
+                        // [Bonus & Star Conversion Patch] Check for converted scores into this week
                         const __bonusConvs = (state.bonusConversions && state.bonusConversions[cid]) || [];
+                        const __starConvs = (state.starConversions && state.starConversions[cid]) || [];
                         let __convIntoThisWeek = 0;
                         __bonusConvs.forEach(c => {
+                            if (c.target === 'week' && String(c.weekNum) === String(p.week)) {
+                                __convIntoThisWeek += (c.data && c.data[s.id]) || 0;
+                            }
+                        });
+                        __starConvs.forEach(c => {
                             if (c.target === 'week' && String(c.weekNum) === String(p.week)) {
                                 __convIntoThisWeek += (c.data && c.data[s.id]) || 0;
                             }
@@ -4435,7 +4441,7 @@ async function submitPlanRequest(planId){
                             } else if (__convIntoThisWeek > 0) {
                                 const __base = (rawScore !== null && rawScore !== '') ? parseFloat(rawScore) : 0;
                                 const __total = window.addScoreToTotal(__base, __convIntoThisWeek, 2);
-                                displayHtml = `<span class="summary-score-cell-content" style="color:#f59e0b;font-weight:800" title="คะแนนพื้นฐาน ${window.formatScoreDisplay(__base, 2)} + โบนัสแปลงเข้า ${window.formatScoreDisplay(__convIntoThisWeek, 2)}">${window.formatScoreDisplay(__total, 2)}</span>`;
+                                displayHtml = `<span class="summary-score-cell-content" style="color:#f59e0b;font-weight:800" title="คะแนนพื้นฐาน ${window.formatScoreDisplay(__base, 2)} + แปลงคะแนนเข้า ${window.formatScoreDisplay(__convIntoThisWeek, 2)}">${window.formatScoreDisplay(__total, 2)}</span>`;
                             } else {
                                 displayHtml = `<span class="summary-score-cell-content text-slate-700">${window.formatScoreDisplay(rawScore, 2)}</span>`;
                             }
@@ -4489,10 +4495,16 @@ async function submitPlanRequest(planId){
                     }
                 }
                 const __isWithdrawnForBonus = window.isStudentWithdrawn(s);
-                // [Bonus Conversion Patch] Check for converted bonus into total
+                // [Bonus & Star Conversion Patch] Check for converted scores into total
                 const __bonusConvsTotal = (state.bonusConversions && state.bonusConversions[cid]) || [];
+                const __starConvsTotal = (state.starConversions && state.starConversions[cid]) || [];
                 let __convIntoTotal = 0;
                 __bonusConvsTotal.forEach(c => {
+                    if (c.target === 'total') {
+                        __convIntoTotal += (c.data && c.data[s.id]) || 0;
+                    }
+                });
+                __starConvsTotal.forEach(c => {
                     if (c.target === 'total') {
                         __convIntoTotal += (c.data && c.data[s.id]) || 0;
                     }
