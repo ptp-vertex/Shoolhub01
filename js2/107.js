@@ -55,15 +55,33 @@ W.openBonusScoreModal = function(){
   if(!cid){ alert2('กรุณาเลือกรายวิชา','กรุณาเปิดรายวิชาก่อนใช้งาน'); return; }
   ensureField(getState(),'bonusScores',{});
   ensureField(getState().bonusScores,cid,{});
-  // บังคับให้ initStaticDropdowns ทำงานใหม่
-  if(typeof window.initStaticDropdowns === 'function') window.initStaticDropdowns();
-  // สั่ง Rebuild UI ให้ Enhancer วาดตัวเลือกใหม่
-  setTimeout(function(){
-    if(typeof window.schoolhubDDEnhancer === 'object' && typeof window.schoolhubDDEnhancer.rebuild === 'function'){
-      window.schoolhubDDEnhancer.rebuild('sh-bonus-week');
+  
+  const weekSel = document.getElementById('sh-bonus-week');
+  if(weekSel){
+    // บังคับให้ initStaticDropdowns ทำงานใหม่
+    weekSel.dataset.schoolhubFinalOptionsHtml = '';
+    if(typeof window.initStaticDropdowns === 'function') window.initStaticDropdowns();
+    
+    // Fallback: ถ้ายังไม่มี options ให้สร้างเอง
+    if(weekSel.options.length === 0){
+      let html='';
+      const maxW = (typeof window.getCurrentPlanWeekLimit === 'function') ? window.getCurrentPlanWeekLimit() : 20;
+      for(let i=1;i<=maxW;i++) html+='<option value="'+i+'">สัปดาห์ที่ '+i+'</option>';
+      weekSel.innerHTML=html;
     }
-  }, 10);
-  shBonusRender();
+    
+    // ตั้งค่าสัปดาห์เริ่มต้นเป็น 1 เสมอเพื่อให้ข้อมูลโหลดขึ้นมา
+    weekSel.value = 1;
+
+    // สั่ง Rebuild UI ให้ Enhancer วาดตัวเลือกใหม่
+    setTimeout(function(){
+      if(typeof window.schoolhubDDEnhancer === 'object' && typeof window.schoolhubDDEnhancer.rebuild === 'function'){
+        window.schoolhubDDEnhancer.rebuild('sh-bonus-week');
+      }
+    }, 10);
+  }
+  
+  W.shBonusRender();
   document.getElementById('sh-bonus-modal').classList.remove('hidden');
 };
 W.shBonusClose = function(){ document.getElementById('sh-bonus-modal').classList.add('hidden'); };
