@@ -139,22 +139,26 @@ W.openStarGroupModal = function(){
       return;
   }
   starCD(cid);
-  // สร้างตัวเลือกสัปดาห์แบบบังคับ (Force) เพื่อให้ Enhancer อัปเดต UI ได้ถูกต้อง
   const weekSel=eid('sh-star-week');
   if(weekSel){
-    // ลบตัวเลือกเดิมออกเพื่อบังคับให้สร้างใหม่
-    weekSel.innerHTML='';
+    // ลบค่า HTML ที่เก็บไว้ใน dataset เพื่อบังคับให้ initStaticDropdowns ทำงานใหม่
     weekSel.dataset.schoolhubFinalOptionsHtml='';
-    // เรียก initStaticDropdowns เพื่อสร้างตัวเลือกสัปดาห์ใหม่
     if(typeof window.initStaticDropdowns === 'function') window.initStaticDropdowns();
-    // สั่งให้ Enhancer อัปเดต UI ของ week grid ให้แสดงผลถูกต้อง
+    
+    // Fallback: ถ้ายังไม่มี options ให้สร้างเอง
+    if(weekSel.options.length === 0){
+      let html='';
+      const maxW = (typeof window.getCurrentPlanWeekLimit === 'function') ? window.getCurrentPlanWeekLimit() : 20;
+      for(let i=1;i<=maxW;i++) html+='<option value="'+i+'">สัปดาห์ที่ '+i+'</option>';
+      weekSel.innerHTML=html;
+    }
+    
+    weekSel.value=1;
+    // กระตุ้นให้ Enhancer อัปเดต UI
     setTimeout(function(){
-      if(typeof window.schoolhubDDEnhancer === 'object' && typeof window.schoolhubDDEnhancer.updateWeekGrid === 'function'){
-        window.schoolhubDDEnhancer.updateWeekGrid('sh-star-week');
-      }
-    }, 50);
+      weekSel.dispatchEvent(new Event('change'));
+    }, 10);
   }
-  weekSel.value=1;
   shStarRender();
   eid('sh-star-modal').classList.remove('hidden');
 };
