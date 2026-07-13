@@ -118,3 +118,8 @@
   font-weight:700; border:none; cursor:pointer; font-size:13px; margin-top:8px;
 }
 .sh-apply-stars-btn:hover { background:#b45309; }
+
+/* ── Week status coloring (Blue / Dark Blue) ── */
+.shdd-week-item.shdd-week-planned { background: #e0f2fe !important; color: #0369a1 !important; border-color: #bae6fd !important; }
+.shdd-week-item.shdd-week-scored { background: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
+.shdd-week-item.shdd-week-scored.shdd-selected { background: #4f46e5 !important; border-color: #4338ca !important; }
