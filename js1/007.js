@@ -1973,19 +1973,25 @@ async function submitPlanRequest(planId){
 
             // Stars (from group membership, same source as the teacher overview table)
             const starCourseData=(state.starGroups&&state.starGroups[cid])||{};
-            const starGroups=starCourseData.groups||[];
-            const weekStars=starCourseData.weekStars||{};
+            const starSets = starCourseData.sets || [];
             let totalStars=0;
             const starDetail=[];
-            const studentGroups=starGroups.filter(g=>(g.members||[]).includes(student.id));
-            Object.keys(weekStars).forEach(wk=>{
-                const weekData=weekStars[wk]||{};
-                let weekStarSum=0;
-                studentGroups.forEach(g=>{weekStarSum+=weekData[g.id]||0;});
-                if(weekStarSum>0){
-                    totalStars+=weekStarSum;
-                    starDetail.push({week:wk.replace('w',''),stars:weekStarSum});
-                }
+            
+            starSets.forEach(s => {
+                const groups = s.groups || [];
+                const weekStars = s.weekStars || {};
+                const studentGroups = groups.filter(g => (g.members||[]).includes(student.id));
+                Object.keys(weekStars).forEach(wk => {
+                    const weekData = weekStars[wk] || {};
+                    let weekStarSum = 0;
+                    studentGroups.forEach(g => { weekStarSum += weekData[g.id] || 0; });
+                    if (weekStarSum > 0) {
+                        totalStars += weekStarSum;
+                        const existing = starDetail.find(d => d.week === wk.replace('w',''));
+                        if (existing) existing.stars += weekStarSum;
+                        else starDetail.push({ week: wk.replace('w',''), stars: weekStarSum });
+                    }
+                });
             });
             starDetail.sort((a,b)=>Number(a.week)-Number(b.week));
 
@@ -4417,19 +4423,24 @@ async function submitPlanRequest(planId){
 
                 // Stars for this student (from group membership)
                 const __starCourseData = (state.starGroups && state.starGroups[cid]) || {};
-                const __starGroups = __starCourseData.groups || [];
-                const __weekStars = __starCourseData.weekStars || {};
+                const __starSets = __starCourseData.sets || [];
                 let __totalStars = 0;
                 const __starDetail = [];
-                const __studentGroups = __starGroups.filter(g => (g.members||[]).includes(s.id));
-                Object.keys(__weekStars).forEach(wk => {
-                  const weekData = __weekStars[wk] || {};
-                  let weekStarSum = 0;
-                  __studentGroups.forEach(g => { weekStarSum += weekData[g.id] || 0; });
-                  if (weekStarSum > 0) {
-                    __totalStars += weekStarSum;
-                    __starDetail.push({ week: wk.replace('w',''), stars: weekStarSum });
-                  }
+                __starSets.forEach(s => {
+                    const groups = s.groups || [];
+                    const weekStars = s.weekStars || {};
+                    const studentGroups = groups.filter(g => (g.members||[]).includes(s.id));
+                    Object.keys(weekStars).forEach(wk => {
+                        const weekData = weekStars[wk] || {};
+                        let weekStarSum = 0;
+                        studentGroups.forEach(g => { weekStarSum += weekData[g.id] || 0; });
+                        if (weekStarSum > 0) {
+                            __totalStars += weekStarSum;
+                            const existing = __starDetail.find(d => d.week === wk.replace('w',''));
+                            if (existing) existing.stars += weekStarSum;
+                            else __starDetail.push({ week: wk.replace('w',''), stars: weekStarSum });
+                        }
+                    });
                 });
                 const __starDetailJson = encodeURIComponent(JSON.stringify(__starDetail));
                 const __starCellColor = __totalStars > 0 ? 'color:#92400e;font-weight:800' : 'color:#94a3b8';

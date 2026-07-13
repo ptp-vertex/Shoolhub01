@@ -75,8 +75,7 @@
     var aoa=[['สรุปภาพรวมวิชา: '+cName],['ห้อง: '+(room || 'ทุกห้อง')],[],header];
     var bonusByCid=(state.bonusScores && state.bonusScores[cid]) || {};
     var starCourseData=(state.starGroups && state.starGroups[cid]) || {};
-    var starGroups=starCourseData.groups || [];
-    var weekStars=starCourseData.weekStars || {};
+    var starSets = starCourseData.sets || [];
     var bmSettings=(state.bonusMergeSettings && state.bonusMergeSettings[cid]) || null;
     students.forEach(function(st,idx){
       var pr=0, la=0, ab=0, lv=0;
@@ -94,9 +93,16 @@
       if (isWithdrawn) { row.push('ลาออก','ลาออก','ลาออก','ลาออก','ลาออก'); aoa.push(row); return; }
       var totalBonus=0;
       Object.keys(bonusByCid).forEach(function(wk){ var wVal=bonusByCid[wk] && bonusByCid[wk][st.id]; if(wVal!==undefined && wVal!=='' && !isNaN(Number(wVal)) && Number(wVal)!==0) totalBonus += Number(wVal); });
-      var studentGroups=starGroups.filter(function(g){ return (g.members||[]).indexOf(st.id) !== -1; });
       var totalStars=0;
-      Object.keys(weekStars).forEach(function(wk){ var weekData=weekStars[wk] || {}; studentGroups.forEach(function(g){ totalStars += weekData[g.id] || 0; }); });
+      starSets.forEach(function(s){
+        var groups = s.groups || [];
+        var weekStars = s.weekStars || {};
+        var studentGroups = groups.filter(function(g){ return (g.members||[]).indexOf(st.id) !== -1; });
+        Object.keys(weekStars).forEach(function(wk){
+          var weekData = weekStars[wk] || {};
+          studentGroups.forEach(function(g){ totalStars += weekData[g.id] || 0; });
+        });
+      });
       // Merge bonus into the total exactly like the on-screen overview table, if the teacher has enabled it
       var note = '';
       if (bmSettings && bmSettings.enabled) {
