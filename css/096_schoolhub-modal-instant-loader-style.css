@@ -1,10 +1,11 @@
 
-/* สปินเนอร์นี้เป็น overlay อิสระที่ต่อเข้า document.body โดยตรง (ไม่ใช่ลูกของ modal อีกต่อไป)
-   เพื่อไม่ให้ไปรบกวน modal.children[0] ที่โค้ด openModal ต้นฉบับใช้อ้างอิงกล่องป็อปอัพจริง
-   position:fixed; inset:0 จึงอ้างอิงกับ viewport เสมอ ครอบเต็มจอจริง ไม่ถูกบีบ/เพี้ยน
-   z-index ถูกตั้งแบบ inline ผ่าน JS ให้อยู่เหนือพื้นหลังเฟดดำของ modal แต่ยังต่ำกว่ากล่องป็อปอัพจริงเสมอ */
+/* สปินเนอร์เป็นลูกของ modal (อยู่ในกรอบเดียวกับกล่องป็อปอัพ) เพื่อไม่ให้โดน backdrop-blur ของ
+   modal บัง และใช้ position:absolute (ไม่ใช่ fixed) อ้างอิงกรอบของ modal เอง ซึ่ง modal เอง
+   เป็น position:fixed; inset:0 ครอบเต็มจออยู่แล้ว ผลคือสปินเนอร์เต็มจอเหมือนเดิม แต่ตอนนี้ใช้ระบบ
+   พิกัด/จุดกึ่งกลางเดียวกับกล่องป็อปอัพ (ซึ่งถูกจัดกึ่งกลางด้วย flex ของ modal เหมือนกัน) จึงซ้อนทับ
+   ตรงกลางพอดีเสมอ ไม่เพี้ยนไปด้านข้างเหมือนตอนใช้ fixed (ซึ่งอ้างอิง viewport คนละระบบพิกัดกับ flex) */
 .schoolhub-modal-mini-spinner{
-  position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
   gap:.6rem; background:transparent; pointer-events:none;
   animation: schoolhubSpinnerFadeIn .12s ease;
 }
