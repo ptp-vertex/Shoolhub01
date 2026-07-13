@@ -1,4 +1,3 @@
-
 (function(W){
 'use strict';
 
@@ -35,16 +34,31 @@ function starCourseData(cid){
     delete cd.rankScores;
   }
   
-  if (cd.sets.length > 0 && !cd.currentSetId) {
+  // Only auto-select if there's exactly 1 set (multi-set requires manual selection)
+  if (cd.sets.length === 1 && !cd.currentSetId) {
     cd.currentSetId = cd.sets[0].id;
   }
   
   return cd;
 }
 
+// ── Init fields on load ──────────────────────────────────────────
+function initStarFields(){
+  const st=getState();
+  ensureField(st,'starGroups',{});
+  const cid=getCid();
+  if(cid && !st.starGroups[cid]) st.starGroups[cid]={ sets:[], currentSetId: null };
+}
+if(document.readyState!=='loading') setTimeout(initStarFields,1500);
+else document.addEventListener('DOMContentLoaded',()=>setTimeout(initStarFields,1500));
+
 W.openStarGroupModal = function(){
   const cid=getCid();
   if(!cid){ alert2('กรุณาเลือกรายวิชา','กรุณาเปิดรายวิชาก่อนใช้งาน'); return; }
+  if(typeof window.schoolhubPlanAllows === 'function' && !window.schoolhubPlanAllows('allowStars')) {
+      if(typeof window.showCustomAlert === 'function') window.showCustomAlert('ไม่มีสิทธิ์ใช้งาน','แผนปัจจุบันไม่รองรับระบบดาว กรุณาอัปเกรดแผน', true);
+      return;
+  }
   starCourseData(cid);
   shStarRender();
   document.getElementById('sh-star-modal').classList.remove('hidden');
@@ -61,7 +75,7 @@ W.shStarRender=function(){
   const setSel = document.getElementById('sh-star-set-select');
   if (setSel) {
     let opts = '';
-    // If only 1 set, auto-select it and don't show the option
+    // If only 1 set, auto-select it (hide placeholder)
     if (sets.length === 1) {
       if (!cd.currentSetId) {
         cd.currentSetId = sets[0].id;
@@ -73,16 +87,26 @@ W.shStarRender=function(){
       sets.forEach(s => {
         opts += `<option value="${s.id}" ${s.id===cd.currentSetId?'selected':''}>${esc(s.name)}</option>`;
       });
+    } else {
+      // No sets yet
+      opts = '<option value="">ยังไม่มีเซต</option>';
     }
     setSel.innerHTML = opts;
   }
 
-  // Render Week Selector (Always force manual selection)
+  // Render Week Selector (Always force manual selection — placeholder as default)
   const weekSel = document.getElementById('sh-star-week');
-  if (weekSel && weekSel.options.length === 0) {
-    let opts = '<option value="">-- เลือกสัปดาห์ --</option>';
-    for(let i=1; i<=20; i++) opts += `<option value="${i}">สัปดาห์ที่ ${i}</option>`;
-    weekSel.innerHTML = opts;
+  if (weekSel) {
+    // Always ensure placeholder exists
+    const hasPlaceholder = weekSel.options.length > 0 && weekSel.options[0].value === '';
+    if (weekSel.options.length === 0 || !hasPlaceholder) {
+      let opts = '<option value="">-- เลือกสัปดาห์ --</option>';
+      const maxW = (typeof window.getCurrentPlanWeekLimit === 'function') ? window.getCurrentPlanWeekLimit() : 20;
+      for(let i=1; i<=maxW; i++) opts += `<option value="${i}">สัปดาห์ที่ ${i}</option>`;
+      weekSel.innerHTML = opts;
+    }
+    // CRITICAL: Never auto-select week 1 — leave as placeholder
+    if (weekSel.value === '1') weekSel.value = '';
   }
 
   const week = parseInt(weekSel.value);
@@ -159,6 +183,9 @@ W.shStarSelectSet = function(id){
   const cid=getCid(); if(!cid) return;
   const cd=starCourseData(cid);
   cd.currentSetId = id || null;
+  // Reset week selection when changing set
+  const weekSel = document.getElementById('sh-star-week');
+  if(weekSel) weekSel.value = '';
   shStarRender();
 };
 
@@ -237,7 +264,7 @@ W.shStarDelSet = function(id){
   });
 };
 
-// ── Group Management inside Set (The logic from original code) ──
+// ── Group Management inside Set ──
 W.__currentEditSetId = null;
 W.shStarOpenGroupModal = function(setId, setName){
   W.__currentEditSetId = setId;
@@ -268,7 +295,7 @@ function shStarRenderGroupList(){
     return;
   }
 
-  // Find students already in any group in THIS set
+  // Find students already in ANY group in THIS set (cross-group exclusion)
   const usedSids = new Set();
   groups.forEach(g => (g.members||[]).forEach(mid => usedSids.add(mid)));
 
@@ -279,6 +306,7 @@ function shStarRenderGroupList(){
       return `<span class="sh-member-chip" onclick="shStarRemoveMember('${g.id}','${mid}')">${esc(name)} <i class="fas fa-times rm"></i></span>`;
     }).join('');
 
+    // Exclude students already assigned to ANY group in this set
     const availableStudents = students.filter(s => !usedSids.has(s.id));
     const addMemberOpts = availableStudents.map(s => `<option value="${s.id}">${esc(s.name||s.id)}</option>`).join('');
 
@@ -333,6 +361,12 @@ W.shStarAddMember = function(gid, mid){
   const grp = currentSet.groups.find(g => g.id === gid);
   if(!grp) return;
   if(!grp.members) grp.members = [];
+  // Double-check: ensure student is not in another group in this set
+  const alreadyUsed = currentSet.groups.some(g => g.id !== gid && (g.members||[]).includes(mid));
+  if(alreadyUsed){
+    alert2('ไม่สามารถเพิ่มได้','นักเรียนคนนี้ถูกเพิ่มในกลุ่มอื่นของเซตนี้แล้ว');
+    return;
+  }
   if(!grp.members.includes(mid)) grp.members.push(mid);
   shStarRenderGroupList();
 };
@@ -406,7 +440,7 @@ W.shBonusRender = function(){
   const cid=getCid(); if(!cid) return;
   const weekSel = document.getElementById('sh-bonus-week');
   if (weekSel && weekSel.options.length === 0) {
-    let opts = '';
+    let opts = '<option value="">-- เลือกสัปดาห์ --</option>';
     for(let i=1; i<=20; i++) opts += `<option value="${i}">สัปดาห์ที่ ${i}</option>`;
     weekSel.innerHTML = opts;
   }

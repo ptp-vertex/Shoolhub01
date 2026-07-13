@@ -97,9 +97,18 @@ W.shOvDeleteStarEntry = function(cid, sid, week){
     const s = st();
     const wk = 'w'+week;
     const cd = (s.starGroups && s.starGroups[cid]) || {};
-    const groups = (cd.groups||[]).filter(function(g){ return (g.members||[]).includes(sid); });
-    if(cd.weekStars && cd.weekStars[wk]){
-      groups.forEach(function(g){ cd.weekStars[wk][g.id] = 0; });
+    // Multi-Set aware: loop through all sets
+    const sets = cd.sets || [];
+    sets.forEach(function(set){
+      var groups = (set.groups||[]).filter(function(g){ return (g.members||[]).includes(sid); });
+      if(set.weekStars && set.weekStars[wk]){
+        groups.forEach(function(g){ set.weekStars[wk][g.id] = 0; });
+      }
+    });
+    // Also handle old structure if exists
+    if(cd.groups && cd.weekStars){
+      var oldGroups = (cd.groups||[]).filter(function(g){ return (g.members||[]).includes(sid); });
+      oldGroups.forEach(function(g){ if(cd.weekStars[wk]) cd.weekStars[wk][g.id] = 0; });
     }
     await dbSave();
     eid('sh-detail-modal').classList.add('hidden');
@@ -112,10 +121,21 @@ W.shOvDeleteAllStarEntries = function(cid, sid){
   shConfirm('ยืนยันการลบ', 'ต้องการลบประวัติดาวทั้งหมดของนักเรียนคนนี้ใช่หรือไม่?', async function(){
     const s = st();
     const cd = (s.starGroups && s.starGroups[cid]) || {};
-    const groups = (cd.groups||[]).filter(function(g){ return (g.members||[]).includes(sid); });
-    if(cd.weekStars){
+    // Multi-Set aware: loop through all sets
+    const sets = cd.sets || [];
+    sets.forEach(function(set){
+      var groups = (set.groups||[]).filter(function(g){ return (g.members||[]).includes(sid); });
+      if(set.weekStars){
+        Object.keys(set.weekStars).forEach(function(wk){
+          groups.forEach(function(g){ if(set.weekStars[wk]) set.weekStars[wk][g.id] = 0; });
+        });
+      }
+    });
+    // Also handle old structure if exists
+    if(cd.groups && cd.weekStars){
+      var oldGroups = (cd.groups||[]).filter(function(g){ return (g.members||[]).includes(sid); });
       Object.keys(cd.weekStars).forEach(function(wk){
-        groups.forEach(function(g){ if(cd.weekStars[wk]) cd.weekStars[wk][g.id] = 0; });
+        oldGroups.forEach(function(g){ if(cd.weekStars[wk]) cd.weekStars[wk][g.id] = 0; });
       });
     }
     await dbSave();
@@ -275,11 +295,31 @@ W.shBonusSave = async function(){
 };
 
 // ── Star Groups ──────────────────────────────────────────────────
+// NOTE: starCD is DISABLED — 107.js handles all star group logic with Multi-Set.
+// This stub exists only for compatibility and will NOT overwrite 107.js data.
 function starCD(cid){
   initFields();
-  if(!st().starGroups[cid]) st().starGroups[cid]={groups:[],weekStars:{},rankScores:{}};
+  var existing = st().starGroups[cid];
+  if (!existing) {
+    st().starGroups[cid] = { sets:[], currentSetId: null };
+  }
+  // If old single-set structure exists, migrate it (same as 107.js)
+  if (existing && existing.groups && (!existing.sets || existing.sets.length === 0)) {
+    existing.sets = [{
+      id: 'set_' + Date.now(),
+      name: 'เซตที่ 1',
+      groups: existing.groups || [],
+      weekStars: existing.weekStars || {}
+    }];
+    existing.currentSetId = existing.sets[0].id;
+    delete existing.groups;
+    delete existing.weekStars;
+    delete existing.rankScores;
+  }
   return st().starGroups[cid];
 }
+// NOTE: openStarGroupModal is handled by 107.js (Multi-Set version).
+// This stub ensures plan check still works but defers rendering to 107.js.
 W.openStarGroupModal = function(){
   const cid=getCid();
   if(!cid){ shAlert('กรุณาเลือกรายวิชา','กรุณาเปิดรายวิชาก่อนใช้งาน'); return; }
@@ -287,43 +327,64 @@ W.openStarGroupModal = function(){
       if(typeof window.showCustomAlert === 'function') window.showCustomAlert('ไม่มีสิทธิ์ใช้งาน','แผนปัจจุบันไม่รองรับระบบดาว กรุณาอัปเกรดแผน', true);
       return;
   }
-  starCD(cid);
+  // Use 107.js multi-set version if available
+  if(typeof window.starCourseData === 'function'){
+    // Migrate if needed (call starCD for backward compat, but 107.js handles it)
+    if(!st().starGroups[cid] || (!st().starGroups[cid].sets && !st().starGroups[cid].groups)) {
+      starCD(cid);
+    }
+  } else {
+    starCD(cid);
+  }
+  // If 107.js version exists, use it directly
+  if(typeof window._shStarOpenStarGroupModal107 === 'function'){
+    window._shStarOpenStarGroupModal107();
+    return;
+  }
+  // Otherwise use the 107.js openStarGroupModal directly
+  if(typeof window.openStarGroupModal === 'function' && window.openStarGroupModal !== W.openStarGroupModal){
+    // 107.js already defined it, just call it
+    return;
+  }
+  // Fallback: use initStaticDropdowns for week selector (like bonus modal)
   const weekSel=eid('sh-star-week');
-  if(weekSel){
-    // ลบค่า HTML ที่เก็บไว้ใน dataset เพื่อบังคับให้ initStaticDropdowns ทำงานใหม่
+  if(weekSel && weekSel.options.length === 0){
+    // Rebuild options without auto-selecting week 1
     weekSel.dataset.schoolhubFinalOptionsHtml='';
     if(typeof window.initStaticDropdowns === 'function') window.initStaticDropdowns();
-
-    // Fallback: ถ้ายังไม่มี options ให้สร้างเอง
     if(weekSel.options.length === 0){
-      let html='';
+      let html='<option value="">-- เลือกสัปดาห์ --</option>';
       const maxW = (typeof window.getCurrentPlanWeekLimit === 'function') ? window.getCurrentPlanWeekLimit() : 20;
       for(let i=1;i<=maxW;i++) html+='<option value="'+i+'">สัปดาห์ที่ '+i+'</option>';
       weekSel.innerHTML=html;
     }
-
-    weekSel.value=1;
-    // สั่ง Rebuild UI ให้ Enhancer วาดตัวเลือกใหม่
-    setTimeout(function(){
-      if(typeof window.schoolhubDDEnhancer === 'object' && typeof window.schoolhubDDEnhancer.rebuild === 'function'){
-        window.schoolhubDDEnhancer.rebuild('sh-star-week');
-      }
-    }, 10);
+    // DO NOT auto-select week 1 — let user choose manually
   }
-  shStarRender();
+  // Delegate to 107.js shStarRender if available
+  if(typeof window.shStarRender === 'function'){
+    window.shStarRender();
+  } else {
+    shStarRender();
+  }
   eid('sh-star-modal').classList.remove('hidden');
 };
 W.shStarClose=function(){ eid('sh-star-modal').classList.add('hidden'); };
+// NOTE: shStarRender, shStarSet, shStarAddGroup, shStarDelGroup, shStarAddMember, shStarRemoveMember
+// are all handled by 107.js (Multi-Set version). These stubs prevent errors but
+// delegate to 107.js implementations when available.
 W.shStarRender=function(){
+  if(typeof window.shStarRender === 'function' && window.shStarRender !== W.shStarRender) return;
+  // Fallback for when 107.js isn't loaded yet
   const cid=getCid(); if(!cid) return;
-  const week=parseInt(eid('sh-star-week').value)||1;
-  const weekKey='w'+week;
+  const weekSel=eid('sh-star-week');
+  const week=weekSel && weekSel.value ? parseInt(weekSel.value) : NaN;
   const cd=starCD(cid);
   const groups=cd.groups||[];
-  const weekStars=(cd.weekStars&&cd.weekStars[weekKey])||{};
+  const weekKey=isNaN(week) ? null : 'w'+week;
+  const weekStars=weekKey ? ((cd.weekStars&&cd.weekStars[weekKey])||{}) : {};
   const container=eid('sh-star-list'); if(!container) return;
   if(!groups.length){
-    container.innerHTML='<div style="text-align:center;color:#94a3b8;padding:20px;font-size:14px"><i class="fas fa-users" style="font-size:28px;display:block;margin-bottom:8px"></i>ยังไม่มีกลุ่ม — เพิ่มกลุ่มด้านล่าง</div>';
+    container.innerHTML='<div style="text-align:center;color:#94a3b8;padding:20px;font-size:14px"><i class="fas fa-users" style="font-size:28px;display:block;margin-bottom:8px"></i>ยังไม่มีกลุ่ม — เพิ่มกลุ่มที่ <span style="color:#ea580c;font-weight:800">ตั้งค่า</span> ด้านบน</div>';
     return;
   }
   const MAX=10;
@@ -334,86 +395,91 @@ W.shStarRender=function(){
     const starsHtml=Array.from({length:MAX},function(_,i){
       return `<button type="button" class="sh-star-btn ${i<g.stars?'filled':''}" onmousedown="shStarSet('${g.id}',${i+1})" title="${i+1} ดาว">⭐</button>`;
     }).join('');
-    // Members
     const memberNames=(g.members||[]).map(function(mid){
       const s=allStudents.find(function(x){ return x.id===mid; });
       return s ? `<span class="sh-member-chip">${escSafe(s.name||s.id)}<span class="rm" onmousedown="shStarRemoveMember('${g.id}','${mid}')">✕</span></span>` : '';
     }).join('');
-    const addMemberOpts=allStudents.filter(function(s){ return !(g.members||[]).includes(s.id); }).map(function(s){
-      return `<option value="${s.id}">${escSafe(s.name||s.id)}</option>`;
-    }).join('');
     return `<div class="sh-group-card" id="sg-${g.id}">
       <div class="sh-group-top"><span class="sh-group-name">${rankEmoji} ${g.name}</span>
       <div style="display:flex;gap:6px;align-items:center">
-      <span class="sh-group-star-count">⭐ ${g.stars} ดาว</span>
-      <button class="sh-del-group" onmousedown="shStarDelGroup('${g.id}')">ลบ</button></div></div>
+      <span class="sh-group-star-count">⭐ ${g.stars} ดาว</span></div></div>
       <div class="sh-stars-row">${starsHtml}</div>
       <div class="sh-member-chips" style="margin-top:8px">${memberNames}</div>
-      <div class="sh-add-member-row"><select id="sh-mem-sel-${g.id}"><option value="">-- เพิ่มสมาชิก --</option>${addMemberOpts}</select>
-      <button onmousedown="shStarAddMember('${g.id}')">เพิ่ม</button></div>
       </div>`;
   }).join('');
 };
 function escSafe(s){ return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;'); }
+// NOTE: The following star group functions are stubs that delegate to 107.js.
+// 107.js defines the real Multi-Set implementations.
 W.shStarSet=function(gid,count){
+  if(typeof window.shStarSet === 'function' && window.shStarSet !== W.shStarSet) return;
   const cid=getCid(); if(!cid) return;
-  const week=parseInt(eid('sh-star-week').value)||1;
-  const weekKey='w'+week;
+  const weekSel=eid('sh-star-week');
+  const week=weekSel ? parseInt(weekSel.value) : NaN;
+  if(isNaN(week)) return;
   const cd=starCD(cid);
-  ensureField(cd,'weekStars',{}); ensureField(cd.weekStars,weekKey,{});
-  const cur=cd.weekStars[weekKey][gid]||0;
-  cd.weekStars[weekKey][gid]=(cur===count)?0:count;
+  const currentSet = (cd.sets||[]).find(function(s){ return s.id===cd.currentSetId; }) || cd;
+  const weekKey='w'+week;
+  ensureField(currentSet,'weekStars',{}); ensureField(currentSet.weekStars,weekKey,{});
+  const cur=currentSet.weekStars[weekKey][gid]||0;
+  currentSet.weekStars[weekKey][gid]=(cur===count)?0:count;
   shStarRender();
-  // Auto-save ทันที
   dbSave().catch(e => console.error('Auto-save star set failed:', e));
 };
 W.shStarAddGroup=function(){
-  const inp=eid('sh-new-grp'); const name=(inp?inp.value.trim():'');
+  if(typeof window.shStarAddGroup === 'function' && window.shStarAddGroup !== W.shStarAddGroup) return;
+  const inp=eid('sh-new-grp-name'); const name=(inp?inp.value.trim():'');
   if(!name){ shAlert('กรุณากรอกชื่อกลุ่ม','กรุณากรอกชื่อกลุ่มก่อนเพิ่ม'); return; }
   const cid=getCid(); if(!cid) return;
   const cd=starCD(cid);
+  const currentSet = (cd.sets||[]).find(function(s){ return s.id===cd.currentSetId; });
+  if(!currentSet) return;
   const newGid='sg'+Date.now();
-  cd.groups.push({id:newGid,name,members:[]});
+  currentSet.groups.push({id:newGid,name:name,members:[]});
   if(inp) inp.value='';
   shStarRender();
-  // Auto-save ทันที
   dbSave().catch(e => console.error('Auto-save add group failed:', e));
-  // auto-scroll to the new group so teacher can immediately add members
   setTimeout(function(){
     var el=eid('sg-'+newGid);
     if(el) el.scrollIntoView({behavior:'smooth',block:'center'});
   },60);
 };
 W.shStarDelGroup=function(gid){
+  if(typeof window.shStarDelGroup === 'function' && window.shStarDelGroup !== W.shStarDelGroup) return;
   const cid=getCid(); if(!cid) return;
   shConfirm('ยืนยันการลบ','ต้องการลบกลุ่มนี้ใช่หรือไม่?',async function(){
     const cd=starCD(cid);
-    cd.groups=cd.groups.filter(function(g){ return g.id!==gid; });
+    const currentSet = (cd.sets||[]).find(function(s){ return s.id===cd.currentSetId; });
+    if(!currentSet) return;
+    currentSet.groups=currentSet.groups.filter(function(g){ return g.id!==gid; });
     shStarRender();
-    // Auto-save ทันที
     await dbSave();
     shAlert('ลบสำเร็จ','ลบกลุ่มเรียบร้อยแล้ว');
   });
 };
-W.shStarAddMember=function(gid){
+W.shStarAddMember=function(gid, mid){
+  if(typeof window.shStarAddMember === 'function' && window.shStarAddMember !== W.shStarAddMember) return;
   const cid=getCid(); if(!cid) return;
-  const sel=eid('sh-mem-sel-'+gid); if(!sel||!sel.value) return;
-  const mid=sel.value;
+  mid = mid || (function(){ var sel=eid('sh-mem-sel-'+gid); return sel?sel.value:''; })();
+  if(!mid) return;
   const cd=starCD(cid);
-  const grp=cd.groups.find(function(g){ return g.id===gid; }); if(!grp) return;
+  const currentSet = (cd.sets||[]).find(function(s){ return s.id===cd.currentSetId; });
+  if(!currentSet) return;
+  const grp=currentSet.groups.find(function(g){ return g.id===gid; }); if(!grp) return;
   if(!grp.members) grp.members=[];
   if(!grp.members.includes(mid)) grp.members.push(mid);
   shStarRender();
-  // Auto-save ทันที
   dbSave().catch(e => console.error('Auto-save add member failed:', e));
 };
 W.shStarRemoveMember=function(gid,mid){
+  if(typeof window.shStarRemoveMember === 'function' && window.shStarRemoveMember !== W.shStarRemoveMember) return;
   const cid=getCid(); if(!cid) return;
   const cd=starCD(cid);
-  const grp=cd.groups.find(function(g){ return g.id===gid; }); if(!grp) return;
+  const currentSet = (cd.sets||[]).find(function(s){ return s.id===cd.currentSetId; });
+  if(!currentSet) return;
+  const grp=currentSet.groups.find(function(g){ return g.id===gid; }); if(!grp) return;
   grp.members=(grp.members||[]).filter(function(x){ return x!==mid; });
   shStarRender();
-  // Auto-save ทันที
   dbSave().catch(e => console.error('Auto-save remove member failed:', e));
 };
 // NOTE: the old rank-based "แปลงดาวเป็นโบนัส" feature (r1/r2/r3 inputs inside
