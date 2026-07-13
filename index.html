@@ -3056,13 +3056,6 @@ document.addEventListener('paste', function(e){
         <i class="fas fa-info-circle mr-1"></i> คุณสามารถสร้างกลุ่มแยกเป็นหลายเซ็ทได้ เช่น เซ็ทกิจกรรมเช้า, เซ็ทกิจกรรมบ่าย
       </div>
       <div id="sh-starset-list" style="margin-bottom:16px"></div>
-      <div style="margin-bottom:16px;padding-top:16px;border-top:1px solid #e2e8f0">
-        <div style="font-weight:800;color:#334155;margin-bottom:10px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em">เพิ่มกลุ่มในเซ็ทปัจจุบัน</div>
-        <div class="sh-add-group">
-          <input type="text" id="sh-new-grp" placeholder="ชื่อกลุ่มใหม่ เช่น กลุ่ม 1" onkeydown="if(event.key==='Enter'){event.preventDefault();shStarAddGroup();}">
-          <button onclick="shStarAddGroup()" style="background:#d97706"><i class="fas fa-plus mr-1"></i>เพิ่มกลุ่ม</button>
-        </div>
-      </div>
       <div style="padding-top:16px;border-top:1px solid #e2e8f0">
         <div style="font-weight:800;color:#334155;margin-bottom:10px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em">เพิ่มเซ็ทใหม่</div>
         <div class="sh-add-group">
@@ -3073,6 +3066,32 @@ document.addEventListener('paste', function(e){
     </div>
     <div class="sh-modal-footer">
       <button class="sh-btn-cancel" style="flex:none;width:100px" onclick="shStarSetClose()">ปิด</button>
+      <div style="flex:1"></div>
+    </div>
+  </div>
+</div>
+
+<!-- ═════════════════════════════════════════════════════════════════
+     MODAL: จัดการกลุ่มในเซ็ทที่เลือก (Manage Groups in Set)
+     ═════════════════════════════════════════════════════════════════ -->
+<div id="sh-stargroup-modal" class="sh-overlay hidden">
+  <div class="sh-modal-box" style="max-width:440px">
+    <div class="sh-modal-header">
+      <h3><i class="fas fa-users" style="color:#8b5cf6;margin-right:8px"></i><span id="sh-stargroup-modal-title">จัดการกลุ่ม</span></h3>
+      <button class="sh-modal-close" onclick="shStarGroupClose()"><i class="fas fa-times"></i></button>
+    </div>
+    <div class="sh-modal-body">
+      <div id="sh-stargroup-list" style="margin-bottom:16px"></div>
+      <div style="padding-top:16px;border-top:1px solid #e2e8f0">
+        <div style="font-weight:800;color:#334155;margin-bottom:10px;font-size:13px;text-transform:uppercase;letter-spacing:0.05em">เพิ่มกลุ่มใหม่</div>
+        <div class="sh-add-group">
+          <input type="text" id="sh-new-grp" placeholder="ชื่อกลุ่มใหม่ เช่น กลุ่ม 1" onkeydown="if(event.key==='Enter'){event.preventDefault();shStarAddGroup();}">
+          <button onclick="shStarAddGroup()" style="background:#d97706"><i class="fas fa-plus mr-1"></i>เพิ่มกลุ่ม</button>
+        </div>
+      </div>
+    </div>
+    <div class="sh-modal-footer">
+      <button class="sh-btn-cancel" style="flex:none;width:100px" onclick="shStarGroupClose()">ปิด</button>
       <div style="flex:1"></div>
     </div>
   </div>
