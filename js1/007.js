@@ -1,7 +1,7 @@
 
         import { initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
         import { getAuth, signInWithEmailAndPassword, createUserWithEmailAndPassword, updateProfile, sendEmailVerification, GoogleAuthProvider, signInWithPopup, onAuthStateChanged, signOut, setPersistence, browserLocalPersistence } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-auth.js";
-        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
+        import { getFirestore, doc, setDoc, getDoc, collection, getDocs, deleteDoc, onSnapshot, query, where, orderBy } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
 
         const firebaseConfig = {
   apiKey: "AIzaSyADAbTJEWivV1Nn-au7tXofStx4ADYTCM8",
@@ -3055,6 +3055,9 @@ async function submitPlanRequest(planId){
         window.__shGetDoc = getDoc;
         window.__shGetDocs = getDocs;
         window.__shCollection = collection;
+        window.__shQuery = query;
+        window.__shWhere = where;
+        window.__shOrderBy = orderBy;
         window.__shGetCurrentUser = () => currentUser;
         window.__shGetUserKey = () => (currentUser ? getUserKey(currentUser) : '');
         window.__shGetIsAdmin = () => isAdmin;
