@@ -1,19 +1,12 @@
 
-/* สปินเนอร์นี้อยู่บนพื้นเบลอ/มืดของ backdrop (หลังป็อปอัพ) เท่านั้น
-   ไม่ใช่การ์ดทึบขาวที่ไปทับหน้าป็อปอัพที่กำลังเด้งขึ้นมา
-   เลยไม่มีพื้นหลังของตัวเอง ไม่มี blur ซ้ำ และวางไว้ "ก่อน" กล่องป็อปอัพใน DOM
-   ให้กล่องป็อปอัพ (ซึ่งมีพื้นหลังทึบของตัวเอง) มาซ้อนทับบังสปินเนอร์ไปเองตามธรรมชาติเมื่อพร้อมแสดง */
+/* สปินเนอร์นี้เป็น overlay อิสระที่ต่อเข้า document.body โดยตรง (ไม่ใช่ลูกของ modal อีกต่อไป)
+   เพื่อไม่ให้ไปรบกวน modal.children[0] ที่โค้ด openModal ต้นฉบับใช้อ้างอิงกล่องป็อปอัพจริง
+   position:fixed; inset:0 จึงอ้างอิงกับ viewport เสมอ ครอบเต็มจอจริง ไม่ถูกบีบ/เพี้ยน
+   z-index ถูกตั้งแบบ inline ผ่าน JS ให้อยู่เหนือพื้นหลังเฟดดำของ modal แต่ยังต่ำกว่ากล่องป็อปอัพจริงเสมอ */
 .schoolhub-modal-mini-spinner{
   position:fixed; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
-  gap:.6rem; background:transparent; z-index:1; pointer-events:none;
+  gap:.6rem; background:transparent; pointer-events:none;
   animation: schoolhubSpinnerFadeIn .12s ease;
-}
-/* บังคับให้กล่องป็อปอัพจริง (ลูกที่ไม่ใช่สปินเนอร์ ตัวแรกในโมดัล) มี stacking context ของตัวเอง
-   และอยู่ "หน้า" สปินเนอร์เสมอ ไม่ว่ากล่องนั้นจะ position:static (ปกติของ .sh-modal-box และกล่อง
-   ป็อปอัพชำระเงินที่ทำด้วย Tailwind) หรือไม่ก็ตาม เพราะ element ที่ position:static จะถูก element
-   ที่ position:absolute + z-index ทับหน้าเสมอตามสเปค CSS แม้จะอยู่หลังใน DOM ก็ตาม */
-.schoolhub-modal-mini-spinner + *{
-  position:relative; z-index:2;
 }
 .schoolhub-modal-mini-spinner .sh-spin{
   width:34px; height:34px; border-radius:50%;
