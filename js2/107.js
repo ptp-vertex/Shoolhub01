@@ -129,14 +129,13 @@ W.openStarGroupModal = function(){
   // รีเซ็ตสัปดาห์ให้เป็นว่าง (บังคับเลือก) ตามความต้องการผู้ใช้
   const weekSel = document.getElementById('sh-star-week');
   if(weekSel) {
-    weekSel.value = ""; 
-    // ถ้ายังไม่มี option ว่าง ให้เพิ่มเข้าไป
-    if(!Array.from(weekSel.options).some(o => o.value === "")){
+    weekSel.innerHTML = '<option value="">-- เลือกสัปดาห์ --</option>';
+    for(let i=1; i<=52; i++){
       const opt = document.createElement('option');
-      opt.value = ""; opt.textContent = "-- เลือกสัปดาห์ --";
-      weekSel.insertBefore(opt, weekSel.firstChild);
-      weekSel.value = "";
+      opt.value = i; opt.textContent = 'สัปดาห์ที่ ' + i;
+      weekSel.appendChild(opt);
     }
+    weekSel.value = "";
   }
 
   shStarRender();
@@ -156,6 +155,7 @@ W.shStarRender=function(){
     let html = !cd.currentSetId ? '<option value="">-- กรุณาเลือกเซ็ท --</option>' : '';
     html += sets.map(s => `<option value="${s.id}" ${s.id===cd.currentSetId?'selected':''}>${s.name}</option>`).join('');
     setSel.innerHTML = html;
+    setSel.onchange = function(){ shStarSelectSet(this.value); };
     
     // ถ้ายังไม่เลือกเซ็ท และมีมากกว่า 1 เซ็ท ให้บังคับเลือกก่อน
     if(!cd.currentSetId){
@@ -234,6 +234,7 @@ W.shStarAddGroup=function(){
   
   currentSet.groups.push({id:'sg'+Date.now(),name,members:[]});
   if(inp) inp.value='';
+  dbSave();
   shStarRender();
 };
 W.shStarDelGroup=function(gid){
@@ -243,6 +244,7 @@ W.shStarDelGroup=function(gid){
     const currentSet = (cd.sets||[]).find(s => s.id === cd.currentSetId);
     if(!currentSet) return;
     currentSet.groups=currentSet.groups.filter(g=>g.id!==gid);
+    dbSave();
     shStarRender();
   });
 };
@@ -321,10 +323,11 @@ W.shStarSetRender = function(){
   }).join('');
 };
 W.shStarSelectSet = function(sid){
+  if(!sid) return;
   const cid=getCid(); if(!cid) return;
   const cd=starCourseData(cid);
   cd.currentSetId = sid;
-  shStarSetRender();
+  dbSave();
   shStarRender();
 };
 W.shStarAddSet = function(){
@@ -337,6 +340,7 @@ W.shStarAddSet = function(){
   cd.sets.push({ id: newId, name: name, groups: [], weekStars: {} });
   if(!cd.currentSetId) cd.currentSetId = newId;
   if(inp) inp.value = '';
+  dbSave();
   shStarSetRender();
   shStarRender();
 };
@@ -346,6 +350,7 @@ W.shStarDelSet = function(sid){
     const cd=starCourseData(cid);
     cd.sets = cd.sets.filter(s => s.id !== sid);
     if(cd.currentSetId === sid) cd.currentSetId = cd.sets.length > 0 ? cd.sets[0].id : null;
+    dbSave();
     shStarSetRender();
     shStarRender();
   });
