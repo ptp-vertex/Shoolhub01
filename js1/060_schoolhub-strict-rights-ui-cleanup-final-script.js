@@ -101,13 +101,5 @@
   }, true);
 
   document.addEventListener('DOMContentLoaded', function(){ applyWraps(); refreshButtonStates(); setTimeout(refreshButtonStates,500); });
-  // สำคัญ: refreshButtonStates() ไล่สแกนปุ่ม/ลิงก์ "ทุกตัวในทั้งหน้า" (document.querySelectorAll('button,a'))
-  // ทุก 1 วินาทีตลอดเวลาไม่มีหยุด ถ้าไปทำงานตอนกำลังสโครลพอดี (โดยเฉพาะหน้าต่างที่มีปุ่ม/checkbox เยอะ
-  // เช่น หน้าต่างแก้ไขข้อมูลรายวิชา) จะไปแย่ง main thread กับการ render ตอนสโครล ทำให้จอกระตุก
-  // จึงข้ามการสแกนรอบนั้นไปก่อนถ้ากำลังสโครลอยู่ (เช็คจาก class 'scrolling' ที่ js2/129 ติดไว้ที่ body)
-  // แล้วรอบถัดไป (1 วิให้หลัง) จะสแกนตามปกติทันทีที่หยุดสโครล ไม่กระทบผลลัพธ์สุดท้ายเลย แค่เลื่อนเวลาออกไปนิดเดียว
-  setInterval(function(){
-    if(document.body.classList.contains('scrolling')) return;
-    applyWraps(); refreshButtonStates();
-  }, 1000);
+  setInterval(function(){ applyWraps(); refreshButtonStates(); }, 1000);
 })();
