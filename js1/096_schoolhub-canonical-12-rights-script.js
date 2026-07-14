@@ -410,9 +410,21 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
       (window.schoolhubIsExportDismissButton && window.schoolhubIsExportDismissButton(el)));
     const hasCloseIcon = inExportModal && !!(el.querySelector && el.querySelector('i.fa-times, i.fa-xmark, i.fa-close, .fa-times, .fa-xmark, .fa-close'));
     return hasExportDismiss || hasCloseIcon ||
-      el.matches('.modal-close, .close-modal, [data-close-modal], .btn-close, [aria-label*="ปิด"], [aria-label*="close" i]') ||
+      el.matches('.modal-close, .close-modal, .sh-modal-close, [data-close-modal], .btn-close, [aria-label*="ปิด"], [aria-label*="close" i]') ||
       /^(×|x|X|ปิด|ยกเลิก)$/.test(txt) ||
-      /closeModal\(|closeCustomAlert\(|closePlanModal\(|schoolhubCloseExportModal\(/.test(String(el.getAttribute('onclick') || ''));
+      /closeModal\(|closeCustomAlert\(|closePlanModal\(|schoolhubCloseExportModal\(/.test(String(el.getAttribute('onclick') || '')) ||
+      // FIX: this app's real close (×) buttons all use the "sh-modal-close"
+      // class (not the generic "modal-close" that was checked above) and
+      // call a function named "...Close(...)" (shStarClose, shStarGroupClose,
+      // shBonusClose, shLeaveClose, shStarConvertClose, etc). Without this
+      // check, a close button whose function name happens to *contain* a
+      // locked-feature keyword — e.g. "shStarGroupClose" contains "StarGroup",
+      // which matches the regex used to detect the "stars" feature — gets
+      // wrongly classified as that locked feature further down in
+      // classifyAction(), so the × button itself gets blocked and shown the
+      // "แผนนี้ไม่รองรับระบบดาว" tooltip even though closing a modal is never
+      // a plan-gated action.
+      /[A-Za-z0-9_]+Close\s*\(/.test(String(el.getAttribute('onclick') || ''));
   }
   function restoreCourseTabVisual(el){
     if(!el || !el.classList || !el.classList.contains('course-tab-btn')) return;
