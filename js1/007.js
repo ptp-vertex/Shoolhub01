@@ -3058,6 +3058,7 @@ async function submitPlanRequest(planId){
         window.__shQuery = query;
         window.__shWhere = where;
         window.__shOrderBy = orderBy;
+        window.__shDeleteDoc = deleteDoc;
         window.__shGetCurrentUser = () => currentUser;
         window.__shGetUserKey = () => (currentUser ? getUserKey(currentUser) : '');
         window.__shGetIsAdmin = () => isAdmin;
