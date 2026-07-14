@@ -21,9 +21,12 @@
         }, 100); // ลดเวลาลงเพื่อให้กลับมาสวยงามได้เร็วขึ้นหลังหยุดสโครล
     }
 
+    // capture:true สำคัญมาก: ปกติ scroll event ของ div ย่อยๆ (เช่น รายการใน modal ที่ scroll ข้างในตัวเอง)
+    // จะไม่ bubble ขึ้นมาถึง window เลย ถ้าไม่ใส่ capture:true ปุ่ม/สไตล์ "กำลังสโครล" ของระบบนี้
+    // จะไม่ทำงานเลยเวลาผู้ใช้สโครลลิสต์ข้างใน popup (เช่น หน้าต่างแก้ไขข้อมูลรายวิชา) ทำให้ยังกระตุกเหมือนเดิม
     window.addEventListener('scroll', function() {
         window.requestAnimationFrame(handleScroll);
-    }, { passive: true });
+    }, { passive: true, capture: true });
 
     // ปรับปรุงประสิทธิภาพของ dropdown (shdd)
     // ใช้เทคนิค Throttle เพื่อลดภาระการคำนวณตำแหน่ง
@@ -31,7 +34,11 @@
         var ticking = false;
         var originalFunc = window.onScrollResize;
         
-        window.removeEventListener('scroll', window.onScrollResize);
+        // สำคัญ: ตอน addEventListener ของ onScrollResize เดิม (js2/106) ใส่ capture:true ไว้
+        // ตอน removeEventListener ต้องระบุ capture:true ให้ตรงกันเป๊ะ ไม่งั้นจะลบไม่ออกจริง (เงียบๆ ไม่ error)
+        // แล้วจะกลายเป็นมี listener เดิม (ไม่มี throttle) ทำงานซ้ำกับตัวใหม่ที่ throttle ไว้แล้ว
+        // ทำให้ onScrollResize ถูกเรียกซ้ำสองชุดทุกครั้งที่ scroll โดยไม่จำเป็น
+        window.removeEventListener('scroll', window.onScrollResize, true);
         window.addEventListener('scroll', function() {
             if (!ticking) {
                 window.requestAnimationFrame(function() {
