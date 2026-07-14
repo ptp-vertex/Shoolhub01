@@ -460,6 +460,11 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
   }
   function classifyAction(el){
     if(!el || isModalCloseButton(el)) return '';
+    // ปุ่ม/ช่องที่ถูกทำเครื่องหมายไว้แล้วว่าให้ใช้งานได้เสมอ (เช่น ปุ่มลบ/เปลี่ยนรูปโปรไฟล์ในหน้าตั้งค่า)
+    // ไม่ควรถูกจัดประเภทเป็นสิทธิ์ของแผนเลย เพื่อไม่ให้ไปโดน keyword ทั่วไปอย่าง "ลบ"/"แก้ไข" เข้าใจผิด
+    // ว่าเป็นฟีเจอร์ที่ต้องเช็คแผน (เช่น "ลบรูปโปรไฟล์" ไม่ใช่ "ลบข้อมูล" นักเรียน/คะแนน)
+    if(el.hasAttribute && el.hasAttribute('data-schoolhub-always-allowed')) return '';
+    if(el.closest && el.closest('[data-schoolhub-always-allowed]')) return '';
     const s = [
       el.getAttribute('onclick') || '',
       el.getAttribute('data-tab') || '',
