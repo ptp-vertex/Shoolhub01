@@ -84,6 +84,8 @@ const LANDING_STAT_META = {
     scores:      { label: 'รายการคะแนน',    getValue: s => num(s.totalScoreItems) },
 };
 
+const LANDING_STAT_DOC_REF = doc(db, 'site_config', 'landing_stats');
+
 function loadLandingStatConfig() {
     try {
         const raw = localStorage.getItem(LANDING_STAT_KEY);
@@ -92,7 +94,26 @@ function loadLandingStatConfig() {
     return { selected: ['teachers','courses','students'], interval: 3 };
 }
 
-function saveLandingStatConfig() {
+// อ่านค่าตั้งค่าล่าสุดจาก Firestore (ที่แอดมินบันทึกไว้) เพื่อให้ผู้เข้าชมทุกคน/ทุกเครื่อง
+// เห็นการ์ด "ภาพรวมวันนี้" ตรงกับที่แอดมินตั้งจริง ๆ ไม่ใช่แค่เครื่องของแอดมินเอง
+async function fetchLandingStatConfigRemote() {
+    try {
+        const snap = await getDoc(LANDING_STAT_DOC_REF);
+        if (snap.exists()) {
+            const data = snap.data() || {};
+            if (Array.isArray(data.selected) && data.selected.length) {
+                const cfg = { selected: data.selected, interval: Math.max(1, Number(data.interval) || 3) };
+                try { localStorage.setItem(LANDING_STAT_KEY, JSON.stringify(cfg)); } catch(e) {}
+                return cfg;
+            }
+        }
+    } catch (error) {
+        console.warn('อ่านการตั้งค่าการ์ดภาพรวมจาก Firestore ไม่สำเร็จ:', error);
+    }
+    return null;
+}
+
+async function saveLandingStatConfig() {
     const checks = document.querySelectorAll('input[name="landing-stat"]:checked');
     const selected = Array.from(checks).map(c => c.value);
     if (selected.length === 0) return showCustomAlert('กรุณาเลือกอย่างน้อย 1 รายการ', 'ต้องเลือกข้อมูลที่จะแสดงอย่างน้อย 1 รายการ', true);
@@ -100,7 +121,13 @@ function saveLandingStatConfig() {
     const cfg = { selected, interval };
     try { localStorage.setItem(LANDING_STAT_KEY, JSON.stringify(cfg)); } catch(e) {}
     applyLandingStatSlide(window._latestGlobalSummary || null);
-    showCustomAlert('บันทึกสำเร็จ', 'อัปเดตการ์ดภาพรวมบน Landing Page และหน้า Login แล้ว');
+    try {
+        await setDoc(LANDING_STAT_DOC_REF, { selected, interval, updatedAt: serverTimestamp() }, { merge: true });
+        showCustomAlert('บันทึกสำเร็จ', 'อัปเดตการ์ดภาพรวมบน Landing Page และหน้า Login แล้ว (มีผลกับผู้เข้าชมทุกคน)');
+    } catch (error) {
+        console.error('บันทึกการตั้งค่าการ์ดภาพรวมไป Firestore ไม่สำเร็จ:', error);
+        showCustomAlert('บันทึกไม่สมบูรณ์', 'บันทึกในเครื่องนี้แล้ว แต่ซิงก์ไปเซิร์ฟเวอร์ไม่สำเร็จ ผู้เข้าชมคนอื่นอาจยังไม่เห็นการเปลี่ยนแปลง ลองบันทึกอีกครั้ง', true);
+    }
 }
 window.saveLandingStatConfig = saveLandingStatConfig;
 
@@ -193,8 +220,19 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const intervalInput = document.getElementById('landing-stat-interval');
     if (intervalInput) intervalInput.value = cfg.interval || 3;
-    // Apply slide with no data yet (shows "—")
+    // Apply slide with no data yet (shows "—") using the local/cached config first
     applyLandingStatSlide(null);
+
+    // แล้วดึงค่าจริงจาก Firestore มาทับ เพื่อให้ตรงกับที่แอดมินตั้งไว้ล่าสุดเสมอ
+    // (ไม่งั้นเครื่อง/เบราว์เซอร์อื่นที่ไม่ใช่ของแอดมินจะเห็นค่า default เท่านั้น)
+    fetchLandingStatConfigRemote().then(remoteCfg => {
+        if (!remoteCfg) return;
+        document.querySelectorAll('input[name="landing-stat"]').forEach(cb => {
+            cb.checked = remoteCfg.selected.includes(cb.value);
+        });
+        if (intervalInput) intervalInput.value = remoteCfg.interval || 3;
+        applyLandingStatSlide(window._latestGlobalSummary || null);
+    });
 });
 
 async function loadGlobalSummary() {
