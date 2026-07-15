@@ -1203,6 +1203,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
   const ADMIN_CONTACT_CLOSED_STATUSES = new Set(['แก้ไขแล้ว','รับทราบแล้ว','ปฏิเสธ','เสร็จสิ้น','done','resolved','rejected','closed','acknowledged']);
   const ADMIN_CONTACT_DEFAULT_STATUSES = ['รอดำเนินการ','รับทราบแล้ว','แก้ไขแล้ว','ปฏิเสธ','กำลังตรวจสอบ','อื่นๆ'];
   let adminContactUnsubscribes = [];
+  let adminContactActiveSourceKey = null;
   let adminContactSnapshotsBySource = new Map();
   let adminContactItems = [];
   let adminContactCurrentSource = null;
@@ -1411,6 +1412,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
     adminContactUnsubscribes = [];
     adminContactSnapshotsBySource = new Map();
     adminContactCurrentSource = null;
+    adminContactActiveSourceKey = null;
   }
   function rebuildAdminContactItems(showList = false){
     adminContactItems = [];
@@ -1438,11 +1440,18 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
     }
     ensureAdminMessageBadges();
     if (showList && box && !adminContactItems.length) box.innerHTML = '<div class="text-center text-slate-400 py-10 bg-white rounded-3xl border border-dashed border-slate-200"><i class="fas fa-spinner fa-spin mr-1"></i> กำลังโหลดข้อความ...</div>';
-    if (adminContactUnsubscribes.length) {
-      rebuildAdminContactItems(showList);
-      return;
-    }
     const sources = adminMessagePathCandidates();
+    const sourceKey = sources.map(s => s.label).join('|');
+    if (adminContactUnsubscribes.length) {
+      // ถ้า path ที่ subscribe ไว้เดิมตรงกับ session ปัจจุบัน ใช้ของเดิมต่อได้เลย
+      // แต่ถ้าอีเมลแอดมิน/เซสชันเปลี่ยนไป (sourceKey ไม่ตรง) ต้อง unsubscribe ของเก่าแล้วเปิดใหม่
+      if (adminContactActiveSourceKey === sourceKey) {
+        rebuildAdminContactItems(showList);
+        return;
+      }
+      stopAdminContactRealtime();
+    }
+    adminContactActiveSourceKey = sourceKey;
     let settledCount = 0;
     let successCount = 0;
     const errors = [];
