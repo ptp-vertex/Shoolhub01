@@ -4451,7 +4451,8 @@ async function submitPlanRequest(planId){
                   const wVal = __bonusByCid[wk] && __bonusByCid[wk][s.id];
                   if (wVal !== undefined && wVal !== '' && !isNaN(Number(wVal)) && Number(wVal) !== 0) {
                     __totalBonus += Number(wVal);
-                    __bonusDetail.push({ week: wk.replace('w',''), val: Number(wVal) });
+                    const __isConv = /^Bonus-Stars-/.test(wk);
+                    __bonusDetail.push({ week: __isConv ? wk : wk.replace(/^w/, ''), val: Number(wVal), key: wk, isConv: __isConv });
                   }
                 });
                 const __bonusDetailJson = encodeURIComponent(JSON.stringify(__bonusDetail));
