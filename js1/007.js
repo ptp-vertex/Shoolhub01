@@ -1703,6 +1703,7 @@
                         requestedPlanId:plan.id,requestedPlanName:plan.name||'',
                         requestedPlanAt:Date.now()
                     },{merge:true});
+                    try{ window.queueAdminNotification&&window.queueAdminNotification('planRequest',{title:`คำขอสมัครแผน (ต้องตรวจสลิปเอง): ${plan.name}`,detail:`ผู้ขอ: ${currentUser.displayName||userKey} (${currentUser.email||userKey})`}); }catch(e){}
                 }
                 localStorage.removeItem(PENDING_PLAN_KEY);
                 closePlanPaymentModal();
@@ -1731,6 +1732,7 @@ async function submitPlanRequest(planId){
                 await setDoc(getPlanRequestDocRef(reqId),payload,{merge:true});
                 await setDoc(doc(db,getPublicPath(),userKey),{uid:currentUser.uid,email:currentUser.email||'',userKey,name:currentUser.displayName||userKey,role:'user',status:'pending_plan',requestedPlanId:plan.id,requestedPlanName:plan.name||'',requestedPlanAt:Date.now()},{merge:true});
                 localStorage.removeItem(PENDING_PLAN_KEY);
+                try{ window.queueAdminNotification&&window.queueAdminNotification('planRequest',{title:`คำขอสมัครแผน: ${plan.name}`,detail:`ผู้ขอ: ${currentUser.displayName||userKey} (${currentUser.email||userKey})`}); }catch(e){}
                 showCustomAlert('ส่งคำขอแล้ว',`ส่งคำขอสมัครแผน ${plan.name} ให้แอดมินตรวจสอบแล้ว\nเมื่อแอดมินอนุมัติ สิทธิ์ของคุณจะเปลี่ยนตามแผนที่สมัคร`);
             }catch(e){showCustomAlert('ส่งคำขอไม่ได้',getFirebaseErrorText(e)+'\nโปรดตรวจสอบ Firestore Rules ของ subscription_requests',true);}
             toggleLoader(false);
