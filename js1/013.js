@@ -84,7 +84,7 @@ const LANDING_STAT_META = {
     scores:      { label: 'รายการคะแนน',    getValue: s => num(s.totalScoreItems) },
 };
 
-const LANDING_STAT_DOC_REF = doc(db, 'global_stats', 'summary');
+const LANDING_STAT_DOC_REF = doc(db, 'system_settings', 'landing_stats');
 
 function loadLandingStatConfig() {
     try {
@@ -96,16 +96,16 @@ function loadLandingStatConfig() {
 
 // อ่านค่าตั้งค่าล่าสุดจาก Firestore (ที่แอดมินบันทึกไว้) เพื่อให้ผู้เข้าชมทุกคน/ทุกเครื่อง
 // เห็นการ์ด "ภาพรวมวันนี้" ตรงกับที่แอดมินตั้งจริง ๆ ไม่ใช่แค่เครื่องของแอดมินเอง
-// หมายเหตุ: เก็บไว้ในฟิลด์ landingStatConfig ของเอกสาร global_stats/summary เดิม (ไม่สร้าง
-// collection ใหม่) เพราะเอกสารนี้มีสิทธิ์อ่าน/เขียนที่ใช้งานได้อยู่แล้วทั้งหน้า Landing/Login
-// (อ่านได้แม้ยังไม่ล็อกอิน) และหน้าแอดมิน (เขียนได้เมื่อล็อกอินแล้ว) — collection site_config
-// ที่สร้างขึ้นใหม่ไม่มี rule รองรับ จึงโดน permission-denied แบบเงียบ ๆ
+// หมายเหตุ: เก็บไว้ที่ system_settings/landing_stats — collection เดียวกับที่ฟีเจอร์ "ประกาศ"
+// ของแอดมิน (system_settings/announcements) ใช้อยู่แล้วและพิสูจน์แล้วว่าอ่าน/เขียนได้จริง
+// (อ่านได้แม้ยังไม่ล็อกอิน, แอดมินเขียนได้). ไม่ใช้ global_stats/summary เพราะเอกสารนั้นเก็บ
+// แต่ตัวเลขสรุปล้วน ๆ คาดว่ามี rule ตรวจสคีมาเข้มงวดกว่า ทำให้ใส่ฟิลด์ใหม่ไม่ผ่าน
 async function fetchLandingStatConfigRemote() {
     try {
         const snap = await getDoc(LANDING_STAT_DOC_REF);
         if (snap.exists()) {
-            const data = (snap.data() || {}).landingStatConfig;
-            if (data && Array.isArray(data.selected) && data.selected.length) {
+            const data = snap.data() || {};
+            if (Array.isArray(data.selected) && data.selected.length) {
                 const cfg = { selected: data.selected, interval: Math.max(1, Number(data.interval) || 3) };
                 try { localStorage.setItem(LANDING_STAT_KEY, JSON.stringify(cfg)); } catch(e) {}
                 return cfg;
@@ -126,12 +126,12 @@ async function saveLandingStatConfig() {
     try { localStorage.setItem(LANDING_STAT_KEY, JSON.stringify(cfg)); } catch(e) {}
     applyLandingStatSlide(window._latestGlobalSummary || null);
     try {
-        await setDoc(LANDING_STAT_DOC_REF, { landingStatConfig: { selected, interval }, updatedAt: serverTimestamp() }, { merge: true });
+        await setDoc(LANDING_STAT_DOC_REF, { selected, interval, updatedAt: Date.now() }, { merge: true });
         showCustomAlert('บันทึกสำเร็จ', 'อัปเดตการ์ดภาพรวมบน Landing Page และหน้า Login แล้ว (มีผลกับผู้เข้าชมทุกคน)');
     } catch (error) {
         console.error('บันทึกการตั้งค่าการ์ดภาพรวมไป Firestore ไม่สำเร็จ:', error);
-        const code = error && error.code ? ` (${error.code})` : '';
-        showCustomAlert('บันทึกไม่สมบูรณ์', 'บันทึกในเครื่องนี้แล้ว แต่ซิงก์ไปเซิร์ฟเวอร์ไม่สำเร็จ' + code + ' ผู้เข้าชมคนอื่นอาจยังไม่เห็นการเปลี่ยนแปลง ลองบันทึกอีกครั้ง', true);
+        const detail = (error && (error.code || error.message)) ? ` (${error.code || error.message})` : '';
+        showCustomAlert('บันทึกไม่สมบูรณ์', 'บันทึกในเครื่องนี้แล้ว แต่ซิงก์ไปเซิร์ฟเวอร์ไม่สำเร็จ' + detail + ' ผู้เข้าชมคนอื่นอาจยังไม่เห็นการเปลี่ยนแปลง ลองบันทึกอีกครั้ง', true);
     }
 }
 window.saveLandingStatConfig = saveLandingStatConfig;
