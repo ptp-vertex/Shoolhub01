@@ -542,10 +542,10 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
     host.innerHTML = `
       <div class="space-y-4 settings-profile-form" data-schoolhub-always-allowed="1">
         <div class="flex items-center gap-4 pb-2">
-          <div class="relative w-20 h-20 shrink-0">
-            <div id="settings-profile-avatar-initial" class="w-20 h-20 rounded-full bg-gradient-to-tr from-primary to-purple-500 text-white flex items-center justify-center text-2xl font-bold shadow-md">U</div>
-            <img id="settings-profile-avatar-img" class="hidden absolute inset-0 w-20 h-20 rounded-full object-cover border-2 border-white shadow-md" alt="รูปโปรไฟล์">
-            <button type="button" id="settings-profile-avatar-pick-btn" data-schoolhub-always-allowed="1" class="absolute -bottom-1 -right-1 w-8 h-8 rounded-full bg-primary hover:bg-indigo-700 text-white flex items-center justify-center shadow-lg border-2 border-white transition"><i class="fas fa-camera text-xs"></i></button>
+          <div class="relative w-28 h-28 shrink-0">
+            <div id="settings-profile-avatar-initial" class="w-28 h-28 rounded-full bg-gradient-to-tr from-primary to-purple-500 text-white flex items-center justify-center text-4xl font-bold shadow-lg">U</div>
+            <img id="settings-profile-avatar-img" class="hidden absolute inset-0 w-28 h-28 rounded-full object-cover border-2 border-white shadow-lg" alt="รูปโปรไฟล์">
+            <button type="button" id="settings-profile-avatar-pick-btn" data-schoolhub-always-allowed="1" class="absolute -bottom-1 -right-1 w-10 h-10 rounded-full bg-primary hover:bg-indigo-700 text-white flex items-center justify-center shadow-lg border-2 border-white transition"><i class="fas fa-camera text-sm"></i></button>
             <input type="file" id="settings-profile-avatar-input" accept="image/*" class="hidden" data-schoolhub-always-allowed="1">
           </div>
           <div class="flex-1 min-w-0">
