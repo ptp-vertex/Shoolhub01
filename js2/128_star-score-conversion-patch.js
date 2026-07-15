@@ -424,8 +424,12 @@
       if (window.__editingConversionHistoryId === id) window.cancelEditStarConversion();
 
       if (typeof window.saveStateToDB === 'function') await window.saveStateToDB();
+
+      // ป็อปอัพยืนยันลบจะถูกปิดไปแล้วโดย showCustomConfirm เอง — ตรงนี้แค่รีเฟรชลิสต์ประวัติ
+      // ในป็อปอัพ "แปลงดาวกลุ่ม" ที่ยังเปิดอยู่ ไม่ต้องปิดป็อปอัพนี้
       window.renderConversionHistoryList();
       if (typeof window.renderCourseOverview === 'function') window.renderCourseOverview();
+      if (window.showCustomAlert) window.showCustomAlert('ลบสำเร็จ', 'ลบประวัติการแปลงคะแนนและคะแนนที่เกี่ยวข้องเรียบร้อยแล้ว');
     });
   };
 
