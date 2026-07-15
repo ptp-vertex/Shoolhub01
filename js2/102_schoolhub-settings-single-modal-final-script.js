@@ -1051,6 +1051,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
       $('schoolhub-settings-admin-messages-tab')?.classList.toggle('hidden', !admin);
       $('schoolhub-settings-admin-system-tab')?.classList.toggle('hidden', !admin);
       $('schoolhub-settings-notifications-tab')?.classList.toggle('hidden', !admin);
+      $('schoolhub-settings-admin-mail-log-tab')?.classList.toggle('hidden', !admin);
       if (admin) startAdminContactRealtime(false); else updateAdminMessageBadges(0);
       unlockSettingsControls();
       renderSettingsPanel(normalizeTab(tab || window.__schoolhubSettingsActiveTab || 'general'));
@@ -1105,6 +1106,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
       $('schoolhub-settings-admin-messages-tab')?.classList.toggle('hidden', !admin);
       $('schoolhub-settings-admin-system-tab')?.classList.toggle('hidden', !admin);
       $('schoolhub-settings-notifications-tab')?.classList.toggle('hidden', !admin);
+      $('schoolhub-settings-admin-mail-log-tab')?.classList.toggle('hidden', !admin);
       if (admin) startAdminContactRealtime(false); else updateAdminMessageBadges(0);
     } catch(e) { console.warn('Settings chrome refresh skipped:', e); }
 

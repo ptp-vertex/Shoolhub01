@@ -1,4 +1,3 @@
-
 /* =========================================================
    SchoolHub Admin Email Notification System
    - ตั้งค่าอีเมลรับการแจ้งเตือนของแอดมิน (per-event: แจ้งทันที / สรุปประจำวัน)
@@ -7,6 +6,8 @@
    - เว็บนี้เป็น static site (GitHub Pages) ไม่มี cron ฝั่งเซิร์ฟเวอร์จริง
      ระบบจะตรวจ/ส่งสรุปประจำวันตอนที่แอดมินเปิดหน้าเว็บ (client-side) และมี
      ปุ่ม "ส่งสรุปวันนี้ตอนนี้" สำหรับส่งเองได้ทันทีเช่นกัน
+   - คอลเลคชั่นหลัก: admin_mail_log (แทน admin_notification_queue)
+     ทุกการส่งเมลจะบันทึกลง admin_mail_log แยกจากเดิม
    ========================================================= */
 import { getApps, getApp, initializeApp } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-app.js";
 import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDocs } from "https://www.gstatic.com/firebasejs/11.6.1/firebase-firestore.js";
@@ -80,7 +81,8 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
   }
 
   const SETTINGS_DOC = () => doc(db, 'system', 'notificationSettings');
-  const QUEUE_COL = () => collection(db, 'admin_notification_queue');
+  // ─── เปลี่ยนจาก admin_notification_queue เป็น admin_mail_log ───
+  const QUEUE_COL = () => collection(db, 'admin_mail_log');
 
   let cachedSettings = null;
   async function loadSettings(force) {
@@ -118,6 +120,33 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
     }
   }
 
+  // ─── บันทึก entry เข้า admin_mail_log ───
+  async function logMailEntry(eventKey, title, detail, mode, userEmail, userUid, userName) {
+    try {
+      const now = Date.now();
+      // ใช้ logId แบบ deterministic เพื่อป้องกันซ้ำ
+      const logId = `${eventKey}_${now}_${Math.random().toString(36).slice(2, 8)}`;
+      await addDoc(QUEUE_COL(), {
+        logId,
+        eventKey,
+        title,
+        detail,
+        mode,
+        sent: false,
+        sentAt: null,
+        userEmail: userEmail || '',
+        userUid: userUid || '',
+        userName: userName || '',
+        createdAt: now,
+        updatedAt: now
+      });
+      return logId;
+    } catch (e) {
+      console.warn('บันทึก admin_mail_log ไม่สำเร็จ', e);
+      return null;
+    }
+  }
+
   // ---------------- Public: queue/send a notification for an event ----------------
   window.queueAdminNotification = async function (eventKey, info) {
     try {
@@ -128,26 +157,34 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
       const title = info?.title || def.label;
       const detail = info?.detail || '';
       const now = Date.now();
-      // เก็บลงคิวเสมอ ไม่ว่าจะเป็นโหมด instant หรือ daily
-      // เพื่อให้คอลเลคชั่น admin_notification_queue มีประวัติเหตุการณ์ทุกครั้ง
       const isInstant = evt.mode !== 'daily';
-      let queueDocId = null;
-      try {
-        const ref = await addDoc(QUEUE_COL(), {
-          eventKey, title, detail, createdAt: now,
-          mode: isInstant ? 'instant' : 'daily',
-          sent: false
-        });
-        queueDocId = ref.id;
-      } catch (queueError) {
-        console.warn('บันทึกคิวแจ้งเตือนไม่สำเร็จ', queueError);
-      }
+
+      // ─── บันทึกเข้า admin_mail_log แทน admin_notification_queue ───
+      const logDocId = await logMailEntry(
+        eventKey, title, detail,
+        isInstant ? 'instant' : 'daily',
+        info?.userEmail || '',
+        info?.userUid || '',
+        info?.userName || ''
+      );
+
       if (!isInstant) return;
       const subject = `[SchoolHub] แจ้งเตือน: ${title}`;
       const message = `${title}\n\n${detail}\n\nเวลา: ${new Date(now).toLocaleString('th-TH')}`;
       const ok = await sendAdminEmailNow(subject, message);
-      if (ok && queueDocId) {
-        try { await updateDoc(doc(db, 'admin_notification_queue', queueDocId), { sent: true, sentAt: Date.now() }); } catch (e) {}
+      // อัปเดตสถานะ sent ใน admin_mail_log
+      if (ok && logDocId) {
+        try {
+          // เนื่องจาก addDoc ให้ random ID เราต้องค้นหา doc ใหม่
+          const snap = await getDocs(QUEUE_COL());
+          snap.forEach(d => {
+            if (d.data().logId === logDocId) {
+              updateDoc(d.ref, { sent: true, sentAt: Date.now() }).catch(() => {});
+            }
+          });
+        } catch (e) {
+          console.warn('อัปเดต sent ใน admin_mail_log ไม่สำเร็จ', e);
+        }
       }
     } catch (e) {
       console.warn('queueAdminNotification ล้มเหลว', e);
@@ -187,7 +224,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
     });
     const ok = await sendAdminEmailNow(`[SchoolHub] สรุปการแจ้งเตือนประจำวัน ${today}`, body);
     if (ok) {
-      await Promise.all(items.map(it => updateDoc(doc(db, 'admin_notification_queue', it.id), { sent: true, sentAt: Date.now() }).catch(() => {})));
+      await Promise.all(items.map(it => updateDoc(doc(db, 'admin_mail_log', it.id), { sent: true, sentAt: Date.now() }).catch(() => {})));
       await saveSettings({ lastDailySendDate: today });
     }
     return { sent: ok, count: items.length };
@@ -250,13 +287,15 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
               <input type="checkbox" id="notif-resend-toggle" class="w-4 h-4 rounded">
               ส่งซ้ำรายการที่เคยส่งไปแล้ว ในสรุปประจำวันครั้งถัดไป
             </label>
-            <div class="mt-2.5 flex items-center gap-2">
+            <div class="mt-2 flex items-center gap-2">
               <label class="text-xs font-bold text-slate-700">เวลาสรุปประจำวัน</label>
               <input type="time" id="notif-daily-time-input" class="bg-white border border-slate-200 rounded-xl px-3 py-1.5 text-sm">
             </div>
             <p class="text-[11px] text-slate-400 mt-2">เว็บนี้เป็น static site ไม่มีตัวจับเวลาฝั่งเซิร์ฟเวอร์ ระบบจะตรวจและส่งสรุปตอนแอดมินเปิดหน้าเว็บหลังเวลานี้ หรือกดส่งเองได้ทันทีด้านล่าง</p>
           </div>
           <button type="button" onclick="window.sendAdminDailyDigestNow && window.sendAdminDailyDigestNow()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-sm"><i class="fas fa-paper-plane mr-1"></i> ส่งสรุปวันนี้ตอนนี้</button>
+          <!-- ปุ่มเปิดหน้าประวัติการส่งเมล -->
+          <button type="button" onclick="window.openAdminMailLog && window.openAdminMailLog()" class="w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-primary font-bold py-2.5 rounded-xl text-sm"><i class="fas fa-history mr-1"></i> ดูประวัติการส่งอีเมลทั้งหมด</button>
         </div>
         <div class="p-4 border-t border-slate-100 bg-slate-50 shrink-0">
           <button type="button" id="notif-save-btn" class="w-full bg-primary hover:bg-indigo-700 text-white font-black py-3 rounded-xl text-sm shadow-lg shadow-indigo-100 transition"><i class="fas fa-save mr-1"></i> บันทึกการตั้งค่า</button>
