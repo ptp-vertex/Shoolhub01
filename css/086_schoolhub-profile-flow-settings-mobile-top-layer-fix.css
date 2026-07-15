@@ -1,18 +1,18 @@
 
 /* Profile flow + Settings mobile top-layer fix: scoped to Settings/Profile only */
 #settings-modal-backdrop{
-  z-index:999990!important;
+  z-index:2147483646!important;
 }
 #settings-modal.settings-modal{
   position:fixed!important;
   inset:0!important;
-  z-index:999991!important;
+  z-index:2147483647!important;
   isolation:isolate!important;
   pointer-events:auto!important;
 }
 #settings-modal .settings-dialog{
   position:relative!important;
-  z-index:999991!important;
+  z-index:2147483647!important;
 }
 body.schoolhub-settings-modal-open{
   overflow:hidden!important;
