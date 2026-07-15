@@ -15,12 +15,20 @@
     return false;
   }
 
+  function isNavOnly(el){
+    // ปุ่มเมนู/แท็บนำทาง (เช่น "บันทึกคะแนน" ในเมนูข้าง ที่จริงๆ แค่สลับแท็บ ไม่ได้บันทึกอะไร)
+    // ไม่ควรขึ้นไอคอนหมุนๆ แบบปุ่มบันทึกจริง
+    if(!el || !el.classList) return false;
+    return el.classList.contains('course-tab-btn') || el.classList.contains('nav-btn');
+  }
+
   // หาปุ่ม/ลิงก์ที่ใกล้ที่สุดจากจุดคลิก แล้วเช็กว่ามีคำว่า "บันทึก" หรือไม่
   // หยุดที่ตัว actionable ตัวแรกที่เจอเท่านั้น (ไม่ไต่ขึ้นไปไกลกว่านั้น) กันเผลอไปจับปุ่มอื่นที่ไม่เกี่ยวข้อง
   function findSaveButton(target){
     var el = target;
     while(el && el !== document.body && el !== document.documentElement){
       if(isActionable(el)){
+        if(isNavOnly(el)) return null;
         var label = (el.textContent || el.value || '');
         if(label.indexOf('บันทึก') !== -1) return el;
         return null;
