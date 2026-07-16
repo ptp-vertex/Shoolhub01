@@ -353,17 +353,18 @@ import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.
       setAllAvatarPreviews('');
       return;
     }
-    // กดที่รูปโปรไฟล์เอง (ทั้งวงกลมตัวอักษร และรูปจริง) ในป็อปอัพ -> ถ้ามีรูปแล้วให้ดูขนาดเต็ม ถ้ายังไม่มีรูปให้เปิดเลือกไฟล์เลย
-    const avatarImg = e.target.closest && e.target.closest('#user-profile-avatar-img');
+    // กดที่รูปโปรไฟล์เอง (ทั้งวงกลมตัวอักษร และรูปจริง) -> ถ้ามีรูปแล้วให้ดูขนาดเต็ม ถ้ายังไม่มีรูปให้เปิดเลือกไฟล์เลย
+    const avatarImg = e.target.closest && e.target.closest('#user-profile-avatar-img, #settings-profile-avatar-img');
     if (avatarImg) {
       e.preventDefault();
       openAvatarLightbox(avatarImg.src);
       return;
     }
-    const avatarInitial = e.target.closest && e.target.closest('#user-profile-avatar-initial');
+    const avatarInitial = e.target.closest && e.target.closest('#user-profile-avatar-initial, #settings-profile-avatar-initial');
     if (avatarInitial) {
       e.preventDefault();
-      document.getElementById('user-profile-avatar-input')?.click();
+      const inputId = avatarInitial.id === 'user-profile-avatar-initial' ? 'user-profile-avatar-input' : 'settings-profile-avatar-input';
+      document.getElementById(inputId)?.click();
       return;
     }
   });
@@ -464,4 +465,20 @@ import { getFirestore, doc, getDoc, setDoc, serverTimestamp } from "https://www.
     if (user) setTimeout(loadAvatarForCurrentUser, 700);
     else window.setUserAvatarPhoto('');
   });
+
+  // ฟัง Event การอัปเดตโปรไฟล์จากหน้าตั้งค่าทั่วไป (102) เพื่อซิงค์ข้อมูลกลับมายังหน้าโปรไฟล์ดั้งเดิม
+  window.addEventListener('schoolhub-profile-updated', function(e) {
+    const { name, email } = e.detail;
+    const nameInput = document.getElementById('user-profile-display-name');
+    const emailInput = document.getElementById('user-profile-display-email');
+    if (nameInput) nameInput.value = name || '';
+    if (emailInput) emailInput.value = email || '';
+    
+    // อัปเดตวงกลมตัวอักษรในหน้าโปรไฟล์ดั้งเดิมด้วย
+    const initial = document.getElementById('user-profile-avatar-initial');
+    if (initial) initial.textContent = (name || 'U').trim().charAt(0).toUpperCase();
+  });
+
+  // เปิดให้ saveAvatarIfChanged เข้าถึงได้จากไฟล์อื่น (เช่น 102)
+  window.saveAvatarIfChanged = saveAvatarIfChanged;
 })();

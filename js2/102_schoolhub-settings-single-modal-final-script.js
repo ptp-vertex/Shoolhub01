@@ -670,9 +670,18 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
   }
 
   function setHeader(name, email){
+    // อัปเดตชื่อและอีเมลใน Header/Sidebar
     if ($('user-display-name')) $('user-display-name').textContent = name || 'ผู้ใช้งาน';
     if ($('user-display-email')) $('user-display-email').textContent = email || '';
     if ($('user-avatar-initial')) $('user-avatar-initial').textContent = (name || 'U').trim().charAt(0).toUpperCase();
+    
+    // อัปเดตชื่อในหน้าโปรไฟล์ดั้งเดิม (ถ้ามี) เพื่อให้ข้อมูลตรงกัน
+    if ($('user-profile-display-name')) $('user-profile-display-name').value = name || '';
+    if ($('user-profile-display-email')) $('user-profile-display-email').value = email || '';
+    if ($('user-profile-avatar-initial')) $('user-profile-avatar-initial').textContent = (name || 'U').trim().charAt(0).toUpperCase();
+
+    // แจ้งเตือนส่วนอื่นๆ ของระบบว่าข้อมูลมีการเปลี่ยนแปลง
+    window.dispatchEvent(new CustomEvent('schoolhub-profile-updated', { detail: { name, email } }));
   }
 
   async function saveInlineProfile(){
@@ -683,6 +692,11 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
     const admin = isAdminSession();
     loader(true);
     try{
+      // บันทึกรูปโปรไฟล์ก่อน (ถ้ามีการแก้ไข) - ฟังก์ชันนี้มาจาก 115_schoolhub-profile-avatar-upload-patch.js
+      if (typeof window.saveAvatarIfChanged === 'function') {
+        await window.saveAvatarIfChanged();
+      }
+
       if (admin) {
         const old = await readAdminCred();
         const username = norm($('settings-profile-admin-username-input')?.value || old.username || 'Admin') || 'Admin';
