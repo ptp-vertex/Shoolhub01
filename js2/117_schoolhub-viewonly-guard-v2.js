@@ -77,7 +77,8 @@
   /* ── 2. block ปุ่มเมื่ออยู่ใน view-only ─────────────────── */
   var BUTTON_TARGETS = [
     { name: 'openStarGroupModal',  label: 'ใช้งานระบบดาวกลุ่ม' },
-    { name: 'openBonusScoreModal', label: 'บันทึกคะแนนโบนัสรายสัปดาห์' }
+    { name: 'openBonusScoreModal', label: 'บันทึกคะแนนโบนัสรายสัปดาห์' },
+    { name: 'openStarConversionPopup', label: 'แปลงคะแนนดาวกลุ่ม' }
   ];
 
   function wrapButtonGuard(name, featureName) {
