@@ -3581,3 +3581,9 @@ document.addEventListener('paste', function(e){
 <script id="schoolhub-admin-mail-log-migration" src="js2/135_schoolhub-admin-mail-log-migration.js" type="module"></script>
 <script id="schoolhub-admin-mail-log-ui" src="js2/136_schoolhub-admin-mail-log-ui.js" type="module"></script>
 <!-- ===== END PATCH: Admin Notification System ===== -->
+
+<!-- ===== PATCH: แก้ปัญหาปิด "คะแนนโบนัส" / "ระบบดาว" แล้วกลับมาเปิดเองหลังกดบันทึกแผน =====
+     ทำงานเป็นลำดับสุดท้ายเพื่อบังคับให้ค่า checkbox ที่แอดมินติ๊กไว้จริง ถูกบันทึกทับ
+     ทั้งใน localStorage และ Firestore เสมอ ไม่ว่าสคริปต์ก่อนหน้าจะรีเซ็ตค่าหรือไม่ ===== -->
+<script id="schoolhub-bonus-star-save-guard" src="js2/137_schoolhub-bonus-star-save-guard.js"></script>
+<!-- ===== END PATCH: Bonus/Star Save Guard ===== -->
