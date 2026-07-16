@@ -122,8 +122,18 @@
     window.openModal = wrapped;
   }
 
+  // ยกเว้น overlay ของระบบ "สอนการใช้งาน" (onboarding tour) โดยเฉพาะ
+  // เพราะ #sh-tour-overlay เป็น fixed เต็มจอ + มืด/เบลอ ตรงเงื่อนไข isOverlayBackdrop()
+  // พอดี ทำให้สปินเนอร์ "กำลังโหลด..." โผล่มาซ้อนกลางจอตอนเปิดหน้าสอนทั้งที่ไม่ได้กำลังโหลดอะไรจริง
+  function isTourElement(el){
+    if(!el || el.nodeType !== 1) return false;
+    var id = el.id || '';
+    return id === 'sh-tour-overlay' || id === 'sh-tour-spotlight' || id === 'sh-tour-card';
+  }
+
   function isOverlayBackdrop(el){
     if(!el || el.nodeType !== 1) return false;
+    if(isTourElement(el)) return false;
     var cs;
     try{ cs = getComputedStyle(el); }catch(e){ return false; }
     if(cs.position !== 'fixed') return false;
