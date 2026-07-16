@@ -243,6 +243,15 @@
             await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
             shLoaderProgress(100, 'พร้อมแล้ว');
         }
+        // สำคัญ: ต้อง expose ฟังก์ชันนี้ไว้บน window ด้วย เพราะสคริปต์อื่น (เช่น ระบบ
+        // ล็อกเมนูตามแผน 096_schoolhub-canonical-12-rights-script.js) ต้องการ "ครอบ"
+        // ฟังก์ชันนี้เพื่อรู้ว่าเมื่อไหร่ข้อมูลแผน/สิทธิ์ผู้ใช้ (__currentUserDir) โหลดเสร็จ
+        // แล้วค่อยรีเฟรชสถานะล็อก/ปลดล็อกของปุ่มเมนูต่าง ๆ ให้ตรงกับสิทธิ์จริง
+        // ถ้าไม่ expose ไว้ตรงนี้ การครอบจะหาไม่เจอ (window.loadSchoolHubDataAfterAuth
+        // เป็น undefined) ทำให้การรีเฟรช UI ตามสิทธิ์หลังล็อกอิน "ไม่เกิดขึ้นเลย" —
+        // ปุ่มที่ถูกล็อกไว้ชั่วคราวตอนข้อมูลยังโหลดไม่เสร็จ (เช่น ปุ่มดาว/โบนัสในเมนูมือถือ)
+        // จะค้างเป็นสีเทาต่อไปแม้สิทธิ์จริงจะอนุญาตแล้วก็ตาม
+        window.loadSchoolHubDataAfterAuth = loadSchoolHubDataAfterAuth;
 
         async function forceSchoolHubLogout(options = {}) {
             const redirect = options.redirect !== false;

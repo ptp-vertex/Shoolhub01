@@ -627,4 +627,18 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
   }
   document.addEventListener('DOMContentLoaded', initOnce);
   initOnce();
+
+  // ─── ตาข่ายนิรภัย (safety net) ───────────────────────────────────
+  // ปุ่มบางปุ่ม (เช่น ระบบดาวกลุ่ม/คะแนนโบนัสในเมนูมือถือ) อาจถูกล็อก/เทาไว้ชั่วคราว
+  // ตอนที่ยังโหลดข้อมูลสิทธิ์ผู้ใช้ (__currentUserDir) ไม่เสร็จ แล้วพลาดจังหวะรีเฟรช
+  // ที่ควรเกิดขึ้นหลังข้อมูลโหลดเสร็จ (เช่น เพราะฟังก์ชันที่ต้องครอบไม่ได้ผูกกับ window
+  // ตั้งแต่แรก) ทำให้ค้างเทาถาวรทั้งที่สิทธิ์จริงอนุญาตแล้ว จึงเช็คซ้ำเป็นระยะสั้น ๆ
+  // หลังโหลดหน้า เพื่อให้ UI ล็อก/ปลดล็อกตรงกับสิทธิ์จริงเสมอ โดยไม่ต้องพึ่งจังหวะ
+  // ของฟังก์ชันอื่นเพียงอย่างเดียว
+  var safetyNetTicks = 0;
+  var safetyNetInterval = setInterval(function(){
+    safetyNetTicks++;
+    refreshRightsUI(document);
+    if(safetyNetTicks >= 15) clearInterval(safetyNetInterval); // เช็คซ้ำ ~15 วินาทีแรกหลังโหลดหน้าก็พอ
+  }, 1000);
 })();
