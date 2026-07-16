@@ -389,7 +389,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
     const saveBtn = panel.querySelector('[data-settings-save-profile]');
     if (saveBtn && saveBtn.dataset.schoolhubBound !== '1') {
       saveBtn.dataset.schoolhubBound = '1';
-      saveBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); window.saveSettingsProfileChanges?.(); });
+      saveBtn.addEventListener('click', function(e){ e.preventDefault(); e.stopPropagation(); window.saveUserProfileChanges?.(); });
     }
     const resetBtn = panel.querySelector('[data-settings-reset-password]');
     if (resetBtn && resetBtn.dataset.schoolhubBound !== '1') {
@@ -1171,13 +1171,79 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, getDocs, quer
     $('user-profile-modal')?.classList.remove('hidden');
     return false;
   };
-  window.saveUserProfileChanges = function(){
-    if (typeof __schoolhubProfilePopupSaveUserProfileChanges === 'function') {
-      return __schoolhubProfilePopupSaveUserProfileChanges.apply(this, arguments);
+  window.saveUserProfileChanges = async function(){
+    const isAdmin = isAdminSession();
+    const authUser = auth.currentUser;
+    const displayName = norm($('settings-profile-display-name-input')?.value);
+    if (!displayName) return alertBox('กรอกข้อมูลไม่ครบ', 'กรุณากรอกชื่อที่แสดง', true);
+    
+    // ตั้ง Loading state บนปุ่มบันทึก
+    const saveBtn = document.querySelector('#schoolhub-settings-profile-host button[data-settings-save-profile]');
+    const origHtml = saveBtn?.innerHTML;
+    if (saveBtn) {
+      saveBtn.disabled = true;
+      saveBtn.classList.add('opacity-70','cursor-not-allowed');
+      saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> กำลังบันทึก...';
     }
-    return saveInlineProfile.apply(this, arguments);
+    
+    loader(true);
+    try{
+      // บันทึกรูปโปรไฟล์ก่อน (ถ้ามีการแก้ไข)
+      if (typeof window.saveAvatarIfChanged === 'function') {
+        await window.saveAvatarIfChanged();
+      }
+
+      if (isAdmin) {
+        const old = await readAdminCred();
+        const username = norm($('settings-profile-admin-username-input')?.value || old.username || 'Admin') || 'Admin';
+        const email = norm($('settings-profile-email-input')?.value || old.email || '');
+        const newPass = norm($('settings-admin-profile-password-input')?.value);
+        const password = newPass || old.password || localStorage.getItem('schoolhub_admin_password') || 'Admin123';
+        if (password.length < 6) throw new Error('รหัสผ่าน Admin ต้องมีอย่างน้อย 6 ตัวอักษร');
+        if (email && !isEmail(email)) throw new Error('กรุณากรอกอีเมลให้ถูกต้อง หรือเว้นว่างไว้');
+        await setDoc(doc(db, 'admin_settings', 'credentials'), {
+          username, email, displayName, password,
+          name: displayName,
+          updatedAt: serverTimestamp(),
+          updatedBy: 'admin'
+        }, { merge: true });
+        await setDoc(doc(db, 'admin_settings', 'security'), {
+          requirePasswordChange: false,
+          updatedAt: serverTimestamp(),
+          lastPasswordChange: newPass ? serverTimestamp() : (old.lastPasswordChange || serverTimestamp())
+        }, { merge: true });
+        localStorage.setItem('schoolhub_admin_active', 'true');
+        localStorage.setItem('schoolhub_admin_username', username);
+        localStorage.setItem('schoolhub_admin_name', displayName);
+        localStorage.setItem('schoolhub_admin_email', email || username);
+        if (newPass) localStorage.setItem('schoolhub_admin_password', newPass);
+        setHeader(displayName, email || username);
+        if ($('settings-admin-profile-password-input')) $('settings-admin-profile-password-input').value = '';
+        renderAccountSummary();
+        showCustomAlertToast('บันทึกสำเร็จ', 'บันทึกโปรไฟล์ Admin ลง Firebase แล้ว', 'success');
+      } else {
+        if (!authUser) throw new Error('ไม่พบข้อมูลผู้ใช้ที่เข้าสู่ระบบ');
+        await updateProfile(authUser, { displayName });
+        try {
+          if (typeof window.addUserToDirectory === 'function') await window.addUserToDirectory(authUser, displayName, 'user');
+          else await setDoc(doc(db, 'public_users_directory', String(authUser.email || authUser.uid).toLowerCase()), { uid:authUser.uid, email:authUser.email || '', name:displayName, displayName, role:'user', updatedAt:serverTimestamp() }, { merge:true });
+        } catch(e) { console.warn('directory profile sync skipped:', e); }
+        setHeader(displayName, authUser.email || norm($('settings-profile-email-input')?.value));
+        renderAccountSummary();
+        showCustomAlertToast('บันทึกสำเร็จ', 'แก้ไขข้อมูลแสดงผลของบัญชีเรียบร้อยแล้ว', 'success');
+      }
+    }catch(e){
+      alertBox('บันทึกไม่สำเร็จ', e?.message || String(e), true);
+    }finally{
+      loader(false);
+      if (saveBtn) {
+        saveBtn.disabled = false;
+        saveBtn.classList.remove('opacity-70','cursor-not-allowed');
+        if (origHtml) saveBtn.innerHTML = origHtml;
+      }
+    }
   };
-  window.saveSettingsProfileChanges = saveInlineProfile;
+  window.saveSettingsProfileChanges = function(){ return window.saveUserProfileChanges?.apply(this, arguments); };
   window.renderUserPlans = function(){
     const result = typeof __schoolhubSettingsOriginalRenderUserPlans === 'function'
       ? __schoolhubSettingsOriginalRenderUserPlans.apply(this, arguments)
