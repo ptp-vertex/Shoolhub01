@@ -304,8 +304,36 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
     return { sent: ok, count: items.length, serverSide: false };
   }
 
+  // ตรวจว่าโมดัล custom-alert ถูกปิดแล้วหรือยัง (รอจนกว่าผู้ใช้กด "ตกลง")
+  function waitForCustomAlertClose(timeoutMs) {
+    return new Promise((resolve) => {
+      const modal = document.getElementById('custom-alert');
+      if (!modal) { resolve(); return; } // ไม่มีโมดัล (ใช้ window.alert ปกติซึ่ง block อยู่แล้ว)
+      const isHidden = () => modal.classList.contains('hidden') || modal.style.display === 'none';
+      let settled = false;
+      const finish = () => { if (settled) return; settled = true; observer.disconnect(); resolve(); };
+      const observer = new MutationObserver(() => { if (isHidden()) finish(); });
+      observer.observe(modal, { attributes: true, attributeFilter: ['class', 'style'] });
+      setTimeout(finish, timeoutMs || 20000); // กันพลาด เผื่อโมดัลไม่ถูกปิดด้วยเหตุใดก็ตาม
+    });
+  }
+
   window.sendAdminDailyDigestNow = async function () {
-    const res = await runDailyDigestIfDue(true);
+    const btn = document.getElementById('notif-send-now-btn');
+    if (btn) {
+      if (btn.disabled) return; // กันกดซ้ำระหว่างกำลังส่ง
+      btn.disabled = true;
+      if (btn.dataset.originalHtml === undefined) btn.dataset.originalHtml = btn.innerHTML;
+      btn.innerHTML = '<i class="fas fa-spinner fa-spin mr-1"></i> กำลังส่ง...';
+    }
+
+    let res;
+    try {
+      res = await runDailyDigestIfDue(true);
+    } catch (e) {
+      res = { sent: false, reason: 'error' };
+    }
+
     const mode = res.serverSide ? 'ผ่านเซิร์ฟเวอร์' : 'แบบออนไลน์';
     if (res.sent) alertBox('ส่งแล้ว', `ส่งสรุปประจำวันแล้ว (${res.count || 0} รายการ) — ${mode}`);
     else if (res.reason === 'empty') alertBox('ไม่มีรายการ', 'ยังไม่มีรายการที่ต้องสรุปในตอนนี้');
@@ -313,6 +341,14 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
     else if (res.reason === 'no-email') alertBox('ยังไม่ได้ตั้งอีเมล', 'กรุณาตั้งอีเมลรับการแจ้งเตือนก่อน', true);
     else if (res.reason === 'no-daily-events') alertBox('ไม่เปิด daily', 'ไม่มี event ใดเปิดเป็น daily digest');
     else alertBox('ส่งไม่สำเร็จ', 'ลองใหม่อีกครั้ง หรือตรวจสอบระบบส่งเมล', true);
+
+    // รอจนกว่าผู้ใช้จะกด "ตกลง" ปิดข้อความยืนยัน แล้วค่อยเอาสถานะโหลดออก
+    await waitForCustomAlertClose();
+
+    if (btn) {
+      btn.disabled = false;
+      btn.innerHTML = btn.dataset.originalHtml || '<i class="fas fa-paper-plane mr-1"></i> ส่งสรุปวันนี้ตอนนี้';
+    }
     return res;
   };
 
@@ -370,7 +406,7 @@ import { getFirestore, doc, getDoc, setDoc, updateDoc, collection, addDoc, getDo
             </div>
             <p class="text-[11px] text-slate-400 mt-2">การตั้งค่าเวลา: ระบบจะส่งอัตโนมัติผ่านเซิร์ฟเวอร์ (Google Apps Script) ตามเวลาที่ตั้งไว้ — ไม่จำเป็นต้องเปิดเว็บทิ้งไว้</p>
           </div>
-          <button type="button" onclick="window.sendAdminDailyDigestNow && window.sendAdminDailyDigestNow()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-bold py-2.5 rounded-xl text-sm"><i class="fas fa-paper-plane mr-1"></i> ส่งสรุปวันนี้ตอนนี้</button>
+          <button type="button" id="notif-send-now-btn" onclick="window.sendAdminDailyDigestNow && window.sendAdminDailyDigestNow()" class="w-full bg-slate-100 hover:bg-slate-200 disabled:opacity-70 disabled:cursor-not-allowed text-slate-700 font-bold py-2.5 rounded-xl text-sm"><i class="fas fa-paper-plane mr-1"></i> ส่งสรุปวันนี้ตอนนี้</button>
           <!-- ปุ่มเปิดหน้าประวัติการส่งเมล -->
           <button type="button" onclick="window.openAdminMailLog && window.openAdminMailLog()" class="w-full bg-indigo-50 hover:bg-indigo-100 border border-indigo-200 text-primary font-bold py-2.5 rounded-xl text-sm"><i class="fas fa-history mr-1"></i> ดูประวัติการส่งอีเมลทั้งหมด</button>
         </div>
