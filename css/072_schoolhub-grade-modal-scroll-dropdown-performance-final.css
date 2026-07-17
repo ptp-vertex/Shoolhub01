@@ -1,0 +1,83 @@
+
+#grade-criteria-modal{
+    z-index: 2147483000 !important;
+    align-items: center !important;
+    justify-content: center !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    padding: max(.75rem, env(safe-area-inset-top)) .75rem max(.75rem, env(safe-area-inset-bottom)) !important;
+    -webkit-overflow-scrolling: touch !important;
+}
+#grade-criteria-modal.hidden{ display:none !important; }
+#grade-criteria-modal:not(.hidden){ display:flex !important; }
+#grade-criteria-modal > div{
+    width: min(100%, 32rem) !important;
+    max-width: 32rem !important;
+    max-height: calc(100dvh - 1.5rem) !important;
+    display: flex !important;
+    flex-direction: column !important;
+    overflow: hidden !important;
+    border-radius: 1.6rem !important;
+}
+#grade-criteria-modal > div > .p-6.border-b{
+    flex: 0 0 auto !important;
+    padding: 1rem 1.15rem !important;
+}
+#grade-criteria-modal form{
+    flex: 1 1 auto !important;
+    min-height: 0 !important;
+    overflow-y: auto !important;
+    overflow-x: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 1rem 1.15rem !important;
+    overscroll-behavior: contain !important;
+}
+#grade-criteria-modal form .pt-4.flex.gap-3{
+    position: sticky !important;
+    bottom: 0 !important;
+    background: linear-gradient(to top, #fff 78%, rgba(255,255,255,.92)) !important;
+    padding-top: .9rem !important;
+    padding-bottom: .15rem !important;
+    z-index: 2 !important;
+}
+#grade-criteria-modal input,
+#grade-criteria-modal select,
+#grade-criteria-modal button,
+select,
+select option{
+    transition: none !important;
+    animation: none !important;
+    filter: none !important;
+    will-change: auto !important;
+}
+select{
+    touch-action: manipulation !important;
+    -webkit-tap-highlight-color: transparent !important;
+    cursor: pointer !important;
+}
+@media (max-width: 767px){
+    #grade-criteria-modal{
+        padding: calc(env(safe-area-inset-top) + .6rem) .6rem calc(env(safe-area-inset-bottom) + .6rem) !important;
+    }
+    #grade-criteria-modal > div{
+        width: 100% !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 1.2rem) !important;
+        border-radius: 1.25rem !important;
+    }
+    #grade-criteria-modal .grid.grid-cols-2{
+        grid-template-columns: 1fr !important;
+        gap: .7rem !important;
+    }
+    #grade-criteria-modal form .pt-4.flex.gap-3{
+        flex-direction: column !important;
+    }
+    #grade-criteria-modal form .pt-4.flex.gap-3 button{
+        width: 100% !important;
+        min-height: 44px !important;
+    }
+    select{
+        font-size: 16px !important;
+        transform: translateZ(0) !important;
+    }
+}

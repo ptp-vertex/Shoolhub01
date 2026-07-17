@@ -1,0 +1,16 @@
+
+
+@media (max-width:767px){
+#course-back-btn .mobile-hide-text,
+#course-teachers-btn .mobile-hide-text{
+display:none !important;
+}
+#course-back-btn,
+#course-teachers-btn{
+width:42px !important;
+min-width:42px !important;
+padding:0 !important;
+justify-content:center !important;
+}
+}
+

@@ -1,0 +1,22 @@
+
+/* สปินเนอร์เป็นลูกของ modal (อยู่ในกรอบเดียวกับกล่องป็อปอัพ) เพื่อไม่ให้โดน backdrop-blur ของ
+   modal บัง และใช้ position:absolute (ไม่ใช่ fixed) อ้างอิงกรอบของ modal เอง ซึ่ง modal เอง
+   เป็น position:fixed; inset:0 ครอบเต็มจออยู่แล้ว ผลคือสปินเนอร์เต็มจอเหมือนเดิม แต่ตอนนี้ใช้ระบบ
+   พิกัด/จุดกึ่งกลางเดียวกับกล่องป็อปอัพ (ซึ่งถูกจัดกึ่งกลางด้วย flex ของ modal เหมือนกัน) จึงซ้อนทับ
+   ตรงกลางพอดีเสมอ ไม่เพี้ยนไปด้านข้างเหมือนตอนใช้ fixed (ซึ่งอ้างอิง viewport คนละระบบพิกัดกับ flex) */
+.schoolhub-modal-mini-spinner{
+  position:absolute; inset:0; display:flex; flex-direction:column; align-items:center; justify-content:center;
+  gap:.6rem; background:transparent; pointer-events:none;
+  animation: schoolhubSpinnerFadeIn .12s ease;
+}
+.schoolhub-modal-mini-spinner .sh-spin{
+  width:34px; height:34px; border-radius:50%;
+  border:3px solid rgba(255,255,255,.28); border-top-color:#fff;
+  animation: schoolhubSpin .6s linear infinite;
+}
+.schoolhub-modal-mini-spinner span{
+  font-size:.78rem; font-weight:700; color:#fff;
+  text-shadow:0 1px 4px rgba(0,0,0,.4);
+}
+@keyframes schoolhubSpin{ to { transform:rotate(360deg); } }
+@keyframes schoolhubSpinnerFadeIn{ from{opacity:0;} to{opacity:1;} }

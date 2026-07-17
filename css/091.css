@@ -1,0 +1,193 @@
+
+/* ── Attendance: ลา option (ย้ายไปแก้ใน 032 เพื่อ Priority ที่ถูกต้อง) ── */
+
+/* ── plan-list desktop buttons always clickable ─────────────────── */
+#plan-list td:last-child,
+#plan-list td[style*="pointer-events"] { position:relative !important; z-index:10 !important; pointer-events:auto !important; }
+#plan-list td:last-child button { pointer-events:auto !important; position:relative !important; z-index:11 !important; cursor:pointer !important; }
+
+/* ── plan mobile card sub always visible ───────────────────────── */
+.schoolhub-mobile-plan-card .schoolhub-mobile-card-sub {
+  display:block !important; visibility:visible !important;
+  opacity:1 !important; overflow:visible !important;
+  max-height:none !important; height:auto !important;
+  margin-top:4px !important;
+}
+
+/* ── generic modal overlay ─────────────────────────────────────── */
+.sh-overlay {
+  position:fixed; inset:0; background:rgba(15,23,42,.5);
+  backdrop-filter:blur(4px); z-index:1000010;
+  display:flex; align-items:center; justify-content:center; padding:16px;
+}
+.sh-overlay.hidden { display:none !important; }
+.sh-modal-box {
+  background:#fff; border-radius:24px; width:100%;
+  max-width:500px; overflow:hidden; box-shadow:0 25px 60px rgba(0,0,0,.25);
+  max-height:90vh; display:flex; flex-direction:column;
+}
+.sh-modal-header {
+  padding:18px 22px 14px; border-bottom:1px solid #f1f5f9;
+  background:#f8fafc; display:flex; justify-content:space-between; align-items:center;
+  flex-shrink:0;
+}
+.sh-modal-header h3 { font-size:17px; font-weight:800; color:#1e293b; margin:0; }
+.sh-modal-close {
+  width:32px; height:32px; border-radius:50%; border:1px solid #e2e8f0;
+  background:#fff; cursor:pointer; display:flex; align-items:center;
+  justify-content:center; color:#64748b; font-size:14px; flex-shrink:0;
+}
+.sh-modal-close:hover { background:#fee2e2; color:#ef4444; }
+.sh-modal-body { padding:18px 22px; overflow-y:auto; flex:1; }
+.sh-modal-footer {
+  padding:14px 22px; border-top:1px solid #f1f5f9;
+  display:flex; gap:10px; flex-shrink:0;
+}
+.sh-modal-footer button {
+  flex:1; padding:11px; border-radius:12px; font-weight:700;
+  cursor:pointer; border:none; font-size:14px;
+}
+.sh-btn-cancel { background:#f1f5f9; color:#475569; }
+.sh-btn-cancel:hover { background:#e2e8f0; }
+.sh-btn-save-purple { background:#7c3aed; color:#fff; box-shadow:0 4px 12px rgba(124,58,237,.3); }
+.sh-btn-save-purple:hover { background:#6d28d9; }
+.sh-btn-save-green { background:#059669; color:#fff; box-shadow:0 4px 12px rgba(5,150,105,.3); }
+.sh-btn-save-green:hover { background:#047857; }
+.sh-btn-save-amber { background:#d97706; color:#fff; box-shadow:0 4px 12px rgba(217,119,6,.3); }
+.sh-btn-save-amber:hover { background:#b45309; }
+
+/* ── Bonus score ────────────────────────────────────────────────── */
+.sh-week-row { display:flex; align-items:center; gap:10px; flex-wrap:wrap; margin-bottom:14px; }
+.sh-week-row label { font-weight:700; color:#475569; font-size:14px; }
+.sh-week-row input, .sh-week-row select {
+  padding:6px 10px; border:1px solid #e2e8f0; border-radius:8px; font-size:14px; background:#f8fafc;
+}
+.sh-bonus-table { width:100%; border-collapse:collapse; font-size:14px; }
+.sh-bonus-table th { background:#f1f5f9; padding:8px 10px; font-weight:700; color:#475569; text-align:left; }
+.sh-bonus-table td { padding:8px 10px; border-bottom:1px solid #f8fafc; }
+.sh-bonus-table tbody tr:hover td { background:#f8fafc; }
+.sh-bonus-input {
+  width:72px; padding:5px 8px; border:1px solid #e2e8f0; border-radius:8px;
+  font-size:14px; text-align:center; background:#fff;
+}
+.sh-bonus-input:focus { outline:none; border-color:#4f46e5; box-shadow:0 0 0 2px rgba(79,70,229,.15); }
+
+/* ── Star groups ────────────────────────────────────────────────── */
+.sh-group-card {
+  background:#fffbeb; border:1.5px solid #fde68a; border-radius:14px;
+  padding:12px 14px; margin-bottom:10px;
+}
+.sh-group-top { display:flex; justify-content:space-between; align-items:center; gap:8px; }
+.sh-group-name { font-weight:800; color:#92400e; font-size:15px; }
+.sh-stars-row { display:flex; gap:4px; flex-wrap:wrap; margin-top:8px; }
+.sh-star-btn {
+  width:30px; height:30px; border-radius:7px; cursor:pointer; font-size:15px;
+  border:1px solid #fde68a; background:#fff; display:flex; align-items:center;
+  justify-content:center; transition:background .12s, transform .1s;
+}
+.sh-star-btn:hover { background:#fef9c3; transform:scale(1.15); }
+.sh-star-btn.filled { background:#fef08a; }
+.sh-group-star-count {
+  font-size:12px; font-weight:800; color:#92400e;
+  background:#fef3c7; border-radius:8px; padding:2px 8px;
+  white-space:nowrap; display:inline-flex; align-items:center; gap:3px; flex-shrink:0;
+}
+.sh-rank-pts { display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px; }
+.sh-rank-pts label { font-size:13px; font-weight:700; color:#475569; }
+.sh-rank-pts input {
+  width:52px; padding:5px 6px; border:1px solid #e2e8f0; border-radius:8px;
+  text-align:center; font-size:14px; background:#f8fafc;
+}
+.sh-add-group { display:flex; gap:8px; margin-top:10px; }
+.sh-add-group input {
+  flex:1; padding:8px 12px; border:1.5px solid #e2e8f0; border-radius:10px;
+  font-size:14px; background:#f8fafc;
+}
+.sh-add-group input:focus { outline:none; border-color:#d97706; }
+.sh-add-group button {
+  padding:8px 14px; border-radius:10px; background:#d97706; color:#fff;
+  font-weight:700; border:none; cursor:pointer; font-size:14px;
+}
+.sh-add-group button:hover { background:#b45309; }
+.sh-del-group {
+  background:#fee2e2; border:none; color:#ef4444; border-radius:8px;
+  padding:3px 9px; cursor:pointer; font-size:12px; font-weight:700;
+}
+.sh-del-group:hover { background:#fecaca; }
+.sh-apply-stars-btn {
+  width:100%; padding:9px; border-radius:10px; background:#d97706; color:#fff;
+  font-weight:700; border:none; cursor:pointer; font-size:13px; margin-top:8px;
+}
+.sh-apply-stars-btn:hover { background:#b45309; }
+
+/* ── Week status coloring (Blue / Dark Blue) ── */
+.shdd-week-item.shdd-week-planned { background: #e0f2fe !important; color: #0369a1 !important; border-color: #bae6fd !important; }
+.shdd-week-item.shdd-week-scored { background: #1e3a8a !important; color: #ffffff !important; border-color: #1e3a8a !important; }
+.shdd-week-item.shdd-week-scored.shdd-selected { background: #4f46e5 !important; border-color: #4338ca !important; }
+
+/* ── Week status coloring: ระบบดาว (ส้มเข้ม) / ระบบโบนัส (เขียวเข้ม) ── */
+/* สัปดาห์ที่ให้ดาวไปแล้ว */
+.shdd-week-item.shdd-week-star-scored { background: #9a3412 !important; color: #ffffff !important; border-color: #9a3412 !important; }
+.shdd-week-item.shdd-week-star-scored:hover { background: #7c2d12 !important; }
+/* ยังคงเป็นส้มเข้ม (เข้มขึ้นอีกนิด) ตอนที่สัปดาห์นั้นถูกเลือกอยู่ด้วย แทนที่จะกลายเป็นสีม่วงปกติ */
+.shdd-week-item.shdd-week-star-scored.shdd-selected { background: #7c2d12 !important; border-color: #6c2e12 !important; }
+
+/* สัปดาห์ที่ให้คะแนนโบนัสไปแล้ว */
+.shdd-week-item.shdd-week-bonus-scored { background: #166534 !important; color: #ffffff !important; border-color: #166534 !important; }
+.shdd-week-item.shdd-week-bonus-scored:hover { background: #14532d !important; }
+.shdd-week-item.shdd-week-bonus-scored.shdd-selected { background: #14532d !important; border-color: #0f3d21 !important; }
+
+/* ── ปุ่มปิด (trigger button) ก็ไล่สีตามสัปดาห์ที่กำลังเลือกอยู่เหมือนกัน ── */
+.shdd-btn.shdd-btn-star-scored { background: #fff7ed !important; color: #9a3412 !important; border-color: #fdba74 !important; font-weight: 700; }
+.shdd-btn.shdd-btn-bonus-scored { background: #f0fdf4 !important; color: #166534 !important; border-color: #86efac !important; font-weight: 700; }
+.shdd-btn.shdd-btn-scored { background: #eff6ff !important; color: #1e3a8a !important; border-color: #93c5fd !important; font-weight: 700; }
+.shdd-btn.shdd-btn-planned { background: #f0f9ff !important; color: #0369a1 !important; border-color: #7dd3fc !important; }
+
+/* ── Star Group: Multi-set UI Extensions ── */
+.sh-star-top-row { display: flex; gap: 12px; margin-bottom: 16px; align-items: flex-end; }
+.sh-star-select-item { flex: 1; display: flex; flex-direction: column; gap: 4px; }
+.sh-star-select-item label { font-size: 12px; font-weight: 800; color: #64748b; display: flex; align-items: center; gap: 4px; }
+.sh-star-select-item select { width: 100%; padding: 10px 12px; border: 1.5px solid #e2e8f0; border-radius: 12px; font-size: 14px; font-weight: 700; color: #1e293b; background: #f8fafc; cursor: pointer; outline: none; transition: border-color 0.2s; }
+.sh-star-select-item select:focus { border-color: #4f46e5; }
+
+@media (max-width: 640px) {
+  .sh-star-top-row { flex-direction: column; gap: 10px; }
+}
+
+.sh-starset-card { background: #fff; border: 1.5px solid #e2e8f0; border-radius: 16px; padding: 14px 16px; display: flex; justify-content: space-between; align-items: center; transition: all 0.2s; }
+.sh-starset-card:hover { border-color: #cbd5e1; background: #f8fafc; }
+.sh-starset-info { display: flex; flex-direction: column; gap: 2px; }
+.sh-starset-name { font-weight: 800; color: #1e293b; font-size: 15px; }
+.sh-starset-meta { font-size: 12px; color: #64748b; font-weight: 500; }
+.sh-starset-actions { display: flex; gap: 8px; }
+
+.sh-btn-purple-sm { background: #f5f3ff; color: #7c3aed; border: 1px solid #ddd6fe; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.sh-btn-purple-sm:hover { background: #ede9fe; }
+.sh-btn-red-sm { background: #fef2f2; color: #ef4444; border: 1px solid #fecaca; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.sh-btn-red-sm:hover { background: #fee2e2; }
+.sh-btn-blue-sm { background: #eff6ff; color: #2563eb; border: 1px solid #bfdbfe; padding: 6px 12px; border-radius: 10px; font-size: 12px; font-weight: 800; cursor: pointer; }
+.sh-btn-blue-sm:hover { background: #dbeafe; }
+
+/* Management Modal inside Set */
+.sh-group-manage-card { background: #f8fafc; border: 1px solid #e2e8f0; border-radius: 14px; padding: 12px; }
+.sh-group-manage-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+.sh-group-manage-header-actions { display: flex; gap: 6px; align-items: center; }
+.sh-group-manage-name { font-weight: 800; color: #1e293b; font-size: 14px; }
+
+/* Star Conversion: ประวัติการแปลงคะแนน */
+.sh-conv-history-section { margin-top: 18px; padding-top: 14px; border-top: 1.5px dashed #e2e8f0; }
+.sh-conv-history-title-row { font-size: 13px; font-weight: 800; color: #92400e; margin-bottom: 10px; display: flex; align-items: center; }
+.sh-conv-history-item { display: flex; justify-content: space-between; align-items: center; gap: 10px; background: #fffbeb; border: 1px solid #fde68a; border-radius: 12px; padding: 10px 12px; margin-bottom: 8px; }
+.sh-conv-history-info { display: flex; flex-direction: column; gap: 3px; min-width: 0; }
+.sh-conv-history-title { font-weight: 700; color: #1e293b; font-size: 13px; }
+.sh-conv-history-meta { font-size: 11px; color: #92400e; font-weight: 600; }
+.sh-conv-history-actions { display: flex; gap: 6px; flex-shrink: 0; }
+
+.sh-conv-edit-banner { display: flex; justify-content: space-between; align-items: center; background: #eff6ff; border: 1px solid #bfdbfe; color: #1d4ed8; border-radius: 12px; padding: 8px 12px; margin-bottom: 14px; font-size: 12px; font-weight: 700; }
+.sh-btn-cancel-sm { background: #fff; color: #64748b; border: 1px solid #cbd5e1; padding: 4px 10px; border-radius: 8px; font-size: 11px; font-weight: 800; cursor: pointer; }
+.sh-btn-cancel-sm:hover { background: #f1f5f9; }
+
+@media (max-width: 640px) {
+  .sh-conv-history-item { flex-direction: column; align-items: stretch; }
+  .sh-conv-history-actions { justify-content: flex-end; }
+}

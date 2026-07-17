@@ -1,0 +1,10 @@
+
+  #overview-room-filter.schoolhub-room-filter-ready{display:block!important;margin:0 0 1rem 0!important;padding:0!important;}
+  #overview-room-filter.schoolhub-room-filter-hidden,
+  #overview-room-filter.hidden:empty{display:none!important;margin:0!important;padding:0!important;}
+  .schoolhub-room-selector-mini{display:inline-flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:#fff;border:1px solid #e0e7ff;border-radius:1rem;padding:.5rem .65rem;box-shadow:0 2px 8px rgba(15,23,42,.04);max-width:100%;}
+  .schoolhub-room-selector-mini-label{display:inline-flex;align-items:center;gap:.38rem;color:#4f46e5;font-size:.82rem;font-weight:900;white-space:nowrap;}
+  .schoolhub-room-selector-mini select{border:1px solid #c7d2fe;border-radius:.8rem;padding:.45rem .75rem;color:#4338ca;font-weight:900;font-size:.82rem;background:#fff;outline:none;min-width:115px;}
+  .schoolhub-course-room-preview{display:flex!important;align-items:center;gap:.35rem;margin-top:.45rem;color:#059669!important;background:transparent!important;border:0!important;box-shadow:none!important;padding:0!important;font-size:.78rem!important;font-weight:900!important;line-height:1.35!important;max-width:100%;}
+  .schoolhub-course-room-preview i{color:#4f46e5!important;font-size:.88em;}
+  .schoolhub-course-room-preview span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}

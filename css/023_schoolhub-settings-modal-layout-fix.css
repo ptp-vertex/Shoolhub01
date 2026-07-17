@@ -1,0 +1,235 @@
+
+/* Settings modal layout fix: do not touch score/grade/export/permission systems */
+body.schoolhub-settings-modal-open { overflow: hidden !important; }
+#settings-modal.settings-modal {
+  position: fixed;
+  inset: 0;
+  z-index: 99990;
+  background: rgba(15, 23, 42, .45);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 18px;
+  pointer-events: auto;
+}
+@media (max-width:768px){
+  #settings-modal.settings-modal { padding: 0 !important; }
+}
+#settings-modal.settings-modal.hidden { display: none !important; }
+#settings-modal.settings-modal * { box-sizing: border-box; }
+#settings-modal .settings-dialog {
+  width: min(960px, 96vw);
+  height: min(720px, 90vh);
+  max-height: 90vh;
+  background: #fff;
+  border-radius: 22px;
+  overflow: hidden;
+  display: grid;
+  grid-template-columns: 280px minmax(0, 1fr);
+  box-shadow: 0 30px 80px rgba(15, 23, 42, .28);
+}
+#settings-modal .settings-sidebar {
+  border-right: 1px solid #e5e7eb;
+  background: #fff;
+  padding: 18px 12px;
+  overflow-y: auto;
+  min-width: 0;
+}
+#settings-modal .settings-sidebar-header {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 12px;
+  padding: 0 4px 14px;
+  border-bottom: 1px solid #f1f5f9;
+  margin-bottom: 12px;
+}
+#settings-modal .settings-sidebar-title h3 {
+  margin: 0;
+  font-size: 1.35rem;
+  line-height: 1.25;
+  font-weight: 900;
+  color: #0f172a;
+}
+#settings-modal .settings-sidebar-title p {
+  margin: 6px 0 0;
+  font-size: .82rem;
+  line-height: 1.55;
+  color: #64748b;
+}
+#settings-modal .settings-role-badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px 14px;
+  border-radius: 16px;
+  font-size: .84rem;
+  font-weight: 900;
+  border-width: 1px;
+  border-style: solid;
+}
+#settings-modal .settings-tabs-list {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+#settings-modal .settings-tab,
+#settings-modal .settings-close {
+  pointer-events: auto !important;
+  opacity: 1 !important;
+  cursor: pointer !important;
+}
+#settings-modal .settings-close {
+  width: 42px;
+  height: 42px;
+  min-width: 42px;
+  min-height: 42px;
+  border: 0;
+  background: #f8fafc;
+  color: #475569;
+  border-radius: 14px;
+  font-size: 30px;
+  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: background .15s ease, color .15s ease, transform .15s ease;
+}
+#settings-modal .settings-close:hover {
+  background: #fee2e2;
+  color: #e11d48;
+}
+#settings-modal .settings-tab {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  color: #334155;
+  padding: 12px 14px;
+  border-radius: 14px;
+  text-align: left;
+  font-weight: 900;
+  line-height: 1.35;
+  transition: background .15s ease, color .15s ease;
+}
+#settings-modal .settings-tab:hover { background: #f8fafc; }
+#settings-modal .settings-tab.active {
+  background: #eef2ff;
+  color: #4f46e5;
+}
+#settings-modal .settings-tab[data-settings-tab="contact-messages"].active {
+  background: #fff1f2;
+  color: #e11d48;
+}
+#settings-modal .settings-content {
+  padding: 24px;
+  overflow-y: auto;
+  min-width: 0;
+  -webkit-overflow-scrolling: touch;
+  background: #fff;
+}
+#settings-modal .schoolhub-settings-panel.hidden { display: none !important; }
+#settings-modal .schoolhub-settings-panel { min-width: 0; }
+#settings-modal .schoolhub-settings-inline-profile .p-6 { padding: 0 !important; }
+#settings-modal .schoolhub-settings-inline-profile > div { width: 100%; }
+#settings-modal .schoolhub-settings-inline-profile input,
+#settings-modal .schoolhub-settings-inline-profile textarea,
+#settings-modal .schoolhub-settings-inline-profile select { font-size: 16px; }
+#settings-modal #user-current-plan-box { margin-bottom: 1rem; }
+#settings-modal #user-plan-list { grid-template-columns: repeat(auto-fit, minmax(230px, 1fr)); }
+#settings-modal #user-payment-history-box { margin-top: 1rem; }
+#settings-modal .pricing-card { min-width: 0; }
+.admin-message-badge {
+  min-width: 18px;
+  height: 18px;
+  padding: 0 6px;
+  border-radius: 999px;
+  background: #ef4444;
+  color: white;
+  font-size: 11px;
+  font-weight: 800;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  margin-left: 6px;
+  line-height: 1;
+  vertical-align: middle;
+}
+.admin-message-badge.hidden { display: none !important; }
+#settings-modal .settings-tab .admin-message-badge { margin-left: auto; }
+#settings-modal .schoolhub-admin-message-status-select,
+#settings-modal .schoolhub-admin-message-custom-status,
+#settings-modal .schoolhub-admin-message-note { font-size: 14px; }
+#settings-modal .schoolhub-admin-message-custom-status.hidden { display: none !important; }
+@media (max-width: 768px) {
+  #settings-modal.settings-modal {
+    padding: 0;
+    align-items: stretch;
+    justify-content: stretch;
+  }
+  #settings-modal .settings-dialog {
+    width: 100vw;
+    height: 100dvh;
+    max-height: 100dvh;
+    border-radius: 0;
+    grid-template-columns: 1fr;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+  #settings-modal .settings-sidebar {
+    border-right: 0;
+    border-bottom: 1px solid #e5e7eb;
+    overflow: hidden;
+    padding: max(10px, env(safe-area-inset-top)) 12px 10px;
+  }
+  #settings-modal .settings-sidebar-header {
+    flex-direction: row;
+    align-items: center;
+    gap: 10px;
+    padding: 0 0 10px;
+    margin-bottom: 10px;
+  }
+  #settings-modal .settings-sidebar-title { min-width: 0; flex: 1 1 auto; }
+  #settings-modal .settings-sidebar-title h3 { font-size: 1.05rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #settings-modal .settings-sidebar-title p { display: none; }
+  #settings-modal .settings-role-badge { flex: 0 0 auto; padding: 7px 10px; font-size: .76rem; }
+  #settings-modal .settings-close {
+    width: 46px;
+    height: 46px;
+    min-width: 46px;
+    min-height: 46px;
+    font-size: 32px;
+    border-radius: 16px;
+  }
+  #settings-modal .settings-tabs-list {
+    flex-direction: row;
+    gap: 8px;
+    overflow-x: auto;
+    overflow-y: hidden;
+    -webkit-overflow-scrolling: touch;
+    padding-bottom: 2px;
+  }
+  #settings-modal .settings-tabs-list::-webkit-scrollbar { height: 0; }
+  #settings-modal .settings-tab {
+    width: auto;
+    flex: 0 0 auto;
+    white-space: nowrap;
+    padding: 11px 13px;
+    border-radius: 999px;
+    background: #f8fafc;
+  }
+  #settings-modal .settings-tab.active { background: #eef2ff; }
+  #settings-modal .settings-content {
+    padding: 16px;
+    overflow-y: auto;
+    min-height: 0;
+    flex: 1 1 0;
+  }
+  #settings-modal #schoolhub-settings-panel-contact-admin .grid,
+  #settings-modal #schoolhub-settings-panel-general .grid,
+  #settings-modal #schoolhub-settings-panel-plans .grid,
+  #settings-modal #schoolhub-settings-panel-admin-system .grid,
+  #settings-modal #schoolhub-settings-panel-contact-messages .grid {
+    grid-template-columns: 1fr !important;
+  }
+  #settings-modal #user-plan-list { grid-template-columns: 1fr !important; }
+  #settings-modal #user-payment-history-box .p-5 { padding: 1rem; }
+}

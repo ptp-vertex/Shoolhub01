@@ -1,0 +1,24 @@
+
+/* SchoolHub Email Only UserStats Strict Final */
+#gd-summary-json,
+#gd-summary-json-container {
+    display: none !important;
+}
+#schoolhub-mini-calendar-backdrop.hidden { display: none !important; }
+#schoolhub-mini-calendar-backdrop:not(.hidden) { display: flex !important; }
+#schoolhub-mini-calendar {
+    width: min(360px, calc(100vw - 32px));
+    border: 1px solid rgba(226,232,240,.95);
+    box-shadow: 0 24px 70px rgba(15,23,42,.18);
+}
+.schoolhub-mini-cal-day { width: 38px; height: 38px; }
+.schoolhub-mini-cal-day.is-selected {
+    background: #4f46e5 !important;
+    color: white !important;
+    font-weight: 900 !important;
+}
+.schoolhub-mini-cal-day.is-today:not(.is-selected) {
+    background: #eef2ff !important;
+    color: #4f46e5 !important;
+    font-weight: 900 !important;
+}

@@ -1,0 +1,12 @@
+
+#custom-alert.hidden{display:none!important;}
+#custom-alert:not(.hidden){display:flex!important;}
+#custom-alert button{
+  pointer-events:auto!important;
+  opacity:1!important;
+  cursor:pointer!important;
+}
+
+/* SchoolHub success toast (เฉพาะ "บันทึกสำเร็จ"/"ลบสำเร็จ"/"สำเร็จ"): ต้องบังคับ flex เช่นเดียวกับ #custom-alert ไม่งั้นจะตกไปเป็น display:block แล้วชิดซ้ายบน */
+#custom-alert-toast.hidden{display:none!important;}
+#custom-alert-toast:not(.hidden){display:flex!important;}

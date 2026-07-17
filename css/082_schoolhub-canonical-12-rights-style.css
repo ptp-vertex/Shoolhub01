@@ -1,0 +1,4 @@
+
+.schoolhub-plan-right-locked{opacity:.48!important;filter:grayscale(.25)!important;cursor:not-allowed!important;}
+.schoolhub-plan-right-locked *{cursor:not-allowed!important;}
+.schoolhub-plan-right-locked[aria-disabled="true"]{pointer-events:auto!important;}

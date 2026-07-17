@@ -1,0 +1,19 @@
+
+#shcm-icon-preview-safe i{line-height:1;}
+@media(max-width:767px){
+  #schoolhub-custom-menu-admin-view .shcm-icon-picker-safe-grid{grid-template-columns:56px 1fr!important;}
+}
+#schoolhub-custom-menu-user-view{overflow:visible!important;}
+#schoolhub-custom-menu-user-view .bg-white{overflow:visible!important;}
+#shcm-user-content{overflow:visible!important;}
+#shcm-user-content iframe{
+  width:100%!important;
+  min-height:760px!important;
+  border:0!important;
+  border-radius:1.5rem!important;
+  background:white!important;
+  display:block!important;
+}
+@media(max-width:767px){
+  #shcm-user-content iframe{min-height:820px!important;border-radius:1rem!important;}
+}

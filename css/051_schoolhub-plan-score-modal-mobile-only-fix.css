@@ -1,0 +1,40 @@
+
+@media (max-width: 768px) {
+    #plan-modal.schoolhub-score-plan-modal {
+        position: fixed !important;
+        inset: 0 !important;
+        z-index: 2147483647 !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+        /* เฉพาะมือถือ: เว้นระยะบน/ล่างเท่ากัน เพื่อให้ป็อปอัพอยู่กึ่งกลางจอจริงๆ (เหมือน modal อื่น) */
+        padding: calc(env(safe-area-inset-top) + 1rem) 0.75rem calc(env(safe-area-inset-bottom) + 1rem) !important;
+        background: rgba(15, 23, 42, 0.72) !important;
+        backdrop-filter: blur(6px) !important;
+        overflow: hidden !important;
+        pointer-events: auto !important;
+    }
+    #plan-modal.schoolhub-score-plan-modal.hidden {
+        display: none !important;
+        pointer-events: none !important;
+    }
+    #plan-modal.schoolhub-score-plan-modal:not(.hidden) {
+        pointer-events: auto !important;
+    }
+    #plan-modal.schoolhub-score-plan-modal > div {
+        width: min(100%, 42rem) !important;
+        max-width: 100% !important;
+        max-height: calc(100dvh - 110px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+        overflow: hidden !important;
+        border-radius: 1.35rem !important;
+        position: relative !important;
+        z-index: 2147483647 !important;
+        margin-top: 0 !important;
+    }
+    #plan-modal.schoolhub-score-plan-modal > div > .overflow-y-auto,
+    #plan-modal.schoolhub-score-plan-modal > div > div:nth-child(2) {
+        overflow-y: auto !important;
+        -webkit-overflow-scrolling: touch !important;
+        max-height: calc(100dvh - 180px - env(safe-area-inset-top) - env(safe-area-inset-bottom)) !important;
+    }
+}

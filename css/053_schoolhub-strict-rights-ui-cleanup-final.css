@@ -1,0 +1,46 @@
+
+/* เอาแถบสีฟ้าใต้หัวข้อเลือกรายวิชาออกทั้งหมด */
+[data-plan-rights-badge],
+#page-subtitle + [data-plan-rights-badge],
+.schoolhub-plan-rights-badge{
+  display:none !important;
+  visibility:hidden !important;
+  height:0 !important;
+  min-height:0 !important;
+  max-height:0 !important;
+  margin:0 !important;
+  padding:0 !important;
+  border:0 !important;
+  overflow:hidden !important;
+}
+
+@media (max-width:767px){
+  /* ปุ่มจัดการครูในรายวิชาบนโทรศัพท์ให้เหลือเฉพาะสัญลักษณ์ */
+  #course-teachers-manage-btn .mobile-hide-text,
+  #course-teachers-btn .mobile-hide-text,
+  button[onclick*="openCourseTeachers"] .mobile-hide-text,
+  button[onclick*="openCourseTeachersModal"] .mobile-hide-text{
+    display:none !important;
+  }
+  #course-teachers-manage-btn,
+  #course-teachers-btn,
+  button[onclick*="openCourseTeachers"],
+  button[onclick*="openCourseTeachersModal"]{
+    width:42px !important;
+    min-width:42px !important;
+    max-width:42px !important;
+    height:42px !important;
+    min-height:42px !important;
+    padding:0 !important;
+    gap:0 !important;
+    justify-content:center !important;
+    overflow:hidden !important;
+  }
+  #course-teachers-manage-btn i,
+  #course-teachers-btn i,
+  button[onclick*="openCourseTeachers"] i,
+  button[onclick*="openCourseTeachersModal"] i{
+    margin:0 !important;
+    font-size:1rem !important;
+  }
+}

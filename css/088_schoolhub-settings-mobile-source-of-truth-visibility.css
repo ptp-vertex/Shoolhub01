@@ -1,0 +1,77 @@
+
+/* Settings mobile uses the same desktop DOM; only CSS changes below 768px. */
+@media (max-width: 768px) {
+  #settings-modal.settings-modal {
+    position: fixed !important;
+    inset: 0 !important;
+    z-index: 999999 !important;
+    padding: 0 !important;
+    align-items: stretch !important;
+    justify-content: stretch !important;
+    background: rgba(15, 23, 42, .45) !important;
+  }
+
+  #settings-modal.settings-modal.hidden { display: none !important; }
+
+  #settings-modal .settings-dialog {
+    width: 100vw !important;
+    height: 100dvh !important;
+    max-height: 100dvh !important;
+    border-radius: 0 !important;
+    display: grid !important;
+    grid-template-rows: auto 1fr !important;
+    grid-template-columns: 1fr !important;
+    overflow: hidden !important;
+  }
+
+  #settings-modal .settings-sidebar {
+    display: flex !important;
+    flex-direction: column !important;
+    width: 100% !important;
+    max-height: none !important;
+    min-height: 0 !important;
+    overflow: hidden !important;
+    border-right: 0 !important;
+    border-bottom: 1px solid #e5e7eb !important;
+    padding: 12px !important;
+    gap: 8px !important;
+  }
+
+  #settings-modal .settings-tabs-list {
+    display: flex !important;
+    flex-direction: row !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    overflow-y: hidden !important;
+    -webkit-overflow-scrolling: touch !important;
+    gap: 8px !important;
+    padding-bottom: 4px !important;
+  }
+
+  #settings-modal .settings-tab {
+    flex: 0 0 auto !important;
+    width: auto !important;
+    white-space: nowrap !important;
+  }
+
+  #settings-modal .settings-content {
+    display: block !important;
+    min-height: 0 !important;
+    height: auto !important;
+    max-height: none !important;
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch !important;
+    padding: 16px !important;
+    padding-bottom: 120px !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+
+  #settings-modal .schoolhub-settings-panel:not(.hidden) {
+    display: block !important;
+    visibility: visible !important;
+    opacity: 1 !important;
+    pointer-events: auto !important;
+  }
+}

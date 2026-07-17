@@ -1,0 +1,13 @@
+
+.schoolhub-locked-action-stable{
+  opacity:.5!important;
+  cursor:not-allowed!important;
+  pointer-events:auto!important;
+  filter:grayscale(.15)!important;
+}
+.schoolhub-unlocked-action-stable{
+  opacity:1!important;
+  cursor:pointer!important;
+  pointer-events:auto!important;
+  filter:none!important;
+}

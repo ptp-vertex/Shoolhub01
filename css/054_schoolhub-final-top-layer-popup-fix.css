@@ -1,0 +1,64 @@
+
+  :root{ --schoolhub-top-z: 2147483647; --schoolhub-under-top-z: 2147483646; }
+
+  /* ป็อปอัพแจ้งเตือน/ยืนยันต้องอยู่บนสุดเสมอ แม้มี popup ดาวน์โหลด Excel เปิดอยู่ */
+  #custom-alert{
+    position:fixed!important;
+    inset:0!important;
+    z-index:2147483647!important;
+    background:rgba(15,23,42,.72)!important;
+    backdrop-filter:blur(8px)!important;
+  }
+  #custom-confirm{
+    position:fixed!important;
+    inset:0!important;
+    z-index:2147483646!important;
+    background:rgba(15,23,42,.68)!important;
+    backdrop-filter:blur(7px)!important;
+  }
+  #custom-alert-box,#custom-confirm-box{
+    position:relative!important;
+    z-index:2147483647!important;
+    box-shadow:0 35px 110px rgba(15,23,42,.42)!important;
+  }
+
+  /* SchoolHub success toast (เฉพาะ "บันทึกสำเร็จ"/"ลบสำเร็จ"): ลอยลงจากขอบบน ไม่มี backdrop มืด ไม่บังหน้าจอ */
+  #custom-alert-toast{
+    position:fixed!important;
+    top:0!important;
+    left:0!important;
+    right:0!important;
+    bottom:auto!important;
+    z-index:2147483647!important;
+    background:transparent!important;
+    backdrop-filter:none!important;
+  }
+  #custom-alert-toast-box{
+    position:relative!important;
+    z-index:2147483647!important;
+    box-shadow:0 12px 32px rgba(15,23,42,.14)!important;
+  }
+
+  /* popup ดาวน์โหลด/เลือกช่วง/เลือกห้อง ให้อยู่ต่ำกว่า alert เสมอ */
+  .schoolhub-export-popup,
+  #schoolhub-overview-export-room-modal,
+  #schoolhub-attendance-export-modal,
+  #student-export-room-modal,
+  #export-date-modal,
+  #download-modal{
+    z-index:2147483000!important;
+  }
+  .schoolhub-export-box{
+    position:relative!important;
+    z-index:2147483001!important;
+  }
+
+  /* modal อื่น ๆ อยู่สูง แต่ยังต่ำกว่า custom alert/confirm */
+  #user-profile-modal,#admin-first-setup-modal,#admin-plan-request-popup,#slip-result-popup,#public-announcement-popup,
+  #plan-payment-modal,#course-modal,#student-edit-modal,#grade-criteria-modal,#multi-student-modal,#share-student-modal,#student-share-create-popup,
+  #admin-plan-popup-backdrop,#central-admin-change-modal,#plan-modal{
+    z-index:2147482000!important;
+  }
+
+  /* loader ไม่ควรบัง alert */
+  #global-loader{ z-index:2147481000!important; }

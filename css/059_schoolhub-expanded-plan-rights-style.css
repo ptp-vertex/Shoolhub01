@@ -1,0 +1,43 @@
+
+#schoolhub-expanded-rights-box{
+  border:1px solid #e2e8f0;
+  background:#f8fafc;
+  border-radius:1.25rem;
+  padding:1rem;
+  margin-top:1rem;
+}
+#schoolhub-expanded-rights-box .shr-title{
+  font-weight:900;
+  color:#0f172a;
+  margin-bottom:.75rem;
+  display:flex;
+  align-items:center;
+  gap:.5rem;
+}
+#schoolhub-expanded-rights-box .shr-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:.65rem;
+}
+#schoolhub-expanded-rights-box label{
+  display:flex;
+  align-items:center;
+  gap:.55rem;
+  padding:.7rem .75rem;
+  border:1px solid #e2e8f0;
+  border-radius:1rem;
+  background:white;
+  font-size:.86rem;
+  font-weight:700;
+  color:#334155;
+}
+#schoolhub-expanded-rights-box label:hover{border-color:#c7d2fe;background:#eef2ff;}
+#schoolhub-expanded-rights-box input[type="checkbox"]{
+  width:1rem;height:1rem;accent-color:#4f46e5;
+}
+#schoolhub-expanded-rights-box .shr-hint{
+  font-size:.75rem;color:#64748b;margin-top:.65rem;line-height:1.5;
+}
+@media(max-width:767px){
+  #schoolhub-expanded-rights-box .shr-grid{grid-template-columns:1fr;}
+}

@@ -1,0 +1,51 @@
+
+#user-current-plan-box.schoolhub-no-plan-state{
+  border:0!important;
+  background:transparent!important;
+  color:inherit!important;
+  padding:0!important;
+}
+.schoolhub-no-plan-card-proper{
+  border-radius:1.5rem!important;
+  padding:1.25rem!important;
+  border:1px solid #fecaca!important;
+  background:linear-gradient(135deg,#fff1f2 0%,#ffffff 100%)!important;
+  color:#7f1d1d!important;
+}
+.schoolhub-no-plan-card-proper .no-plan-label{
+  font-size:.875rem!important;
+  font-weight:900!important;
+  color:#dc2626!important;
+}
+.schoolhub-no-plan-card-proper .no-plan-title{
+  font-size:1.5rem!important;
+  line-height:1.25!important;
+  font-weight:900!important;
+  color:#7f1d1d!important;
+  margin-top:.25rem!important;
+}
+.schoolhub-no-plan-card-proper .no-plan-desc{
+  margin-top:.6rem!important;
+  color:#991b1b!important;
+  font-size:.95rem!important;
+  line-height:1.55!important;
+  font-weight:700!important;
+}
+.schoolhub-no-plan-card-proper .meta-grid{
+  display:grid!important;
+  grid-template-columns:repeat(2,minmax(0,1fr))!important;
+  gap:.65rem!important;
+  margin-top:1rem!important;
+}
+.schoolhub-no-plan-card-proper .meta-item{
+  background:rgba(255,255,255,.86)!important;
+  border:1px solid #fecaca!important;
+  border-radius:1rem!important;
+  padding:.75rem .9rem!important;
+  font-size:.85rem!important;
+  font-weight:900!important;
+  color:#991b1b!important;
+}
+@media(max-width:767px){
+  .schoolhub-no-plan-card-proper .meta-grid{grid-template-columns:1fr!important;}
+}

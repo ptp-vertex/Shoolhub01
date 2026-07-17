@@ -1,0 +1,21 @@
+
+#mobile-menu:not(.hidden){
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  padding: 1rem !important;
+}
+#mobile-menu > div{
+  width: min(94vw, 480px) !important;
+  max-width: 480px !important;
+  height: auto !important;
+  max-height: min(85vh, calc(100dvh - 2rem)) !important;
+  border-radius: 1.75rem !important;
+  animation: fadeIn 0.25s ease !important;
+}
+@media (max-width: 480px){
+  #mobile-menu > div{
+    width: min(96vw, 480px) !important;
+    max-height: min(88vh, calc(100dvh - 1.5rem)) !important;
+  }
+}

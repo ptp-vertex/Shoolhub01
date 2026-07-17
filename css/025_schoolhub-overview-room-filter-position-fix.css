@@ -1,0 +1,12 @@
+
+@media (max-width: 768px){
+  #course-tab-overview .table-container > .p-6{align-items:flex-start !important;}
+  #course-tab-overview .table-container > .p-6 > .flex{width:100%; flex-direction:column !important; align-items:stretch !important;}
+  #course-tab-overview .table-container > .p-6 > .flex button,
+  #course-tab-overview #overview-room-filter,
+  #course-tab-overview #overview-room-filter select{width:100%; justify-content:center;}
+  #course-tab-overview #overview-room-filter{order:99;}
+}
+@media (min-width: 769px){
+  #course-tab-overview #overview-room-filter{display:flex;}
+}

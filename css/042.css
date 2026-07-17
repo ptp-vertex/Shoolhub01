@@ -1,0 +1,8 @@
+
+  #overview-room-filter.schoolhub-room-filter-ready{display:block!important;margin-bottom:1rem!important;}
+  #overview-room-filter.schoolhub-room-filter-hidden{display:none!important;margin:0!important;padding:0!important;}
+  .schoolhub-room-selector-mini{display:flex;align-items:center;gap:.5rem;flex-wrap:wrap;background:#fff;border:1px solid #e0e7ff;border-radius:1rem;padding:.55rem .65rem;box-shadow:0 2px 8px rgba(15,23,42,.04);width:fit-content;max-width:100%;}
+  .schoolhub-room-selector-mini-label{display:inline-flex;align-items:center;gap:.4rem;color:#4f46e5;font-size:.82rem;font-weight:900;white-space:nowrap;}
+  .schoolhub-room-selector-mini select{border:1px solid #c7d2fe;border-radius:.8rem;padding:.48rem .75rem;color:#4338ca;font-weight:800;font-size:.82rem;background:#fff;outline:none;min-width:120px;}
+  .schoolhub-course-room-preview{display:inline-flex;align-items:center;gap:.35rem;margin-top:.45rem;color:#059669;background:#ecfdf5;border:1px solid #d1fae5;border-radius:999px;padding:.25rem .55rem;font-size:.72rem;font-weight:900;max-width:100%;}
+  .schoolhub-course-room-preview span{overflow:hidden;text-overflow:ellipsis;white-space:nowrap;}
