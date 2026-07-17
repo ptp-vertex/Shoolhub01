@@ -1,0 +1,29 @@
+/* PATCH: ปุ่ม "ขยายเต็มจอ" สำหรับเมนูเพิ่มเติมที่ฝังมาจากระบบแอดมิน
+   (#schoolhub-custom-menu-user-view โหมดป็อปอัพจาก js2/114 + css/097)
+   กดแล้วป็อปอัพขยายเต็มหน้าจอ (ไม่มีขอบโค้ง ไม่มี padding รอบข้าง) กดซ้ำเพื่อย่อกลับขนาดปกติ */
+.sh-popup-maximize-btn{
+  width: 2.25rem;
+  height: 2.25rem;
+  border-radius: 9999px;
+  background: #fff;
+  border: 1px solid #e2e8f0;
+  color: #475569;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  box-shadow: 0 6px 16px rgba(0,0,0,.12);
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.sh-popup-maximize-btn:hover{ background: #f1f5f9; }
+
+#shcm-popup-maximize-x{ position: absolute; top: .85rem; right: 3.6rem; z-index: 2; }
+
+#schoolhub-custom-menu-user-view.shcm-popup-mode.sh-menu-maximized{ padding: 0 !important; }
+#schoolhub-custom-menu-user-view.shcm-popup-mode.sh-menu-maximized > div{
+  max-width: 100% !important;
+  width: 100% !important;
+  height: 100vh !important;
+  max-height: 100vh !important;
+  border-radius: 0 !important;
+}
