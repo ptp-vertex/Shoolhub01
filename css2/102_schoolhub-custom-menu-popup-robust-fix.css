@@ -1,0 +1,25 @@
+/* PATCH: แก้ปัญหาเมนูหลักเพิ่มเติม (เมนูฝังเว็บ/HTML ที่แอดมินเพิ่ม) ของผู้ใช้งาน
+   1) กันไม่ให้ iframe ขยายความสูงตัวเองจนดันหน้าเว็บทั้งหน้ายาวไม่จบ (บั๊กเดิมจาก
+      js1/065 ที่คำนวณความสูงจาก scrollHeight ของเนื้อหาข้างในแล้วไม่มีเพดานสูงสุด)
+   2) บังคับให้ iframe เต็มพื้นที่กล่องป็อปอัพเสมอ แล้วให้เนื้อหาเลื่อน (scroll)
+      อยู่ภายในป็อปอัพเท่านั้น ไม่ดันความสูงของทั้งหน้าเว็บ
+   ใช้ !important เพื่อให้ชนะ inline style ที่สคริปต์เก่ากำหนดความสูงเป็นพิกเซลไว้ */
+#schoolhub-custom-menu-user-view.shcm-popup-mode #shcm-user-content{
+  display: flex !important;
+  flex-direction: column !important;
+  min-height: 0 !important;
+}
+#schoolhub-custom-menu-user-view.shcm-popup-mode #shcm-user-content iframe{
+  flex: 1 1 auto !important;
+  width: 100% !important;
+  height: 100% !important;
+  max-height: 100% !important;
+  min-height: 0 !important;
+  border: 0 !important;
+  overflow: auto !important;
+}
+
+/* กันหน้าเว็บขาววาบก่อนป็อปอัพจะขึ้น: ซ่อนหน้าเมนูฝังไว้ก่อนจนกว่าจะพร้อมเป็นป็อปอัพจริง */
+#schoolhub-custom-menu-user-view:not(.shcm-popup-mode){
+  display: none !important;
+}
