@@ -3640,6 +3640,10 @@ async function submitPlanRequest(planId){
                 showCustomAlert('โหลดแอดมินไม่ครบ', getFirebaseErrorText(error), true);
             }
         }
+        // PATCH: ต้อง export ขึ้น window เพราะไฟล์อื่น (เช่น js1/009, js1/011) อยู่คนละ <script>
+        // แล้วอ้างอิงชื่อนี้แบบ global ตรงๆ ถ้าไม่ export จะโดน ReferenceError: enterAdminMode is not defined
+        // ซึ่งจะทำให้สคริปต์ตัวนั้นหยุดทำงานกลางคันและหน้าเว็บค้างที่หน้าโหลด
+        window.enterAdminMode = enterAdminMode;
 
 
         window.openUserProfileSettings = () => {

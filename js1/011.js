@@ -69,14 +69,14 @@
           localStorage.setItem('schoolhub_admin_bypass','true');
           localStorage.setItem('schoolhub_admin_name', cfg.name || 'Administrator');
           currentUser = {uid:'admin-bypass', email:'Admin', displayName:cfg.name || 'Administrator'};
-          await enterAdminMode();
+          await window.enterAdminMode();
           toggleLoader(false);
           return;
         }
         if(pass !== 'Admin123'){ toggleLoader(false); return showCustomAlert('รหัสผ่าน Admin ไม่ถูกต้อง','ครั้งแรกเท่านั้นใช้ Admin / Admin123 หลังตั้งค่าแล้วใช้รหัสกลางจากระบบ',true); }
         localStorage.setItem('schoolhub_admin_bypass','true');
         currentUser = {uid:'admin-bypass', email:'Admin', displayName:'Administrator'};
-        await enterAdminMode();
+        await window.enterAdminMode();
         toggleLoader(false);
         setTimeout(()=>openAdminFirstSetupModal(),250);
         return;

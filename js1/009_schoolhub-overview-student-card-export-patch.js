@@ -146,8 +146,8 @@
     await setDoc(doc(db, SCHOOLHUB_ADMIN_CONFIG_PATH[0], SCHOOLHUB_ADMIN_CONFIG_PATH[1]), Object.assign({}, payload, {updatedAt:Date.now()}), {merge:true});
   }
 
-  const __oldEnterAdminModeGlobal = enterAdminMode;
-  enterAdminMode = async function(){
+  const __oldEnterAdminModeGlobal = window.enterAdminMode;
+  window.enterAdminMode = async function(){
     try{
       const cfg = await getSystemAdminConfig_();
       if(cfg && cfg.name) localStorage.setItem('schoolhub_admin_name', cfg.name);
