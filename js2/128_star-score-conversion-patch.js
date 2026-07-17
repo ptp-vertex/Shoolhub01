@@ -149,7 +149,9 @@
     window.__conversionSelectionKey = null;
     window.__conversionSelectedStudentIds = null;
 
-    var setOptions = starSets.map((s, i) => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
+    var setOptions = '<option value="">-- เลือกเซท --</option>'
+      + '<option value="ALL">⭐ เลือกทุกเซท (รวมทุกเซท)</option>'
+      + starSets.map((s, i) => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
 
     var plans = ((state.coursePlans && state.coursePlans[cid]) || []).slice().sort((a,b) => a.week - b.week);
     var planOptions = plans.length
@@ -248,11 +250,46 @@
   };
 
 
+  // คืนค่า "เซต" ที่จะใช้คำนวณ preview/บันทึกจริง — ถ้า setId === 'ALL' จะรวมกลุ่ม/ดาว
+  // จากทุกเซตเข้าด้วยกัน (id ของกลุ่มยังคงเดิม ไม่ชนกันเพราะแต่ละกลุ่มมี id ไม่ซ้ำกันอยู่แล้ว)
+  // ชื่อกลุ่มจะต่อท้ายด้วยชื่อเซตต้นทาง เพื่อไม่ให้สับสนว่ากลุ่มไหนมาจากเซตไหน
+  function getEffectiveSet(starSets, setId){
+    if (setId === 'ALL') {
+      var mergedGroups = [];
+      var mergedWeekStars = {};
+      starSets.forEach(function(s){
+        (s.groups || []).forEach(function(g){
+          mergedGroups.push(Object.assign({}, g, { name: g.name + ' (' + s.name + ')' }));
+        });
+        var ws = s.weekStars || {};
+        Object.keys(ws).forEach(function(wk){
+          if (!mergedWeekStars[wk]) mergedWeekStars[wk] = {};
+          Object.assign(mergedWeekStars[wk], ws[wk]);
+        });
+      });
+      return { id: 'ALL', name: 'ทุกเซท (รวมทุกเซท)', groups: mergedGroups, weekStars: mergedWeekStars };
+    }
+    return starSets.find(s => s.id === setId);
+  }
+
   window.updateConversionPreview = function(){
     var cid = window.currentActiveCourseId;
     var setId = document.getElementById('conversion-set-id').value;
-    var dest = document.getElementById('conversion-dest') ? document.getElementById('conversion-dest').value : 'bonus';
+    var theadElEarly = document.getElementById('conversion-preview-thead');
+    var listElEarly = document.getElementById('conversion-preview-list');
+    var selectAllRowEarly = document.getElementById('conversion-selectall-row');
+
+    // ยังไม่ได้เลือกเซท — โชว์ข้อความให้เลือกก่อน ไม่คำนวณอะไรทั้งสิ้น
+    if (!setId) {
+      window.__currentGroupData = null;
+      window.__currentStudentRows = null;
+      if (selectAllRowEarly) selectAllRowEarly.style.display = 'none';
+      if (theadElEarly) theadElEarly.innerHTML = '';
+      if (listElEarly) listElEarly.innerHTML = '<tr><td colspan="4" style="text-align:center;color:#94a3b8;padding:24px 12px"><i class="fas fa-hand-pointer" style="font-size:22px;display:block;margin-bottom:8px"></i>กรุณาเลือก <b>เซท</b> ก่อน (หรือเลือก "เลือกทุกเซท" เพื่อรวมทุกเซท)</td></tr>';
+      return;
+    }
     var maxInput = document.getElementById('conv-max-score');
+    var dest = document.getElementById('conversion-dest') ? document.getElementById('conversion-dest').value : 'bonus';
 
     // แปลงเข้าสัปดาห์: ล็อกคะแนนสูงสุดให้เท่ากับคะแนนเต็มของงานที่เลือกเสมอ (กันแปลงคะแนนเกินคะแนนเต็มของงานนั้น)
     if (dest === 'week') {
@@ -276,7 +313,7 @@
 
     var starCourseData = (state.starGroups && state.starGroups[cid]) || {};
     var starSets = starCourseData.sets || [];
-    var currentSet = starSets.find(s => s.id === setId);
+    var currentSet = getEffectiveSet(starSets, setId);
     if (!currentSet) return;
 
     var groups = currentSet.groups || [];
@@ -535,11 +572,15 @@
 
     var groupData = window.__currentGroupData;
     var setId = document.getElementById('conversion-set-id').value;
+    if (!setId) {
+      if (window.showCustomAlert) window.showCustomAlert('กรุณาเลือกเซท', 'กรุณาเลือกเซท (หรือ "เลือกทุกเซท") ก่อนบันทึกคะแนน', true);
+      return;
+    }
     var dest = document.getElementById('conversion-dest') ? document.getElementById('conversion-dest').value : 'bonus';
     var maxS = parseFloat(document.getElementById('conv-max-score').value) || 0;
     var minS = parseFloat(document.getElementById('conv-min-score').value) || 0;
     var starCourseData = (state.starGroups && state.starGroups[cid]) || {};
-    var currentSet = (starCourseData.sets || []).find(s => s.id === setId);
+    var currentSet = getEffectiveSet(starCourseData.sets || [], setId);
     if (!currentSet) return;
 
     // โหมด "รายคน" — เฉพาะคนที่ติ๊กไว้เท่านั้นที่จะถูกบันทึกคะแนน
