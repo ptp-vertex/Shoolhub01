@@ -477,6 +477,12 @@ import { getFirestore, doc, getDoc, setDoc } from "https://www.gstatic.com/fireb
     // ว่าเป็นฟีเจอร์ที่ต้องเช็คแผน (เช่น "ลบรูปโปรไฟล์" ไม่ใช่ "ลบข้อมูล" นักเรียน/คะแนน)
     if(el.hasAttribute && el.hasAttribute('data-schoolhub-always-allowed')) return '';
     if(el.closest && el.closest('[data-schoolhub-always-allowed]')) return '';
+    // FIX: ปุ่ม "สมัคร/เปลี่ยนแผน" (requestSubscriptionPlan / openPlanPaymentModal) เรียกด้วย
+    // planId เป็นพารามิเตอร์ เช่น requestSubscriptionPlan('team') สำหรับแพ็กเกจชื่อ "ทีม"
+    // ทำให้ onclick attribute มีคำว่า "team" ปนอยู่ แล้วโดน regex ด้านล่าง (คำว่า team) จับผิด
+    // ว่าเป็นการใช้ฟีเจอร์ "จัดการครูในรายวิชา" ทั้งที่จริงๆ คือปุ่มสมัครแผนเฉยๆ ไม่ควรถูกเช็ค
+    // สิทธิ์ของแผนปัจจุบันเลย (เพราะจุดประสงค์คือ "เปลี่ยน" ไปแผนนั้น ไม่ใช่ "ใช้" ฟีเจอร์นั้น)
+    if(/requestSubscriptionPlan\s*\(|openPlanPaymentModal\s*\(/.test(el.getAttribute('onclick') || '')) return '';
     const s = [
       el.getAttribute('onclick') || '',
       el.getAttribute('data-tab') || '',
