@@ -5,6 +5,19 @@
 
   function esc(v){ try { return window.escapeHTML ? window.escapeHTML(v) : String(v||'').replace(/[&<>"']/g, m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m])); } catch(e){ return String(v||''); } }
 
+  // หานักเรียนทั้งหมดของวิชานี้ (แบบเดียวกับหน้าภาพรวม) โดยไม่พึ่ง window.getOverviewStudents
+  // เพราะฟังก์ชันนั้นเป็นฟังก์ชันภายในของอีกไฟล์ (ไม่ได้ผูกไว้กับ window)
+  function shClassName(st){ return (window.getStudentClassName ? window.getStudentClassName(st) : (st && (st.room||st.classroom||st.grade)) || '-').toString().trim() || '-'; }
+  function getCourseStudentsForConversion(courseId){
+    if (!courseId || !window.state) return [];
+    var course = (state.courses||[]).find(c=>c.id===courseId) || {};
+    var rooms = Array.isArray(course.studentRooms) ? course.studentRooms : (Array.isArray(course.studentGrades) ? course.studentGrades : []);
+    var extraIds = Array.isArray(course.extraStudentIds) ? course.extraStudentIds : [];
+    if (!rooms.length && !extraIds.length) return [];
+    return (state.students||[]).filter(st => rooms.includes(shClassName(st)) || extraIds.includes(st.id))
+      .sort((a,b)=>String(shClassName(a)).localeCompare(String(shClassName(b)),'th',{numeric:true}) || String(a.code||'').localeCompare(String(b.code||''),'th',{numeric:true}) || String(a.name||'').localeCompare(String(b.name||''),'th'));
+  }
+
   // 0. ตัวจับดับเบิลคลิกแบบ delegation ที่ document (ยิงก่อนใครทั้งหมดในเฟส capture
   //    และไม่สนใจว่า <th> ตัวเดิมจะถูกสร้างใหม่ระหว่างคลิกที่ 1 กับ 2 หรือไม่)
   var STAR_HEADER_SELECTOR = '[data-sh-stargroup-header="1"]';
@@ -73,8 +86,7 @@
     }
 
 
-    var overview = window.getOverviewStudents ? window.getOverviewStudents(cid) : {students:[]};
-    var courseStudents = overview.students;
+    var courseStudents = getCourseStudentsForConversion(cid);
     var rows = table.querySelectorAll('tbody tr');
     var starCourseData = (state.starGroups && state.starGroups[cid]) || {};
     var starSets = starCourseData.sets || [];
@@ -275,8 +287,7 @@
   // เมื่อเลือก "ทุกเซท" — คำนวณดาวรวมของ "รายคน" เหมือนหน้าภาพรวม (รวมดาวจากทุกกลุ่ม/ทุกเซทที่นักเรียนคนนั้นอยู่)
   // แทนที่จะรวมเป็น "กลุ่ม" แบบเดิม แล้วเรียงลำดับตามรายชื่อหน้าภาพรวม
   function computeAllModeStudentRows(cid, starSets){
-    var overview = window.getOverviewStudents ? window.getOverviewStudents(cid) : {students:[]};
-    var courseStudents = overview.students || [];
+    var courseStudents = getCourseStudentsForConversion(cid);
     return courseStudents.map(function(st){
       var totalStars = 0;
       starSets.forEach(function(s){
