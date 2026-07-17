@@ -172,13 +172,18 @@ function buildOptions(panel, wrap, sel){
             other.dispatchEvent(new Event('change',{bubbles:true}));
           }
         });
-        // Also call any global function named in the *first* onchange found for this ID
-        var canonical = document.querySelector('select[id="'+sel.id+'"][onchange]');
-        if(!canonical && sel.hasAttribute('onchange')) canonical = sel;
-        if(canonical){
-          var fn = (canonical.getAttribute('onchange')||'').replace(/\s*\(.*$/,'').trim();
-          if(fn && typeof window[fn]==='function') window[fn]();
-        }
+        // NOTE: previously this also called `window[fn]()` (the function named
+        // in the select's onchange attribute, e.g. shStarSelectSet) directly
+        // with NO arguments, as a "just in case" fallback. That call ran AFTER
+        // the change event above had already correctly invoked the handler
+        // with the picked value (e.g. shStarSelectSet('set_xxx')), and since it
+        // passed no argument, it immediately re-ran the handler with
+        // `id = undefined`, resetting the just-made selection back to null.
+        // This was the cause of "เลือกเซทแล้วแต่ข้อมูลด้านล่างยังบอกให้เลือกเซท".
+        // The change event dispatched on `sel` already invokes any onchange
+        // handler bound to it (inline onchange="fn(this.value)" becomes a real
+        // change listener), so this extra manual call is unnecessary and unsafe
+        // to keep — removed.
       }
 
       syncLabel(wrap, sel);
