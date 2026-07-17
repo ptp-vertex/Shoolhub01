@@ -146,6 +146,8 @@
     // ใช้สไตล์ป็อปอัพมาตรฐานเดียวกับระบบโบนัส (sh-overlay/sh-modal-box) แต่ธีมสีเป็นของระบบดาว (ส้มอำพัน)
     pop.className = 'sh-overlay';
     window.__editingConversionHistoryId = null;
+    window.__conversionSelectionKey = null;
+    window.__conversionSelectedStudentIds = null;
 
     var setOptions = starSets.map((s, i) => `<option value="${s.id}">${esc(s.name)}</option>`).join('');
 
@@ -172,6 +174,20 @@
           </div>
 
           <div class="sh-week-row">
+            <label><i class="fas fa-user-check" style="color:#d97706;margin-right:4px"></i>เลือกแบบ</label>
+            <select id="conversion-mode" style="flex:1;min-width:160px" onchange="window.onConversionModeChange()">
+              <option value="group">ทั้งเซต (ตามกลุ่ม)</option>
+              <option value="individual">รายคน (เลือกเอง)</option>
+            </select>
+          </div>
+
+          <div class="sh-week-row" id="conversion-selectall-row" style="display:none">
+            <label style="cursor:pointer;display:flex;align-items:center;gap:6px">
+              <input type="checkbox" id="conversion-select-all" checked onchange="window.toggleConversionSelectAll(this.checked)"> ติ๊กแปลงทุกคน
+            </label>
+          </div>
+
+          <div class="sh-week-row">
             <label><i class="fas fa-route" style="color:#d97706;margin-right:4px"></i>แปลงเข้า</label>
             <select id="conversion-dest" style="flex:1;min-width:160px" onchange="window.onConversionDestChange()">
               <option value="bonus">คะแนนโบนัส</option>
@@ -192,7 +208,7 @@
           </div>
 
           <table class="sh-bonus-table">
-            <thead><tr><th width="40" style="text-align:center">ลำดับ</th><th>กลุ่ม</th><th style="text-align:center">ดาวรวม</th><th style="text-align:center">คะแนนที่แปลง</th></tr></thead>
+            <thead id="conversion-preview-thead"><tr><th width="40" style="text-align:center">ลำดับ</th><th>กลุ่ม</th><th style="text-align:center">ดาวรวม</th><th style="text-align:center">คะแนนที่แปลง</th></tr></thead>
             <tbody id="conversion-preview-list"></tbody>
           </table>
 
@@ -297,7 +313,61 @@
       g.scaledScore = Math.round(g.scaledScore * 100) / 100;
     });
 
-    var previewHtml = groupData.map(g => `
+    var mode = document.getElementById('conversion-mode') ? document.getElementById('conversion-mode').value : 'group';
+    var selectAllRow = document.getElementById('conversion-selectall-row');
+    if (selectAllRow) selectAllRow.style.display = (mode === 'individual') ? '' : 'none';
+
+    var theadEl = document.getElementById('conversion-preview-thead');
+    var listEl = document.getElementById('conversion-preview-list');
+
+    if (mode === 'individual') {
+      // ขยายข้อมูลจาก "รายกลุ่ม" เป็น "รายคน" — แต่ละคนสืบคะแนน/ดาวมาจากกลุ่มของตัวเอง
+      var studentRows = [];
+      groupData.forEach(g => {
+        var groupObj = currentSet.groups.find(x => x.id === g.id);
+        var members = (groupObj && groupObj.members) || [];
+        members.forEach(stId => {
+          var stu = (state.students || []).find(x => x.id === stId);
+          studentRows.push({ studentId: stId, studentName: stu ? (stu.name || stId) : stId, groupName: g.name, stars: g.stars, rank: g.rank, scaledScore: g.scaledScore });
+        });
+      });
+
+      // รีเซ็ตการติ๊กเฉพาะตอนเปลี่ยนเซต/โหมด ไม่ใช่ทุกครั้งที่พิมพ์คะแนนสูงสุด-ต่ำสุด
+      var selKey = 'individual|' + setId;
+      if (window.__conversionSelectionKey !== selKey || !window.__conversionSelectedStudentIds) {
+        window.__conversionSelectionKey = selKey;
+        window.__conversionSelectedStudentIds = new Set(studentRows.map(r => r.studentId));
+      }
+      var selectedIds = window.__conversionSelectedStudentIds;
+
+      if (theadEl) theadEl.innerHTML = '<tr><th width="34" style="text-align:center"></th><th width="40" style="text-align:center">ลำดับ</th><th>ชื่อ</th><th style="text-align:center">ดาวรวม</th><th style="text-align:center">คะแนนที่แปลง</th></tr>';
+
+      var selectAllCb = document.getElementById('conversion-select-all');
+      if (selectAllCb) selectAllCb.checked = studentRows.length > 0 && studentRows.every(r => selectedIds.has(r.studentId));
+
+      var previewHtml = studentRows.map(r => {
+        var checked = selectedIds.has(r.studentId);
+        return `
+      <tr style="${checked ? '' : 'opacity:.4'}">
+        <td style="text-align:center"><input type="checkbox" ${checked ? 'checked' : ''} onchange="window.toggleConversionStudent('${r.studentId}', this.checked)"></td>
+        <td style="text-align:center;font-weight:800;color:#92400e">#${r.rank}</td>
+        <td style="font-weight:700;color:#1e293b">${esc(r.studentName)} <span style="font-size:11px;color:#94a3b8;font-weight:600">(${esc(r.groupName)})</span></td>
+        <td style="text-align:center">${r.stars} ⭐</td>
+        <td style="text-align:center;font-weight:800;color:#d97706">${window.formatScoreDisplay(r.scaledScore, 2)}</td>
+      </tr>
+        `;
+      }).join('');
+
+      if (listEl) listEl.innerHTML = previewHtml;
+      window.__currentStudentRows = studentRows;
+    } else {
+      window.__conversionSelectionKey = null;
+      window.__conversionSelectedStudentIds = null;
+      window.__currentStudentRows = null;
+
+      if (theadEl) theadEl.innerHTML = '<tr><th width="40" style="text-align:center">ลำดับ</th><th>กลุ่ม</th><th style="text-align:center">ดาวรวม</th><th style="text-align:center">คะแนนที่แปลง</th></tr>';
+
+      var previewHtml = groupData.map(g => `
       <tr>
         <td style="text-align:center;font-weight:800;color:#92400e">#${g.rank}</td>
         <td style="font-weight:700;color:#1e293b">${esc(g.name)}</td>
@@ -306,9 +376,30 @@
       </tr>
     `).join('');
 
-    var listEl = document.getElementById('conversion-preview-list');
-    if (listEl) listEl.innerHTML = previewHtml;
+      if (listEl) listEl.innerHTML = previewHtml;
+    }
+
     window.__currentGroupData = groupData;
+  };
+
+  // สลับติ๊ก/ไม่ติ๊กนักเรียนรายคนในโหมด "รายคน"
+  window.toggleConversionStudent = function(studentId, checked){
+    if (!window.__conversionSelectedStudentIds) window.__conversionSelectedStudentIds = new Set();
+    if (checked) window.__conversionSelectedStudentIds.add(studentId);
+    else window.__conversionSelectedStudentIds.delete(studentId);
+    window.updateConversionPreview();
+  };
+
+  // ปุ่ม "ติ๊กแปลงทุกคน" — ติ๊ก/ยกเลิกติ๊กทุกแถวพร้อมกัน
+  window.toggleConversionSelectAll = function(checked){
+    var rows = window.__currentStudentRows || [];
+    window.__conversionSelectedStudentIds = checked ? new Set(rows.map(r => r.studentId)) : new Set();
+    window.updateConversionPreview();
+  };
+
+  // เปลี่ยนโหมด (ทั้งเซต / รายคน) — แค่ต้อง re-render preview ใหม่
+  window.onConversionModeChange = function(){
+    window.updateConversionPreview();
   };
 
   // 3. ประวัติการแปลงคะแนน (เก็บแยกเป็นรายการต่อครั้ง แก้ไข/ลบทีหลังได้)
@@ -451,6 +542,14 @@
     var currentSet = (starCourseData.sets || []).find(s => s.id === setId);
     if (!currentSet) return;
 
+    // โหมด "รายคน" — เฉพาะคนที่ติ๊กไว้เท่านั้นที่จะถูกบันทึกคะแนน
+    var conversionMode = document.getElementById('conversion-mode') ? document.getElementById('conversion-mode').value : 'group';
+    var selectedIds = (conversionMode === 'individual') ? (window.__conversionSelectedStudentIds || new Set()) : null;
+    if (selectedIds && selectedIds.size === 0) {
+      if (window.showCustomAlert) window.showCustomAlert('กรุณาเลือกนักเรียน', 'กรุณาติ๊กเลือกนักเรียนอย่างน้อย 1 คนก่อนบันทึกคะแนน', true);
+      return;
+    }
+
     var history = getConversionHistory(cid);
     var editingId = window.__editingConversionHistoryId;
     var existingRec = editingId ? history.find(h => h.id === editingId) : null;
@@ -477,6 +576,7 @@
         var groupObj = currentSet.groups.find(x => x.id === g.id);
         if (groupObj && groupObj.members) {
           groupObj.members.forEach(stId => {
+            if (selectedIds && !selectedIds.has(stId)) return;
             recordsObj[stId] = Math.max(0, Math.min(g.scaledScore, plan.maxScore));
           });
         }
@@ -501,6 +601,7 @@
         var groupObj = currentSet.groups.find(x => x.id === g.id);
         if (groupObj && groupObj.members) {
           groupObj.members.forEach(stId => {
+            if (selectedIds && !selectedIds.has(stId)) return;
             state.bonusScores[cid][week][stId] = g.scaledScore;
           });
         }
@@ -510,13 +611,16 @@
     // เก็บสมาชิกของแต่ละกลุ่ม ณ ตอนแปลง ไว้ในประวัติ เพื่อให้ย้อนกลับ/แก้ไขภายหลังได้ถูกต้อง
     var groupDataSnapshot = groupData.map(function(g){
       var groupObj = currentSet.groups.find(x => x.id === g.id);
-      return { id: g.id, name: g.name, stars: g.stars, rank: g.rank, scaledScore: g.scaledScore, members: (groupObj && groupObj.members) ? groupObj.members.slice() : [] };
+      var members = (groupObj && groupObj.members) ? groupObj.members.slice() : [];
+      if (selectedIds) members = members.filter(function(m){ return selectedIds.has(m); });
+      return { id: g.id, name: g.name, stars: g.stars, rank: g.rank, scaledScore: g.scaledScore, members: members };
     });
 
     var record = Object.assign({
       id: recId,
       setId: setId,
       setName: currentSet.name,
+      mode: conversionMode,
       dest: dest,
       maxScore: maxS,
       minScore: minS,
