@@ -59,51 +59,54 @@ W.openStarGroupModal = function(){
       if(typeof window.showCustomAlert === 'function') window.showCustomAlert('ไม่มีสิทธิ์ใช้งาน','แผนปัจจุบันไม่รองรับระบบดาว กรุณาอัปเกรดแผน', true);
       return;
   }
-  starCourseData(cid);
+  const cd = starCourseData(cid);
+  // ทุกครั้งที่ "เข้ามา" ใหม่ (เปิด modal) และมีเซทตั้งแต่ 2 ขึ้นไป ให้เริ่มที่ "-- เลือกเซต --"
+  // เสมอ ไม่ยึดค่าที่เคยเลือกไว้ในรอบก่อน — ตรงตามที่ต้องการ: 1 เซท = auto-select,
+  // 2+ เซท = ต้องเลือกเองทุกครั้งที่เข้ามา
+  if ((cd.sets || []).length > 1) cd.currentSetId = null;
+  renderStarSetSelector();
   shStarRender();
   document.getElementById('sh-star-modal').classList.remove('hidden');
 };
 
 W.shStarClose=function(){ document.getElementById('sh-star-modal').classList.add('hidden'); };
 
+// สร้าง/รีเฟรช dropdown "เลือกเซต" เท่านั้น — เรียกเฉพาะตอนที่รายการเซทเปลี่ยนจริงๆ
+// (เปิด modal ใหม่ / เพิ่ม / ลบ / เปลี่ยนชื่อเซท) ห้ามเรียกจาก shStarRender ทุกครั้งที่
+// กดดาวหรือสลับสัปดาห์ เพราะการเขียน innerHTML ทับ <select> ขณะที่มันกำลังยิง
+// event "change" ของตัวเอง (เช่นตอนผู้ใช้เพิ่งเลือกเซทอื่น) ทำให้ค่าที่เพิ่งเลือกเด้ง
+// กลับไปที่ placeholder ได้ในบางเบราว์เซอร์ — นี่คือสาเหตุของปัญหา "เลือกเซทอื่นไม่ติด"
+function renderStarSetSelector(){
+  const cid=getCid(); if(!cid) return;
+  const cd=starCourseData(cid);
+  const sets = cd.sets || [];
+  const setSel = document.getElementById('sh-star-set-select');
+  if (!setSel) return;
+
+  let opts = '';
+  if (sets.length === 1) {
+    if (!cd.currentSetId) cd.currentSetId = sets[0].id;
+    opts = `<option value="${sets[0].id}" selected>${esc(sets[0].name)}</option>`;
+  } else if (sets.length > 1) {
+    if (cd.currentSetId && !sets.some(s => s.id === cd.currentSetId)) cd.currentSetId = null;
+    opts = '<option value="">-- เลือกเซต --</option>';
+    sets.forEach(s => {
+      opts += `<option value="${s.id}" ${s.id===cd.currentSetId?'selected':''}>${esc(s.name)}</option>`;
+    });
+  } else {
+    opts = '<option value="">ยังไม่มีเซต</option>';
+  }
+  setSel.innerHTML = opts;
+  setSel.value = cd.currentSetId || '';
+}
+
 W.shStarRender=function(){
   const cid=getCid(); if(!cid) return;
   const cd=starCourseData(cid);
   const sets = cd.sets || [];
-  
-  // Render Set Selector
-  const setSel = document.getElementById('sh-star-set-select');
-  if (setSel) {
-    let opts = '';
-    // If only 1 set, auto-select it (hide placeholder)
-    if (sets.length === 1) {
-      if (!cd.currentSetId) {
-        cd.currentSetId = sets[0].id;
-      }
-      opts = `<option value="${sets[0].id}" selected>${esc(sets[0].name)}</option>`;
-    } else if (sets.length > 1) {
-      // Multiple sets: require manual selection. If currentSetId was carried
-      // over from back when there was only 1 set (auto-selected), it's no
-      // longer valid now that there are 2+ — reset so the placeholder shows
-      // by default instead of silently keeping "เซตที่ 1" selected.
-      if (cd.currentSetId && !sets.some(s => s.id === cd.currentSetId)) {
-        cd.currentSetId = null;
-      }
-      opts = '<option value="">-- เลือกเซต --</option>';
-      sets.forEach(s => {
-        opts += `<option value="${s.id}" ${s.id===cd.currentSetId?'selected':''}>${esc(s.name)}</option>`;
-      });
-    } else {
-      // No sets yet
-      opts = '<option value="">ยังไม่มีเซต</option>';
-    }
-    setSel.innerHTML = opts;
-    // Safety net: explicitly sync the live DOM value to cd.currentSetId.
-    // Relying only on the "selected" attribute in the HTML string above can
-    // fail to stick in some cases, which is what made picking a different
-    // set appear to "bounce back" to the placeholder.
-    setSel.value = cd.currentSetId || '';
-  }
+
+  // หมายเหตุ: ตัว dropdown "เลือกเซต" ไม่ถูกแตะจากฟังก์ชันนี้แล้ว — ดู renderStarSetSelector()
+  // ด้านบน เพื่อไม่ให้ไปรบกวนค่าที่ผู้ใช้เพิ่งเลือกขณะ event "change" ของ select ยังทำงานอยู่
 
   // Render Week Selector (Always force manual selection — placeholder as default)
   const weekSel = document.getElementById('sh-star-week');
@@ -268,6 +271,7 @@ W.shStarRenameSet = async function(id){
   if(!trimmed){ alert2('ชื่อไม่ถูกต้อง','กรุณากรอกชื่อเซต'); return; }
   set.name = trimmed;
   shStarSetRender();
+  renderStarSetSelector();
   shStarRender();
   await dbSave();
 };
@@ -286,6 +290,7 @@ W.shStarAddSet = function(){
   cd.currentSetId = (cd.sets.length === 1) ? newSet.id : null;
   inp.value = '';
   shStarSetRender();
+  renderStarSetSelector();
   shStarRender();
 };
 
@@ -294,8 +299,12 @@ W.shStarDelSet = function(id){
     const cid=getCid(); if(!cid) return;
     const cd=starCourseData(cid);
     cd.sets = cd.sets.filter(s => s.id !== id);
-    if(cd.currentSetId === id) cd.currentSetId = cd.sets.length > 0 ? cd.sets[0].id : null;
+    if(cd.currentSetId === id){
+      // เหลือเซทเดียว = auto-select ให้; เหลือ 0 หรือ 2+ = ต้องเลือกเอง
+      cd.currentSetId = (cd.sets.length === 1) ? cd.sets[0].id : null;
+    }
     shStarSetRender();
+    renderStarSetSelector();
     shStarRender();
     await dbSave();
   });
