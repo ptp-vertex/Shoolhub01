@@ -135,13 +135,16 @@
   document.addEventListener('DOMContentLoaded', installShowCustomAlert);
   window.__schoolhubReinstallShowCustomAlert = installShowCustomAlert;
 
-  var oldConfirm = window.showCustomConfirm;
   // Re-entrancy guard: prevents the "confirm asks to confirm again instead of
   // showing success" symptom that happened when showCustomConfirm was invoked
   // more than once for the same action (e.g. a click handler firing twice),
   // which used to stack a second confirm dialog on top of / after the first.
   window.__shConfirmBusy = false;
-  window.showCustomConfirm = function(title,message,confirmCallback,cancelCallback){
+  function installShowCustomConfirm(){
+  var already = window.showCustomConfirm;
+  if(already && already.__schoolhubConfirmPatched) return; // กันติดตั้งซ้ำทับตัวเอง
+  var oldConfirm = window.showCustomConfirm;
+  var patchedConfirm = function(title,message,confirmCallback,cancelCallback){
     var modal = document.getElementById('custom-confirm');
     var box = document.getElementById('custom-confirm-box');
     if(!modal || !box){
@@ -182,6 +185,16 @@
     modal.classList.remove('hidden');
     setTimeout(function(){ box.classList.remove('scale-95','opacity-0'); box.classList.add('scale-100','opacity-100'); }, 10);
   };
+  patchedConfirm.__schoolhubConfirmPatched = true;
+  window.showCustomConfirm = patchedConfirm;
+  }
+  installShowCustomConfirm();
+  // สำคัญ: js1/007.js โหลดแบบ type="module" จึงทำงาน "หลัง" สคริปต์ปกติทุกตัว (รวมไฟล์นี้)
+  // และมันมีการเซ็ต window.showCustomConfirm = ... ของตัวเองทับอีกที ทำให้ตัวกันกดยืนยันซ้ำ
+  // (re-entrancy guard) หายไป เกิดอาการป็อปอัพยืนยันขึ้นซ้อนกัน 2 รอบ ต้องติดตั้งซ้ำอีกครั้งตอน
+  // DOMContentLoaded (ซึ่งจะยิงหลังสคริปต์ type="module" ทำงานเสร็จเสมอ) เพื่อทับกลับ
+  document.addEventListener('DOMContentLoaded', installShowCustomConfirm);
+  window.__schoolhubReinstallShowCustomConfirm = installShowCustomConfirm;
 
   var oldOpenModal = window.openModal;
   window.openModal = function(id){
