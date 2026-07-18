@@ -3773,6 +3773,16 @@ async function submitPlanRequest(planId){
             }
         };
 
+        // FIX: แถบประกาศด้านบนหน้าหลักไม่ขึ้นให้ผู้ใช้ทั่วไปสม่ำเสมอ
+        // เดิมการโหลด/แสดงประกาศ (loadPublicAnnouncements) ถูกเรียกเฉพาะ "หลัง"
+        // Firebase Auth ตรวจสอบสถานะเสร็จ (ภายใน onAuthStateChanged) เท่านั้น
+        // ทำให้การแสดงผลของแถบประกาศต้องรอคิวของ Auth ก่อนเสมอ ถ้า Auth ใช้เวลานาน
+        // หรือมีจังหวะหน่วงต่างกันในแต่ละครั้ง แถบประกาศก็จะขึ้นช้า/ไม่ทันที ไม่คงเส้นคงวา
+        // แก้โดยเรียกโหลด/แสดงประกาศทันทีตั้งแต่สคริปต์นี้เริ่มทำงาน โดยไม่ต้องรอ Auth เลย
+        // (ใช้ค่าจากแคชในเครื่องก่อน แล้วค่อยอัปเดตด้วยข้อมูลสดจาก Firestore)
+        // ส่วน onAuthStateChanged ด้านล่างยังคงเรียกซ้ำได้อีกครั้งตามปกติ ไม่ชนกัน
+        loadPublicAnnouncements().catch(e => console.warn('initial loadPublicAnnouncements failed:', e));
+
         onAuthStateChanged(auth, async (user) => {
             if (await safeAsync(() => withTimeout(loadPublicShareFromURL(), 7000, 'loadPublicShare'), false)) { toggleLoader(false); return; }
             const logoutIntentAt = Number(localStorage.getItem('schoolhub_logout_intent') || 0);
