@@ -3575,14 +3575,7 @@ async function submitPlanRequest(planId){
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('main-app').classList.add('hidden');
                 document.getElementById('landing-view').classList.remove('hidden');
-                // FIX: เดิมเรียก toggleLoader(false) ทันที ทำให้แถบโหลดลอยด้านล่างถูกซ่อนไปตั้งแต่
-                // จังหวะเดียวกับที่ปรากฏ (หน้าแรกโหลดเร็วมาก) คนใช้เลยไม่เคยเห็นแถบนี้เลยตอนเข้าเว็บ
-                // ครั้งแรก/รีเฟรช ให้ค่อยๆ ไล่เปอร์เซ็นต์ขึ้นแบบสั้นๆ ก่อนค่อยซ่อน จะได้เห็นแถบจริง
-                shLoaderProgress(35, 'กำลังโหลดหน้าแรก...');
-                setTimeout(function () {
-                    shLoaderProgress(100, 'เสร็จสิ้น');
-                    setTimeout(function () { toggleLoader(false); }, 200);
-                }, 350);
+                toggleLoader(false);
                 // โหลดประกาศ/แผนแบบเบื้องหลังเหมือนไฟล์ที่ไม่ค้าง: Firebase ช้าก็ไม่บล็อกหน้าแรก
                 Promise.allSettled([loadPublicAnnouncements(), loadPublicPlans()]).catch(e => console.warn('โหลดหน้าแรกไม่ครบ:', e));
             }
