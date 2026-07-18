@@ -4370,7 +4370,35 @@ async function submitPlanRequest(planId){
             if(!plan) return;
             const isChecklist = Number(plan.maxScore) === 0;
             const scoreText = isChecklist ? 'เช็คงาน' : `${plan.maxScore} คะแนน`;
-            showCustomAlert(`สัปดาห์ที่ ${plan.week}`, `ชื่องาน: ${plan.title}\nคะแนนเต็ม: ${scoreText}`);
+            // FIX: เดิมใช้ showCustomAlert ซึ่งมีแค่ปุ่ม "ตกลง" ปุ่มเดียว ไม่พอสำหรับความต้องการใหม่
+            // ที่อยากได้ปุ่มเล็กๆ เพิ่มเข้ามาให้กดแล้วเปิดหน้าบันทึกคะแนนของสัปดาห์นั้นทันที
+            // จึงสร้างป็อปอัพของตัวเองแยกต่างหาก (ไม่แตะ showCustomAlert ที่ใช้ร่วมกันทั้งระบบ)
+            document.getElementById('sh-plan-detail-popup')?.remove();
+            const wrap = document.createElement('div');
+            wrap.id = 'sh-plan-detail-popup';
+            wrap.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999999] flex items-center justify-center p-4';
+            wrap.innerHTML = `
+                <div class="bg-white rounded-3xl w-full max-w-sm p-8 text-center shadow-2xl">
+                    <div class="text-6xl mb-4"><i class="fas fa-clipboard-list text-primary"></i></div>
+                    <h3 class="text-2xl font-bold text-slate-800 mb-2">สัปดาห์ที่ ${plan.week}</h3>
+                    <p class="text-slate-500 mb-8 font-medium whitespace-pre-line">ชื่องาน: ${escapeHTML(plan.title||'')}\nคะแนนเต็ม: ${scoreText}</p>
+                    <div class="flex flex-col gap-2">
+                        <button type="button" onclick="shOpenScoreEntryFromPlan('${courseId}','${String(plan.week)}')" class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3.5 rounded-2xl transition shadow-lg shadow-indigo-200">
+                            <i class="fas fa-pen"></i> เปิดบันทึกคะแนนสัปดาห์นี้
+                        </button>
+                        <button type="button" onclick="document.getElementById('sh-plan-detail-popup')?.remove()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 rounded-2xl transition">ปิด</button>
+                    </div>
+                </div>`;
+            document.body.appendChild(wrap);
+        };
+        // FIX: ปุ่มใหม่จากป็อปอัพหัวตารางแต่ละสัปดาห์ (showPlanDetail) — สลับไปแท็บ "บันทึกคะแนน"
+        // ของวิชานี้ แล้วเลือกสัปดาห์ให้อัตโนมัติ ไม่ต้องไปเลือกเองอีกที
+        window.shOpenScoreEntryFromPlan = (courseId, week) => {
+            document.getElementById('sh-plan-detail-popup')?.remove();
+            currentActiveCourseId = courseId;
+            window.switchCourseTab('scores');
+            const weekSel = document.getElementById('score-week');
+            if (weekSel) { weekSel.value = week; window.handleScoreWeekChange(); }
         };
         window.renderCourseOverview = () => {
             const table = document.getElementById('course-summary-table'); table.innerHTML = '';
