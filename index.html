@@ -1231,6 +1231,71 @@ document.addEventListener('paste', function(e){
                                 <span class="text-xs text-slate-400">(ใช้เมื่อเลือกมากกว่า 3 รายการ)</span>
                             </div>
                         </div>
+
+                        <!-- สถิติการเข้าใช้งาน -->
+                        <div class="p-6 border-t border-slate-100" id="usage-stats-section">
+                            <div class="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-5">
+                                <div>
+                                    <h4 class="text-lg font-bold text-slate-800"><i class="fas fa-chart-column text-primary mr-2"></i>สถิติการเข้าใช้งาน</h4>
+                                    <p class="text-xs text-slate-500 mt-1">จำนวนครั้งที่เข้าใช้งานและผู้ใช้งานที่ไม่ซ้ำ แยกตามช่วงเวลา</p>
+                                </div>
+                                <div class="flex items-center gap-2">
+                                    <select id="usage-stats-range" class="bg-white border border-slate-200 rounded-xl px-3 py-2.5 text-sm font-bold text-slate-700 focus:ring-2 focus:ring-primary focus:outline-none">
+                                        <option value="7">7 วันล่าสุด</option>
+                                        <option value="14">14 วันล่าสุด</option>
+                                        <option value="30" selected>30 วันล่าสุด</option>
+                                        <option value="90">3 เดือนล่าสุด</option>
+                                        <option value="all">ทั้งหมด</option>
+                                    </select>
+                                    <button onclick="window.loadUsageStats && window.loadUsageStats()" class="bg-white border border-slate-200 hover:bg-slate-50 text-slate-600 px-3.5 py-2.5 rounded-xl text-sm font-bold">
+                                        <i class="fas fa-rotate"></i>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-5">
+                                <div class="rounded-3xl bg-indigo-50 border border-indigo-100 p-4">
+                                    <div id="usage-stat-total-visits" class="text-2xl md:text-3xl font-black text-primary">0</div>
+                                    <div class="text-xs font-bold text-slate-500 mt-1">ยอดเข้าใช้งานรวม</div>
+                                </div>
+                                <div class="rounded-3xl bg-emerald-50 border border-emerald-100 p-4">
+                                    <div id="usage-stat-unique-users" class="text-2xl md:text-3xl font-black text-emerald-600">0</div>
+                                    <div class="text-xs font-bold text-slate-500 mt-1">ผู้ใช้งานไม่ซ้ำ</div>
+                                </div>
+                                <div class="rounded-3xl bg-amber-50 border border-amber-100 p-4">
+                                    <div id="usage-stat-avg-day" class="text-2xl md:text-3xl font-black text-amber-600">0</div>
+                                    <div class="text-xs font-bold text-slate-500 mt-1">เฉลี่ยต่อวัน</div>
+                                </div>
+                                <div class="rounded-3xl bg-rose-50 border border-rose-100 p-4">
+                                    <div id="usage-stat-peak-day" class="text-lg md:text-xl font-black text-rose-600">—</div>
+                                    <div class="text-xs font-bold text-slate-500 mt-1">วันที่เข้าใช้งานสูงสุด</div>
+                                </div>
+                            </div>
+
+                            <div class="bg-white border border-slate-100 rounded-3xl p-4 mb-4">
+                                <div id="usage-stats-chart" class="w-full overflow-x-auto"></div>
+                                <div id="usage-stats-empty" class="hidden text-center text-sm text-slate-400 py-8">ยังไม่มีข้อมูลการเข้าใช้งานในช่วงเวลานี้</div>
+                            </div>
+
+                            <button id="usage-stats-detail-toggle" onclick="window.toggleUsageStatsDetail && window.toggleUsageStatsDetail()" class="text-sm font-bold text-primary hover:underline">
+                                <i class="fas fa-chevron-down mr-1" id="usage-stats-detail-icon"></i>ดูรายละเอียดรายวัน
+                            </button>
+
+                            <div id="usage-stats-detail" class="hidden mt-4 overflow-x-auto rounded-2xl border border-slate-100">
+                                <table class="min-w-full text-sm">
+                                    <thead class="bg-slate-50">
+                                        <tr>
+                                            <th class="text-left px-4 py-2.5 font-bold text-slate-600">วันที่</th>
+                                            <th class="text-right px-4 py-2.5 font-bold text-slate-600">จำนวนการเข้าใช้งาน</th>
+                                            <th class="text-right px-4 py-2.5 font-bold text-slate-600">ผู้ใช้งานไม่ซ้ำ</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="usage-stats-detail-body"></tbody>
+                                </table>
+                            </div>
+
+                            <p id="usage-stats-updated" class="text-xs text-slate-400 mt-4">อัปเดตล่าสุด: —</p>
+                        </div>
                     </div>
                 </div>
 
@@ -3660,3 +3725,10 @@ document.addEventListener('paste', function(e){
      ทั้งใน localStorage และ Firestore เสมอ ไม่ว่าสคริปต์ก่อนหน้าจะรีเซ็ตค่าหรือไม่ ===== -->
 <script id="schoolhub-bonus-star-save-guard" src="js2/137_schoolhub-bonus-star-save-guard.js"></script>
 <!-- ===== END PATCH: Bonus/Star Save Guard ===== -->
+
+<!-- ===== PATCH: สถิติการเข้าใช้งาน (Dashboard) =====
+     - เพิ่มส่วนสถิติการเข้าใช้งานด้านล่างสุดของ "แดชบอร์ดรวม"
+     - แสดงกราฟแท่ง + ตัวเลขสรุป พร้อม Dropdown เลือกช่วงเวลา และตารางรายละเอียดรายวัน
+     - บันทึกลง Firestore: usage_stats/{YYYY-MM-DD} ไม่กระทบข้อมูล/สคริปต์เดิมของระบบ ===== -->
+<script id="schoolhub-dashboard-usage-stats" src="js2/138_schoolhub-dashboard-usage-stats.js" type="module"></script>
+<!-- ===== END PATCH: Dashboard Usage Stats ===== -->
