@@ -830,7 +830,7 @@
             state.index = state.index % visible.length;
             const top = visible[state.index];
             topbar.classList.remove('hidden', 'sh-topbar-out');
-            topbar.innerHTML = `<div class="bg-indigo-600 text-white px-4 py-3 shadow-lg"><div class="max-w-7xl mx-auto flex items-start gap-3 sh-announcement-clickable" onclick="openAnnouncementDetail('${top.id}')"><i class="fas fa-bullhorn mt-1"></i>${top.imageUrl ? `<img src="${escapeHTML(top.imageUrl)}" class="w-12 h-12 object-cover rounded-xl border border-white/20 hidden sm:block" onerror="this.classList.add('hidden')">` : ''}<div class="flex-1 min-w-0"><b>ประกาศ</b><span class="mx-2 hidden sm:inline">•</span><span class="font-bold break-words">${escapeHTML(top.title)}</span><span class="mx-2 hidden sm:inline">•</span><span class="block sm:inline break-words">${escapeHTML(top.message)}</span></div><button onclick="event.stopPropagation(); dismissTopAnnouncement('${top.id}', '${containerId}')" class="sh-announcement-bar-close rounded-full bg-white/15 hover:bg-white/25 shrink-0 flex items-center justify-center"><i class="fas fa-times"></i></button></div></div>`;
+            topbar.innerHTML = `<div class="bg-indigo-600 text-white px-4 py-3 shadow-lg"><div class="max-w-7xl mx-auto flex items-start gap-3 sh-announcement-clickable" onclick="openAnnouncementDetail('${top.id}')"><i class="fas fa-bullhorn mt-1"></i>${top.imageUrl ? `<img src="${escapeHTML(top.imageUrl)}" class="w-12 h-12 object-cover rounded-xl border border-white/20 hidden sm:block" onerror="this.classList.add('hidden')">` : ''}<div class="flex-1 min-w-0"><b>ประกาศ</b><span class="mx-2 hidden sm:inline">•</span><span class="font-bold break-words">${escapeHTML(top.title)}</span><span class="mx-2 hidden sm:inline">•</span><span class="block sm:inline break-words">${escapeHTML(top.message)}</span></div><div class="flex items-center gap-2 shrink-0" onclick="event.stopPropagation()"><label class="sh-announcement-bar-mute-label"><input type="checkbox" id="sh-topbar-mute-${containerId}"> ไม่แสดงซ้ำ 10 วัน</label><button onclick="dismissTopAnnouncement('${top.id}', '${containerId}', document.getElementById('sh-topbar-mute-${containerId}')?.checked)" class="sh-announcement-bar-close rounded-full bg-white/15 hover:bg-white/25 flex items-center justify-center"><i class="fas fa-times"></i></button></div></div></div>`;
             state.onRender();
             if (state.timer) clearInterval(state.timer);
             state.timer = null;
@@ -867,9 +867,13 @@
             showFirstVisitPopupAnnouncement();
         };
 
-        window.dismissTopAnnouncement = (id, containerId = 'public-announcement-topbar') => {
+        window.dismissTopAnnouncement = (id, containerId = 'public-announcement-topbar', mute = false) => {
             const topbar = document.getElementById(containerId);
-            const doClose = () => { closeAnnouncementForSession(id); renderPublicAnnouncements(); };
+            const doClose = () => {
+                if (mute) { muteAnnouncementFor(id, 10); trackAnnouncementMute(id, 10); }
+                else { closeAnnouncementForSession(id); }
+                renderPublicAnnouncements();
+            };
             if (topbar && !topbar.classList.contains('hidden')) {
                 topbar.classList.add('sh-topbar-out');
                 setTimeout(doClose, 260);
