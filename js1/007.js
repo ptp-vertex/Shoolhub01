@@ -619,6 +619,10 @@
         let adminPlanRequests = [];
         let announcementPopupTimer = null;
         let announcementPopupIndex = 0;
+        // เก็บ id ประกาศที่ผู้ใช้กดปิด (X) ไว้ในหน่วยความจำเท่านั้น (ไม่ persist)
+        // เพื่อให้เมื่อรีเฟรชหน้าเว็บ ประกาศทั้งหมดกลับมาแสดงใหม่ทุกครั้ง
+        // ไม่ว่าจะเป็นหน้าหลัก (landing) หรือหน้าที่เข้าสู่ระบบแล้ว (app)
+        const closedAnnouncementIdsInMemory = new Set();
 
         let editingCourseId = null;
         let editingStudentId = null;
@@ -685,11 +689,16 @@
         }
 
         function isAnnouncementSessionClosed(id) {
-            return sessionStorage.getItem(`schoolhub_announcement_sessionclosed_${id}`) === 'true';
+            // ใช้ตัวแปรในหน่วยความจำแทน sessionStorage โดยตั้งใจ:
+            // sessionStorage จะยังคงค่าไว้แม้กดรีเฟรชหน้าเว็บ (F5) ในแท็บเดิม
+            // แต่ requirement ต้องการให้ "กดปิดแล้วไม่แสดงอีกจนกว่าจะรีเฟรช"
+            // เมื่อรีเฟรช สคริปต์นี้จะถูกโหลดใหม่ทั้งหมด ตัวแปรนี้จะว่างเปล่า
+            // ทำให้ประกาศกลับมาแสดงอีกครั้งตามที่ต้องการ
+            return closedAnnouncementIdsInMemory.has(id);
         }
 
         function closeAnnouncementForSession(id) {
-            sessionStorage.setItem(`schoolhub_announcement_sessionclosed_${id}`, 'true');
+            closedAnnouncementIdsInMemory.add(id);
         }
 
         function getAnnouncementTrackingIdentity() {
