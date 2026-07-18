@@ -67,7 +67,23 @@ function renderSummary(s) {
 
     // Store latest summary values for landing stat slide
     window._latestGlobalSummary = s;
+    cacheLandingSummary(s);
     applyLandingStatSlide(s);
+}
+
+// เก็บค่าล่าสุดที่ดึงได้จริงไว้ใน localStorage เพื่อให้เปิดหน้าใหม่ครั้งถัดไป
+// วาดค่าล่าสุดได้ทันทีระหว่างรอข้อมูลสดจาก Firestore แทนที่จะโชว์ "—" ว่าง ๆ
+const LANDING_STAT_CACHE_KEY = 'schoolhub_landing_stat_last_summary';
+
+function cacheLandingSummary(s) {
+    try { localStorage.setItem(LANDING_STAT_CACHE_KEY, JSON.stringify(s)); } catch (e) {}
+}
+
+function loadCachedLandingSummary() {
+    try {
+        const raw = localStorage.getItem(LANDING_STAT_CACHE_KEY);
+        return raw ? JSON.parse(raw) : null;
+    } catch (e) { return null; }
 }
 
 // ============================================================
@@ -140,6 +156,8 @@ window.saveLandingStatConfig = saveLandingStatConfig;
 let _landingSlideTimer = null;
 let _landingSlideGroups = [];
 let _landingSlideIdx = 0;
+let _landingSwapToken = 0;
+const _landingLastSignature = { landing: '', auth: '' };
 
 function _chunkArray(arr, size) {
     const out = [];
@@ -147,10 +165,13 @@ function _chunkArray(arr, size) {
     return out;
 }
 
-function _renderLandingSlot(slots) {
+function _renderLandingSlot(slots, opts) {
     // slots: array of {label, value} up to 3
+    const instant = !!(opts && opts.instant);
     const landingGrid = document.getElementById('stat-landing-grid');
     const authGrid = document.getElementById('stat-auth-grid');
+
+    const signature = JSON.stringify(slots);
 
     const landingHtml = slots.map(slot => `
             <div class="bg-white/10 rounded-2xl p-3">
@@ -166,22 +187,43 @@ function _renderLandingSlot(slots) {
             </div>
         `).join('');
 
-    function swapGrid(grid, html) {
+    function swapGrid(grid, html, cacheKey) {
         if (!grid) return;
-        grid.style.opacity = '0';
-        grid.style.transition = 'opacity 0.35s ease';
-        setTimeout(() => {
-            grid.innerHTML = html;
+        if (_landingLastSignature[cacheKey] === signature) return; // เนื้อหาเหมือนเดิม ไม่ต้อง fade ซ้ำ (กันกระพริบโดยไม่จำเป็น)
+        _landingLastSignature[cacheKey] = signature;
+
+        // วาดทันทีแบบไม่มีเอฟเฟกต์ (ใช้ตอนโหลดหน้าครั้งแรก/มีค่า cache ให้แสดงทันที)
+        if (instant || !grid.childElementCount) {
+            grid.style.transition = 'none';
             grid.style.opacity = '1';
-        }, 180);
+            grid.style.transform = 'none';
+            grid.innerHTML = html;
+            return;
+        }
+
+        const myToken = ++_landingSwapToken;
+        grid.style.willChange = 'opacity, transform';
+        grid.style.transition = 'opacity 180ms cubic-bezier(0.4,0,0.2,1), transform 180ms cubic-bezier(0.4,0,0.2,1)';
+        grid.style.opacity = '0';
+        grid.style.transform = 'translateY(-4px)';
+
+        setTimeout(() => {
+            if (myToken !== _landingSwapToken) return; // มีการอัปเดตใหม่แซงคิวมาแล้ว ยกเลิกอันเก่าเพื่อไม่ให้ค้าง/กระพริบซ้อน
+            grid.innerHTML = html;
+            grid.style.transform = 'translateY(4px)';
+            void grid.offsetHeight; // บังคับ reflow ก่อนเล่น transition เข้า เพื่อให้ได้เอฟเฟกต์ slide ที่ลื่นไหลจริง
+            grid.style.transition = 'opacity 240ms cubic-bezier(0.4,0,0.2,1), transform 240ms cubic-bezier(0.4,0,0.2,1)';
+            grid.style.opacity = '1';
+            grid.style.transform = 'translateY(0)';
+        }, 170);
     }
 
     // ใช้ชุดข้อมูลเดียวกันทั้ง Landing Page และหน้าล็อกอิน เพื่อให้ "ภาพรวมวันนี้" แสดงเหมือนหน้าหลัก
-    swapGrid(landingGrid, landingHtml);
-    swapGrid(authGrid, authHtml);
+    swapGrid(landingGrid, landingHtml, 'landing');
+    swapGrid(authGrid, authHtml, 'auth');
 }
 
-function applyLandingStatSlide(s) {
+function applyLandingStatSlide(s, opts) {
     const cfg = loadLandingStatConfig();
     const selected = cfg.selected || ['teachers','courses','students'];
     const intervalMs = Math.max(1, cfg.interval || 3) * 1000;
@@ -200,14 +242,14 @@ function applyLandingStatSlide(s) {
         if (_landingSlideTimer) { clearInterval(_landingSlideTimer); _landingSlideTimer = null; }
         _landingSlideGroups = [allSlots];
         _landingSlideIdx = 0;
-        _renderLandingSlot(allSlots);
+        _renderLandingSlot(allSlots, opts);
         return;
     }
 
     // > 3: split into groups of 3 and cycle
     _landingSlideGroups = _chunkArray(allSlots, 3);
     _landingSlideIdx = 0;
-    _renderLandingSlot(_landingSlideGroups[0]);
+    _renderLandingSlot(_landingSlideGroups[0], opts);
 
     if (_landingSlideTimer) clearInterval(_landingSlideTimer);
     _landingSlideTimer = setInterval(() => {
@@ -225,8 +267,14 @@ document.addEventListener('DOMContentLoaded', () => {
     });
     const intervalInput = document.getElementById('landing-stat-interval');
     if (intervalInput) intervalInput.value = cfg.interval || 3;
-    // Apply slide with no data yet (shows "—") using the local/cached config first
-    applyLandingStatSlide(null);
+
+    // แสดงค่าล่าสุดที่เคยแคชไว้ทันที (ไม่มีการ fade/กระพริบ) เพื่อไม่ให้การ์ดว่างเปล่าระหว่างรอข้อมูลสดจาก Firestore
+    // ถ้ายังไม่เคยมี cache เลย ให้ปล่อยการ์ด "—" ที่ render มากับ HTML ไว้ตามเดิม (ไม่ต้องยิง fade เปล่า ๆ)
+    const cached = loadCachedLandingSummary();
+    if (cached) {
+        window._latestGlobalSummary = cached;
+        applyLandingStatSlide(cached, { instant: true });
+    }
 
     // แล้วดึงค่าจริงจาก Firestore มาทับ เพื่อให้ตรงกับที่แอดมินตั้งไว้ล่าสุดเสมอ
     // (ไม่งั้นเครื่อง/เบราว์เซอร์อื่นที่ไม่ใช่ของแอดมินจะเห็นค่า default เท่านั้น)
