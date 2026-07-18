@@ -832,6 +832,73 @@
             document.getElementById('announcement-end').value = '';
             document.getElementById('announcement-rotation').value = '6';
             document.getElementById('announcement-active').checked = true;
+            const fileInput = document.getElementById('announcement-image-file'); if (fileInput) fileInput.value = '';
+            const status = document.getElementById('announcement-image-upload-status'); if (status) status.textContent = '';
+            document.getElementById('announcement-image-preview')?.classList.add('hidden');
+            window.setAnnouncementImageMode('link');
+        };
+
+        // FIX: สลับโหมด "ใส่ลิงก์" / "อัปโหลดรูป" สำหรับรูปภาพประกาศ
+        window.setAnnouncementImageMode = (mode) => {
+            const isUpload = mode === 'upload';
+            document.getElementById('announcement-image').classList.toggle('hidden', isUpload);
+            document.getElementById('announcement-image-upload-wrap').classList.toggle('hidden', !isUpload);
+            const linkBtn = document.getElementById('announcement-image-mode-link-btn');
+            const uploadBtn = document.getElementById('announcement-image-mode-upload-btn');
+            linkBtn.className = 'flex-1 text-xs font-bold py-1.5 rounded-lg ' + (isUpload ? 'bg-slate-100 text-slate-600' : 'bg-primary text-white');
+            uploadBtn.className = 'flex-1 text-xs font-bold py-1.5 rounded-lg ' + (isUpload ? 'bg-primary text-white' : 'bg-slate-100 text-slate-600');
+        };
+
+        // FIX: บีบอัดรูปประกาศก่อนเก็บเป็น data URL — ประกาศทุกอันถูกเก็บรวมกันใน document เดียว
+        // (Firestore จำกัดขนาด document ที่ ~1MB) จึงต้องบีบให้เล็กพอจะใส่ได้หลายอันพร้อมกัน
+        // แต่ยังคงความคมชัดไว้ให้มากที่สุดโดยพยายามคงคุณภาพ/ขนาดสูงสุดก่อน แล้วค่อยลดถ้าจำเป็น
+        async function compressAnnouncementImage(file){
+            const MAX_BYTES = 380000; // เผื่อให้มีประกาศพร้อมรูปได้หลายอันในเอกสารเดียวกัน
+            const rawDataUrl = await readFileAsDataURL(file);
+            if(dataUrlByteLength(rawDataUrl) <= MAX_BYTES) return rawDataUrl;
+            return new Promise((resolve,reject)=>{
+                const img = new Image();
+                img.onload = () => {
+                    try{
+                        let maxSide = 1600; // เริ่มจากขนาดใหญ่คมชัดก่อน ค่อยลดถ้ายังใหญ่เกิน
+                        let quality = 0.9;
+                        const canvas = document.createElement('canvas');
+                        const ctx = canvas.getContext('2d', { alpha:false });
+                        let result = rawDataUrl;
+                        for(let round=0; round<14; round++){
+                            const ratio = Math.min(1, maxSide / Math.max(img.width, img.height));
+                            canvas.width = Math.max(1, Math.round(img.width * ratio));
+                            canvas.height = Math.max(1, Math.round(img.height * ratio));
+                            ctx.fillStyle = '#ffffff';
+                            ctx.fillRect(0,0,canvas.width,canvas.height);
+                            ctx.drawImage(img,0,0,canvas.width,canvas.height);
+                            result = canvas.toDataURL('image/jpeg', quality);
+                            if(dataUrlByteLength(result) <= MAX_BYTES) break;
+                            quality = Math.max(0.5, quality - 0.07);
+                            maxSide = Math.max(640, Math.floor(maxSide * 0.85));
+                        }
+                        resolve(result);
+                    }catch(e){ reject(e); }
+                };
+                img.onerror = () => reject(new Error('บีบอัดรูปไม่ได้ กรุณาเลือกรูปใหม่'));
+                img.src = rawDataUrl;
+            });
+        }
+
+        window.handleAnnouncementImageFile = async (input) => {
+            const file = input.files && input.files[0];
+            const status = document.getElementById('announcement-image-upload-status');
+            const preview = document.getElementById('announcement-image-preview');
+            if (!file) return;
+            if (status) status.textContent = 'กำลังบีบอัดรูป...';
+            try {
+                const compressed = await compressAnnouncementImage(file);
+                document.getElementById('announcement-image').value = compressed;
+                if (preview) { preview.src = compressed; preview.classList.remove('hidden'); }
+                if (status) status.textContent = 'พร้อมใช้งาน (' + Math.round(dataUrlByteLength(compressed)/1024) + ' KB)';
+            } catch (e) {
+                if (status) status.textContent = 'บีบอัดรูปไม่สำเร็จ: ' + (e?.message || e);
+            }
         };
 
         window.editAdminAnnouncement = (id) => {
@@ -845,6 +912,9 @@
             document.getElementById('announcement-end').value = a.endAt || '';
             document.getElementById('announcement-rotation').value = Number(a.rotationSeconds || 6);
             document.getElementById('announcement-active').checked = a.active !== false;
+            window.setAnnouncementImageMode((a.imageUrl||'').startsWith('data:') ? 'upload' : 'link');
+            const preview = document.getElementById('announcement-image-preview');
+            if (a.imageUrl) { preview.src = a.imageUrl; preview.classList.remove('hidden'); } else { preview.classList.add('hidden'); }
             document.getElementById('announcement-title').focus();
         };
 
@@ -4370,35 +4440,7 @@ async function submitPlanRequest(planId){
             if(!plan) return;
             const isChecklist = Number(plan.maxScore) === 0;
             const scoreText = isChecklist ? 'เช็คงาน' : `${plan.maxScore} คะแนน`;
-            // FIX: เดิมใช้ showCustomAlert ซึ่งมีแค่ปุ่ม "ตกลง" ปุ่มเดียว ไม่พอสำหรับความต้องการใหม่
-            // ที่อยากได้ปุ่มเล็กๆ เพิ่มเข้ามาให้กดแล้วเปิดหน้าบันทึกคะแนนของสัปดาห์นั้นทันที
-            // จึงสร้างป็อปอัพของตัวเองแยกต่างหาก (ไม่แตะ showCustomAlert ที่ใช้ร่วมกันทั้งระบบ)
-            document.getElementById('sh-plan-detail-popup')?.remove();
-            const wrap = document.createElement('div');
-            wrap.id = 'sh-plan-detail-popup';
-            wrap.className = 'fixed inset-0 bg-slate-900/40 backdrop-blur-sm z-[999999] flex items-center justify-center p-4';
-            wrap.innerHTML = `
-                <div class="bg-white rounded-3xl w-full max-w-sm p-8 text-center shadow-2xl">
-                    <div class="text-6xl mb-4"><i class="fas fa-clipboard-list text-primary"></i></div>
-                    <h3 class="text-2xl font-bold text-slate-800 mb-2">สัปดาห์ที่ ${plan.week}</h3>
-                    <p class="text-slate-500 mb-8 font-medium whitespace-pre-line">ชื่องาน: ${escapeHTML(plan.title||'')}\nคะแนนเต็ม: ${scoreText}</p>
-                    <div class="flex flex-col gap-2">
-                        <button type="button" onclick="shOpenScoreEntryFromPlan('${courseId}','${String(plan.week)}')" class="w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3.5 rounded-2xl transition shadow-lg shadow-indigo-200">
-                            <i class="fas fa-pen"></i> เปิดบันทึกคะแนนสัปดาห์นี้
-                        </button>
-                        <button type="button" onclick="document.getElementById('sh-plan-detail-popup')?.remove()" class="w-full bg-slate-100 hover:bg-slate-200 text-slate-700 font-medium py-3 rounded-2xl transition">ปิด</button>
-                    </div>
-                </div>`;
-            document.body.appendChild(wrap);
-        };
-        // FIX: ปุ่มใหม่จากป็อปอัพหัวตารางแต่ละสัปดาห์ (showPlanDetail) — สลับไปแท็บ "บันทึกคะแนน"
-        // ของวิชานี้ แล้วเลือกสัปดาห์ให้อัตโนมัติ ไม่ต้องไปเลือกเองอีกที
-        window.shOpenScoreEntryFromPlan = (courseId, week) => {
-            document.getElementById('sh-plan-detail-popup')?.remove();
-            currentActiveCourseId = courseId;
-            window.switchCourseTab('scores');
-            const weekSel = document.getElementById('score-week');
-            if (weekSel) { weekSel.value = week; window.handleScoreWeekChange(); }
+            showCustomAlert(`สัปดาห์ที่ ${plan.week}`, `ชื่องาน: ${plan.title}\nคะแนนเต็ม: ${scoreText}`);
         };
         window.renderCourseOverview = () => {
             const table = document.getElementById('course-summary-table'); table.innerHTML = '';
