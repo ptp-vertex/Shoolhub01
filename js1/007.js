@@ -294,6 +294,7 @@
 
         async function restoreUserSessionFromLocal(saved) {
             if (!saved || saved.role !== 'user' || !saved.uid) return false;
+            let restoreFullySucceeded = false;
             try {
                 toggleLoader(true);
                 currentUser = {
@@ -316,6 +317,7 @@
                 document.getElementById('auth-view').classList.add('hidden');
                 document.getElementById('main-app').classList.remove('hidden');
                 window.goToHome();
+                restoreFullySucceeded = true;
                 return true;
             } catch(e) {
                 console.warn('restore local session failed:', e);
@@ -324,7 +326,11 @@
             } finally {
                 toggleLoader(false);
                 // แสดงป็อปอัพประกาศหลังจากคืนเซสชันเสร็จสมบูรณ์และปิด loader แล้วเท่านั้น
-                if (currentUser) window.renderPublicAnnouncements?.();
+                // (ไม่แสดงถ้าการคืนเซสชันล้มเหลวกลางทาง)
+                if (restoreFullySucceeded) {
+                    announcementPopupReady = true;
+                    window.renderPublicAnnouncements?.();
+                }
             }
         }
 
@@ -636,7 +642,12 @@
         let adminPlanRequests = [];
         let announcementPopupTimer = null;
         let announcementPopupIndex = 0;
-        let loginRenderAnnouncementsPending = false;
+        // ธงบอกว่า "พร้อมแสดงป็อปอัพประกาศ" จริง ๆ หรือยัง
+        // false ตลอดช่วงที่กำลังตรวจสอบ/คืนเซสชัน หรือกำลังโหลดข้อมูลผู้ใช้หลัง login
+        // (แม้ currentUser จะถูกตั้งค่าไปแล้วก็ตาม แต่หน้า main-app ยังไม่ได้เปิดจริง)
+        // จะเป็น true ก็ต่อเมื่อ: (1) ยืนยันแล้วว่าไม่มีเซสชันเดิม (หน้า landing ของแขกจริง ๆ)
+        // หรือ (2) เข้าสู่ระบบ/คืนเซสชันสำเร็จสมบูรณ์แล้ว (ปิด loader แล้ว)
+        let announcementPopupReady = false;
         // เก็บ id ประกาศที่ผู้ใช้กดปิด (X) ไว้ในหน่วยความจำเท่านั้น (ไม่ persist)
         // เพื่อให้เมื่อรีเฟรชหน้าเว็บ ประกาศทั้งหมดกลับมาแสดงใหม่ทุกครั้ง
         // ไม่ว่าจะเป็นหน้าหลัก (landing) หรือหน้าที่เข้าสู่ระบบแล้ว (app)
@@ -895,10 +906,9 @@
         }
 
         function showFirstVisitPopupAnnouncement() {
-            // ถ้ายังไม่มี currentUser (เช่น หน้ายังไม่โหลด Auth เสร็จ) แต่มีเซสชันเดิม
-            // ที่กำลังจะ auto-login อยู่ ให้รอไปก่อน ไม่ต้องเปิดป็อปอัพที่หน้า landing
-            // เดี๋ยวจะโดนเรียกซ้ำอีกครั้งหลัง login เข้าหน้า app แล้วค่อยแสดงตามปกติ
-            if (!currentUser && hasPendingSchoolHubSession()) return;
+            // ยังไม่พร้อมแสดงป็อปอัพ (กำลังตรวจ/คืนเซสชัน หรือกำลังโหลดข้อมูลหลัง login อยู่)
+            // รอไปก่อน เดี๋ยวจะถูกเรียกซ้ำอีกครั้งหลัง login/ยืนยันสถานะเสร็จสมบูรณ์แล้วค่อยแสดง
+            if (!announcementPopupReady) return;
             const scope = currentUser ? 'app' : 'landing';
             const popups = getActiveAnnouncements().filter(a => announcementMatchesScope(a, scope) && announcementMatchesType(a, 'popup') && !isAnnouncementSessionClosed(a.id) && !isAnnouncementMuted(a.id));
             if (!popups.length) return;
@@ -3818,6 +3828,7 @@ async function submitPlanRequest(planId){
             if (user) {
                 // Google login fix: ห้าม return ระหว่าง signInWithPopup เพราะบางครั้ง Auth state ยิงก่อนปิด flag แล้วค้างหน้าเปล่า/ต้องรีเฟรช
                 if (window.isSocialAuthenticating) { window.isSocialAuthenticating = false; }
+                let loginFullySucceeded = false;
                 try {
                     toggleLoader(true);
                     currentUser = user; isAdmin = false;
@@ -3848,7 +3859,7 @@ async function submitPlanRequest(planId){
                     if(!planFlow) {
                         window.goToHome();
                     }
-                    loginRenderAnnouncementsPending = true;
+                    loginFullySucceeded = true;
                 } catch (error) {
                     window.__schoolhubGoogleLoginWaiting = false;
                     if (typeof setGoogleLoginButtonLoading === 'function') setGoogleLoginButtonLoading(false);
@@ -3857,9 +3868,10 @@ async function submitPlanRequest(planId){
                 finally {
                     toggleLoader(false);
                     // แสดงป็อปอัพประกาศ "หลัง" ที่เข้าสู่ระบบเสร็จสมบูรณ์และปิด loader แล้วเท่านั้น
-                    // (ย้ายมาจากตอนกลาง flow ด้านบน เพื่อไม่ให้ป็อปอัพขึ้นทับตอนกำลังโหลด/สลับหน้า)
-                    if (loginRenderAnnouncementsPending) {
-                        loginRenderAnnouncementsPending = false;
+                    // (ย้ายมาจากตอนกลาง flow ด้านบน เพื่อไม่ให้ป็อปอัพขึ้นทับตอนกำลังโหลด/สลับหน้า
+                    // และไม่แสดงเลยถ้า login ล้มเหลวกลางทาง)
+                    if (loginFullySucceeded) {
+                        announcementPopupReady = true;
                         window.renderPublicAnnouncements?.();
                     }
                 }
@@ -3869,6 +3881,8 @@ async function submitPlanRequest(planId){
                 document.getElementById('main-app').classList.add('hidden');
                 document.getElementById('landing-view').classList.remove('hidden');
                 toggleLoader(false);
+                // ยืนยันแล้วว่าไม่มีเซสชันเดิม (แขกจริง ๆ ที่หน้า landing) พร้อมแสดงป็อปอัพได้ตามปกติ
+                announcementPopupReady = true;
                 // โหลดประกาศ/แผนแบบเบื้องหลังเหมือนไฟล์ที่ไม่ค้าง: Firebase ช้าก็ไม่บล็อกหน้าแรก
                 Promise.allSettled([loadPublicAnnouncements(), loadPublicPlans()]).catch(e => console.warn('โหลดหน้าแรกไม่ครบ:', e));
             }
@@ -3925,12 +3939,14 @@ async function submitPlanRequest(planId){
                 await loadStateFromDB();
                 window.switchView('admin-permissions');
                 toggleLoader(false);
+                announcementPopupReady = true;
                 window.renderPublicAnnouncements?.();
                 Promise.allSettled([loadPublicPlans(), loadPublicAnnouncements()]).then(() => { if (isAdmin) { renderAdminPlans(); renderAdminAnnouncements(); } });
             } catch (error) {
                 console.warn('enterAdminMode failed:', error);
                 toggleLoader(false);
                 try { window.switchView('admin-permissions'); } catch(e) {}
+                announcementPopupReady = true;
                 window.renderPublicAnnouncements?.();
                 showCustomAlert('โหลดแอดมินไม่ครบ', getFirebaseErrorText(error), true);
             }
