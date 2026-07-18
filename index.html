@@ -1208,15 +1208,24 @@ document.addEventListener('paste', function(e){
                                 <input type="hidden" id="announcement-edit-id">
                                 <div class="md:col-span-2">
                                     <label class="block text-xs font-bold text-slate-500 mb-1">หัวข้อ</label>
-                                    <input id="announcement-title" type="text" required class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="เช่น แจ้งปรับปรุงระบบ">
+                                    <input id="announcement-title" type="text" required class="w-full h-[46px] bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="เช่น แจ้งปรับปรุงระบบ">
                                 </div>
                                 <div class="md:col-span-4">
                                     <label class="block text-xs font-bold text-slate-500 mb-1">ข้อความ</label>
-                                    <textarea id="announcement-message" required rows="1" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="รายละเอียดประกาศ"></textarea>
+                                    <textarea id="announcement-message" required rows="1" class="w-full h-[46px] resize-none bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="รายละเอียดประกาศ"></textarea>
                                 </div>
                                 <div class="md:col-span-3">
-                                    <label class="block text-xs font-bold text-slate-500 mb-1">ลิงก์รูปภาพ (ไม่บังคับ)</label>
-                                    <input id="announcement-image" type="url" class="w-full bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="https://...">
+                                    <label class="block text-xs font-bold text-slate-500 mb-1">รูปภาพประกาศ (ไม่บังคับ)</label>
+                                    <div class="flex gap-1.5 mb-1.5">
+                                        <button type="button" id="announcement-image-mode-link-btn" onclick="setAnnouncementImageMode('link')" class="flex-1 text-xs font-bold py-1.5 rounded-lg bg-primary text-white">ใส่ลิงก์</button>
+                                        <button type="button" id="announcement-image-mode-upload-btn" onclick="setAnnouncementImageMode('upload')" class="flex-1 text-xs font-bold py-1.5 rounded-lg bg-slate-100 text-slate-600">อัปโหลดรูป</button>
+                                    </div>
+                                    <input id="announcement-image" type="url" class="w-full h-[46px] bg-slate-50 border border-slate-200 rounded-xl p-3 focus:ring-2 focus:ring-primary focus:outline-none" placeholder="https://..." oninput="document.getElementById('announcement-image-preview')?.classList.add('hidden')">
+                                    <div id="announcement-image-upload-wrap" class="hidden">
+                                        <input id="announcement-image-file" type="file" accept="image/*" class="w-full text-xs bg-slate-50 border border-slate-200 rounded-xl p-2.5" onchange="handleAnnouncementImageFile(this)">
+                                        <p id="announcement-image-upload-status" class="text-[11px] text-slate-400 mt-1"></p>
+                                    </div>
+                                    <img id="announcement-image-preview" class="hidden mt-2 max-h-24 rounded-lg border border-slate-200 object-contain">
                                 </div>
                                 <div>
                                     <label class="block text-xs font-bold text-slate-500 mb-1">รูปแบบ</label>
