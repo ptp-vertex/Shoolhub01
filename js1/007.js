@@ -688,6 +688,15 @@
             return `<img src="${escapeHTML(url)}" alt="ประกาศ" class="${extraClass}" onerror="this.classList.add('hidden')">`;
         }
 
+        function syncLandingTopOffset() {
+            const landing = document.getElementById('landing-view');
+            const topbar = document.getElementById('public-announcement-topbar');
+            if (!landing) return;
+            const h = (topbar && !topbar.classList.contains('hidden')) ? topbar.offsetHeight : 0;
+            landing.style.setProperty('--sh-topbar-h', h + 'px');
+        }
+        window.addEventListener('resize', syncLandingTopOffset);
+
         function renderTopbarAnnouncement(items) {
             const topbar = document.getElementById('public-announcement-topbar');
             if (!topbar) return;
@@ -697,12 +706,14 @@
                 topbar.innerHTML = '';
                 if (announcementTopbarTimer) clearInterval(announcementTopbarTimer);
                 announcementTopbarTimer = null;
+                syncLandingTopOffset();
                 return;
             }
             announcementTopbarIndex = announcementTopbarIndex % visible.length;
             const top = visible[announcementTopbarIndex];
-            topbar.classList.remove('hidden');
-            topbar.innerHTML = `<div class="bg-indigo-600 text-white px-4 py-3 shadow-lg"><div class="max-w-7xl mx-auto flex items-start gap-3"><i class="fas fa-bullhorn mt-1"></i>${top.imageUrl ? `<img src="${escapeHTML(top.imageUrl)}" class="w-12 h-12 object-cover rounded-xl border border-white/20 hidden sm:block" onerror="this.classList.add('hidden')">` : ''}<div class="flex-1 min-w-0"><b>ประกาศ</b><span class="mx-2 hidden sm:inline">•</span><span class="font-bold break-words">${escapeHTML(top.title)}</span><span class="mx-2 hidden sm:inline">•</span><span class="block sm:inline break-words">${escapeHTML(top.message)}</span></div><button onclick="dismissTopAnnouncement('${top.id}')" class="w-8 h-8 rounded-full bg-white/15 hover:bg-white/25 shrink-0"><i class="fas fa-times"></i></button></div></div>`;
+            topbar.classList.remove('hidden', 'sh-topbar-out');
+            topbar.innerHTML = `<div class="bg-indigo-600 text-white px-4 py-3 shadow-lg"><div class="max-w-7xl mx-auto flex items-start gap-3 sh-announcement-clickable" onclick="openAnnouncementDetail('${top.id}')"><i class="fas fa-bullhorn mt-1"></i>${top.imageUrl ? `<img src="${escapeHTML(top.imageUrl)}" class="w-12 h-12 object-cover rounded-xl border border-white/20 hidden sm:block" onerror="this.classList.add('hidden')">` : ''}<div class="flex-1 min-w-0"><b>ประกาศ</b><span class="mx-2 hidden sm:inline">•</span><span class="font-bold break-words">${escapeHTML(top.title)}</span><span class="mx-2 hidden sm:inline">•</span><span class="block sm:inline break-words">${escapeHTML(top.message)}</span></div><button onclick="event.stopPropagation(); dismissTopAnnouncement('${top.id}')" class="sh-announcement-bar-close rounded-full bg-white/15 hover:bg-white/25 shrink-0 flex items-center justify-center"><i class="fas fa-times"></i></button></div></div>`;
+            syncLandingTopOffset();
             if (announcementTopbarTimer) clearInterval(announcementTopbarTimer);
             announcementTopbarTimer = null;
             if (visible.length >= 2) {
@@ -719,7 +730,7 @@
             const empty = document.getElementById('landing-announcement-empty');
             if (list) {
                 list.innerHTML = active.map(a => `
-                    <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition overflow-hidden">
+                    <div class="bg-white rounded-3xl p-5 border border-slate-100 shadow-sm hover:shadow-md transition overflow-hidden sh-announcement-clickable" onclick="openAnnouncementDetail('${a.id}')">
                         ${imageMarkup(a.imageUrl, 'w-full h-36 object-cover rounded-2xl mb-4 border border-slate-100')}
                         <div class="flex items-start gap-3">
                             <div class="w-11 h-11 rounded-2xl ${announcementMatchesType(a, 'popup') ? 'bg-amber-50 text-amber-600' : 'bg-indigo-50 text-primary'} flex items-center justify-center shrink-0"><i class="fas ${announcementMatchesType(a, 'popup') ? 'fa-window-restore' : 'fa-thumbtack'}"></i></div>
@@ -737,15 +748,24 @@
         };
 
         window.dismissTopAnnouncement = (id) => {
-            localStorage.setItem(`schoolhub_announcement_closed_${id}`, 'true');
-            renderPublicAnnouncements();
+            const topbar = document.getElementById('public-announcement-topbar');
+            if (topbar && !topbar.classList.contains('hidden')) {
+                topbar.classList.add('sh-topbar-out');
+                setTimeout(() => {
+                    localStorage.setItem(`schoolhub_announcement_closed_${id}`, 'true');
+                    renderPublicAnnouncements();
+                }, 260);
+            } else {
+                localStorage.setItem(`schoolhub_announcement_closed_${id}`, 'true');
+                renderPublicAnnouncements();
+            }
         };
 
-        function renderPopupAnnouncement(popup) {
+        function showAnnouncementDetailModal(popup) {
             const modal = document.getElementById('public-announcement-popup');
-            if (!modal || currentUser || !popup) return;
-            document.getElementById('public-popup-title').textContent = 'ประกาศ';
-            document.getElementById('public-popup-message').textContent = `${popup.title ? popup.title + '\n' : ''}${popup.message || ''}`;
+            if (!modal || !popup) return;
+            document.getElementById('public-popup-title').textContent = popup.title || 'ประกาศ';
+            document.getElementById('public-popup-message').textContent = popup.message || '';
             const img = document.getElementById('public-popup-image');
             if (img) {
                 if (popup.imageUrl) { img.src = popup.imageUrl; img.classList.remove('hidden'); }
@@ -753,6 +773,16 @@
             }
             modal.dataset.announcementId = popup.id;
             modal.classList.remove('hidden');
+        }
+
+        window.openAnnouncementDetail = (id) => {
+            const a = (publicAnnouncements || []).find(x => x.id === id);
+            if (a) showAnnouncementDetailModal(a);
+        };
+
+        function renderPopupAnnouncement(popup) {
+            if (currentUser || !popup) return;
+            showAnnouncementDetailModal(popup);
         }
 
         function showFirstVisitPopupAnnouncement() {

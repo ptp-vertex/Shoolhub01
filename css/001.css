@@ -744,12 +744,19 @@
         /* Landing page + announcements */
         .landing-bg { background: radial-gradient(circle at top left, rgba(79,70,229,.18), transparent 32%), radial-gradient(circle at bottom right, rgba(14,165,233,.16), transparent 30%), linear-gradient(135deg, #f8fafc 0%, #eef2ff 48%, #ffffff 100%); }
         .landing-card { background: rgba(255,255,255,.82); backdrop-filter: blur(18px); border: 1px solid rgba(255,255,255,.7); }
-        #landing-view .landing-hero { overflow: visible !important; padding-top: 9rem !important; }
-        #landing-view nav { min-height: 5.25rem; }
-        .announcement-topbar { position: sticky; top: 0; z-index: 120; }
+        #landing-view .landing-hero { overflow: visible !important; padding-top: calc(9rem + var(--sh-topbar-h, 0px)) !important; transition: padding-top .35s cubic-bezier(.4,0,.2,1); }
+        #landing-view nav { min-height: 5.25rem; top: var(--sh-topbar-h, 0px) !important; transition: top .35s cubic-bezier(.4,0,.2,1); }
+        .announcement-topbar { position: sticky; top: 0; z-index: 120; overflow: hidden; transform-origin: top center; animation: sh-topbar-in .4s cubic-bezier(.16,1,.3,1); }
+        .announcement-topbar.sh-topbar-out { animation: sh-topbar-out .28s cubic-bezier(.4,0,1,1) forwards; }
+        @keyframes sh-topbar-in { from { transform: translateY(-100%); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+        @keyframes sh-topbar-out { from { transform: translateY(0); opacity: 1; } to { transform: translateY(-100%); opacity: 0; } }
+        .sh-announcement-bar-close { width: 1.5rem; height: 1.5rem; font-size: .7rem; transition: background-color .2s ease, transform .2s ease; }
+        .sh-announcement-bar-close:active { transform: scale(.9); }
+        .sh-announcement-clickable { cursor: pointer; transition: opacity .2s ease; }
+        .sh-announcement-clickable:hover { opacity: .92; }
         @media (max-width: 768px) {
             #landing-view { overflow-y: auto !important; }
-            #landing-view .landing-hero { padding-top: 6.25rem !important; overflow: visible !important; }
+            #landing-view .landing-hero { padding-top: calc(6.25rem + var(--sh-topbar-h, 0px)) !important; overflow: visible !important; }
             #auth-view { padding: 1rem !important; overflow-y: auto !important; align-items: flex-start !important; }
             #auth-view > div:last-child { margin-top: 4.5rem !important; margin-bottom: 1.5rem !important; padding: 1.5rem !important; border-radius: 1.5rem !important; }
             #admin-announcement-table { min-width: 760px !important; }
