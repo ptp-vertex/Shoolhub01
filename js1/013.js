@@ -156,7 +156,7 @@ window.saveLandingStatConfig = saveLandingStatConfig;
 let _landingSlideTimer = null;
 let _landingSlideGroups = [];
 let _landingSlideIdx = 0;
-let _landingSwapToken = 0;
+const _landingSwapToken = { landing: 0, auth: 0 };
 const _landingLastSignature = { landing: '', auth: '' };
 
 function _chunkArray(arr, size) {
@@ -201,14 +201,14 @@ function _renderLandingSlot(slots, opts) {
             return;
         }
 
-        const myToken = ++_landingSwapToken;
+        const myToken = ++_landingSwapToken[cacheKey];
         grid.style.willChange = 'opacity, transform';
         grid.style.transition = 'opacity 180ms cubic-bezier(0.4,0,0.2,1), transform 180ms cubic-bezier(0.4,0,0.2,1)';
         grid.style.opacity = '0';
         grid.style.transform = 'translateY(-4px)';
 
         setTimeout(() => {
-            if (myToken !== _landingSwapToken) return; // มีการอัปเดตใหม่แซงคิวมาแล้ว ยกเลิกอันเก่าเพื่อไม่ให้ค้าง/กระพริบซ้อน
+            if (myToken !== _landingSwapToken[cacheKey]) return; // มีการอัปเดตใหม่แซงคิวมาแล้ว ยกเลิกอันเก่าเพื่อไม่ให้ค้าง/กระพริบซ้อน
             grid.innerHTML = html;
             grid.style.transform = 'translateY(4px)';
             void grid.offsetHeight; // บังคับ reflow ก่อนเล่น transition เข้า เพื่อให้ได้เอฟเฟกต์ slide ที่ลื่นไหลจริง
