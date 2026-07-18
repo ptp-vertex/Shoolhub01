@@ -73,12 +73,35 @@
                 return null;
             }
 
+            // เดาว่าผู้ใช้ "น่าจะติดเซสชันล็อกอิน" อยู่หรือไม่ (จะถูก auto-login เข้าหน้าแอปหลัง 007.js โหลดเสร็จ)
+            // ใช้ตรรกะเดียวกับที่ 007.js ใช้ตัดสินใจ restore session (schoolhub_session_active / admin_bypass)
+            // โดยไม่นับกรณีเพิ่งกดออกจากระบบเอง (schoolhub_logout_intent ภายใน 10 นาทีล่าสุด)
+            function schoolhubHasLikelyLoginSession() {
+                try {
+                    var logoutIntentAt = Number(localStorage.getItem('schoolhub_logout_intent') || 0);
+                    var isManualLogout = logoutIntentAt && (Date.now() - logoutIntentAt < 10 * 60 * 1000);
+                    if (isManualLogout) return false;
+                    if (localStorage.getItem('schoolhub_admin_bypass') === 'true') return true;
+                    if (localStorage.getItem('schoolhub_session_active') === 'true') return true;
+                    return false;
+                } catch (e) { return false; }
+            }
+
             function renderAnnouncementTopbarFromItems(items) {
                 try {
                     if (typeof window.renderPublicAnnouncements === 'function') return; // 007.js โหลดสำเร็จแล้ว ปล่อยให้มันทำงานเอง (ข้อมูล real-time แม่นกว่า)
-                    var topbar = document.getElementById('public-announcement-topbar');
-                    if (!topbar || !topbar.classList.contains('hidden')) return; // มีอะไรแสดงอยู่แล้ว หรือหา element ไม่เจอ ไม่ต้องทำอะไร
                     if (!Array.isArray(items) || !items.length) return;
+
+                    // ประกาศที่ตั้ง scope="app" หรือ "both" ต้องไปแสดงหลังเข้าสู่ระบบ (app-announcement-topbar)
+                    // ถ้าตอนนี้ผู้ใช้ติดเซสชันล็อกอินอยู่ (กำลังจะถูกพาเข้าหน้าแอปหลัง auth เสร็จ)
+                    // ถ้ายังไม่ติดเซสชัน (อยู่หน้า landing จริง ๆ) ให้ scope="both" แสดงที่หน้าหลักไปเลย
+                    // ส่วน scope="landing" แสดงที่หน้าหลักเสมอตามปกติ
+                    var hasSession = schoolhubHasLikelyLoginSession();
+                    var containerId = hasSession ? 'app-announcement-topbar' : 'public-announcement-topbar';
+                    var allowedScopes = hasSession ? ['app', 'both'] : ['landing', 'both'];
+
+                    var topbar = document.getElementById(containerId);
+                    if (!topbar || !topbar.classList.contains('hidden')) return; // มีอะไรแสดงอยู่แล้ว หรือหา element ไม่เจอ ไม่ต้องทำอะไร
                     var now = Date.now();
                     var active = items.filter(function (a) {
                         if (!a || a.active === false) return false;
@@ -88,7 +111,8 @@
                         if (end && now > end) return false;
                         return true;
                     }).filter(function (a) {
-                        return !a.scope || a.scope === 'both' || a.scope === 'landing';
+                        var scope = a.scope || 'both';
+                        return allowedScopes.indexOf(scope) !== -1;
                     }).filter(function (a) {
                         return a.type === 'topbar' || a.type === 'both';
                     });
