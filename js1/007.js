@@ -4714,25 +4714,59 @@ async function submitPlanRequest(planId){
                 extraActions.appendChild(goBtn);
             }
         };
-        // กระโดดไปหน้ากรอกคะแนนของสัปดาห์ที่เลือก โดยเลือกสัปดาห์นั้นให้อัตโนมัติ
+        // กระโดดไปหน้ากรอกคะแนนของสัปดาห์ที่เลือก โดยเลือกสัปดาห์นั้น (และชื่องานถ้ามีในแผน) ให้อัตโนมัติ
+        // ใช้การ "รอจนกว่าจะพร้อมจริง" (poll ทุก 50ms) แทนการรอเวลาคงที่ เพราะสคริปต์อื่นๆ
+        // ที่ครอบ switchCourseTab ไว้หลายชั้นใช้เวลา render ไม่เท่ากันในแต่ละครั้ง
         window.jumpToScoreEntry = (courseId, week, ev) => {
             if (ev && ev.stopPropagation) ev.stopPropagation();
+
+            function waitForScoreWeek(attempt) {
+                attempt = attempt || 0;
+                const scoreWeek = document.getElementById('score-week');
+                const tab = document.getElementById('course-tab-scores');
+                const tabReady = tab && !tab.classList.contains('hidden') && tab.offsetParent !== null;
+                const hasOption = scoreWeek && Array.prototype.some.call(scoreWeek.options || [], o => o.value === String(week));
+
+                if (scoreWeek && tabReady && hasOption) {
+                    scoreWeek.value = String(week);
+                    if (typeof window.handleScoreWeekChange === 'function') window.handleScoreWeekChange();
+                    try { scoreWeek.dispatchEvent(new Event('change', { bubbles: true })); } catch (e) {}
+                    if (tab && typeof tab.scrollIntoView === 'function') {
+                        tab.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    return;
+                }
+
+                if (attempt >= 60) { // รอสูงสุด ~3 วินาที แล้ว fallback ทำ best-effort
+                    if (scoreWeek) {
+                        scoreWeek.value = String(week);
+                        if (typeof window.handleScoreWeekChange === 'function') window.handleScoreWeekChange();
+                    }
+                    if (tab && typeof tab.scrollIntoView === 'function') {
+                        tab.scrollIntoView({ behavior: 'smooth', block: 'start' });
+                    }
+                    return;
+                }
+                setTimeout(() => waitForScoreWeek(attempt + 1), 50);
+            }
+
+            function afterCourseReady() {
+                window.switchCourseTab('scores');
+                waitForScoreWeek(0);
+            }
+
             if (courseId && courseId !== currentActiveCourseId) {
                 if (typeof window.openCourseDetail === 'function') { window.openCourseDetail(courseId); }
                 else if (typeof window.selectCourse === 'function') { window.selectCourse(courseId); }
+
+                (function waitForCourse(attempt) {
+                    attempt = attempt || 0;
+                    if (window.currentActiveCourseId === courseId || attempt >= 60) { afterCourseReady(); return; }
+                    setTimeout(() => waitForCourse(attempt + 1), 50);
+                })(0);
+            } else {
+                afterCourseReady();
             }
-            window.switchCourseTab('scores');
-            setTimeout(() => {
-                const scoreWeek = document.getElementById('score-week');
-                if (scoreWeek) {
-                    scoreWeek.value = String(week);
-                    if (typeof window.handleScoreWeekChange === 'function') window.handleScoreWeekChange();
-                }
-                const scoresTab = document.getElementById('course-tab-scores');
-                if (scoresTab && typeof scoresTab.scrollIntoView === 'function') {
-                    scoresTab.scrollIntoView({ behavior: 'smooth', block: 'start' });
-                }
-            }, 60);
         };
         window.renderCourseOverview = () => {
             const table = document.getElementById('course-summary-table'); table.innerHTML = '';
