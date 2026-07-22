@@ -26,6 +26,69 @@
                 setTimeout(releaseLoaderIfStuck, 200);
             });
 
+            // ถ้าหน้าโหลดค้างเกิน 10 วินาที ให้ค่อยๆ แสดงปุ่ม "ปิดหน้านี้" ให้ผู้ใช้กดปิดเองได้
+            // (กันกรณีค้างแบบที่ไม่เข้าเงื่อนไข error/unhandledrejection ด้านบน)
+            (function () {
+                var STUCK_MS = 10000;
+                var shownAt = null; // เวลาที่ loader เริ่มแสดงในรอบปัจจุบัน
+                var btnShown = false;
+
+                function getEls() {
+                    return {
+                        loader: document.getElementById('global-loader'),
+                        btn: document.getElementById('sh-loader-stuck-close-btn')
+                    };
+                }
+
+                function isVisible(loader) {
+                    return !!loader && loader.style.display !== 'none' && !loader.classList.contains('hidden');
+                }
+
+                function tick() {
+                    var els = getEls();
+                    if (!els.loader) return;
+                    var visible = isVisible(els.loader);
+
+                    if (!visible) {
+                        shownAt = null;
+                        if (btnShown && els.btn) {
+                            els.btn.classList.add('opacity-0');
+                            els.btn.classList.remove('pointer-events-auto');
+                            els.btn.classList.add('pointer-events-none');
+                            btnShown = false;
+                        }
+                        return;
+                    }
+
+                    if (shownAt === null) shownAt = Date.now();
+                    if (!btnShown && Date.now() - shownAt >= STUCK_MS && els.btn) {
+                        els.btn.classList.remove('opacity-0');
+                        els.btn.classList.remove('pointer-events-none');
+                        els.btn.classList.add('pointer-events-auto');
+                        btnShown = true;
+                    }
+                }
+
+                document.addEventListener('click', function (e) {
+                    var btn = e.target && e.target.closest ? e.target.closest('#sh-loader-stuck-close-btn') : null;
+                    if (!btn) return;
+                    e.preventDefault();
+                    e.stopPropagation();
+                    releaseLoaderIfStuck();
+                    var els = getEls();
+                    if (els.loader) els.loader.style.display = 'none';
+                    if (els.btn) {
+                        els.btn.classList.add('opacity-0');
+                        els.btn.classList.remove('pointer-events-auto');
+                        els.btn.classList.add('pointer-events-none');
+                    }
+                    shownAt = null;
+                    btnShown = false;
+                }, true);
+
+                setInterval(tick, 500);
+            })();
+
             // FIX: แถบประกาศด้านบนไม่ขึ้นให้ผู้ใช้ทั่วไปสม่ำเสมอ (แต่แอดมินเห็นทุกครั้ง)
             // สาเหตุตัวจริง: การแสดงประกาศทำงานอยู่ใน js1/007.js ซึ่งเป็น Firebase ES module
             // (type="module") — ถ้าเครือข่ายของผู้เข้าชม (มือถือ/บริษัท/ตัวบล็อกโฆษณา)
