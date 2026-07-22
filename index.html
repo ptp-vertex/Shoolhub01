@@ -1921,6 +1921,15 @@ document.addEventListener('paste', function(e){
                     <p class="text-xs text-slate-400 font-semibold mt-2">ถ้าจำนวนสายหรือขาดถึงเกณฑ์อย่างใดอย่างหนึ่ง ระบบจะแสดงผลลัพธ์พิเศษก่อนคำนวณเกรดจากคะแนน</p>
                 </div>
 
+                <div class="schoolhub-grade-main-box mt-4" id="schoolhub-score-scale-box">
+                    <div class="flex items-center justify-between gap-3 mb-3 schoolhub-special-header-row">
+                        <div class="schoolhub-grade-main-title mb-0"><i class="fas fa-divide text-indigo-500"></i> ระบบหารคะแนน (ปรับคะแนนเต็ม)</div>
+                        <button type="button" onclick="shOpenScoreScaleRuleModal()" class="schoolhub-grade-mini-btn"><i class="fas fa-plus mr-1"></i> เพิ่มกฎหารคะแนน</button>
+                    </div>
+                    <div id="schoolhub-score-scale-rules-list"><div class="schoolhub-grade-empty">ยังไม่มีกฎหารคะแนน</div></div>
+                    <p class="text-xs text-slate-400 font-semibold mt-2">เลือกสัปดาห์/งานที่ต้องการ ระบบจะนำคะแนนเต็มรวมของงานที่เลือกมาเฉลี่ยให้เหลือเท่ากับคะแนนที่ตั้งไว้ ก่อนนำไปรวมเป็นคะแนนรวมทั้งหมด ต้องกด "บันทึก" ด้านล่างอีกครั้งเพื่อยืนยันการเปลี่ยนแปลง</p>
+                </div>
+
                 <div class="pt-4 flex gap-3"><button type="button" onclick="closeModal('grade-criteria-modal')" class="w-1/2 py-3 bg-slate-100 rounded-xl font-bold text-slate-600">ยกเลิก</button><button type="submit" class="w-1/2 py-3 text-white bg-primary rounded-xl font-bold shadow-lg shadow-indigo-200">บันทึก</button></div>
             </form>
         </div>
@@ -3733,3 +3742,10 @@ document.addEventListener('paste', function(e){
      - บันทึกลง Firestore: usage_stats/{YYYY-MM-DD} ไม่กระทบข้อมูล/สคริปต์เดิมของระบบ ===== -->
 <script id="schoolhub-dashboard-usage-stats" src="js2/138_schoolhub-dashboard-usage-stats.js" type="module"></script>
 <!-- ===== END PATCH: Dashboard Usage Stats ===== -->
+
+<!-- ===== PATCH: ระบบหารคะแนน (ตั้งค่าเกณฑ์เกรด) =====
+     - เพิ่มกล่อง "ระบบหารคะแนน" ในหน้าตั้งค่าเกณฑ์เกรด ให้เลือกสัปดาห์/งาน (หรือทั้งสัปดาห์) มาเฉลี่ยคะแนนเต็มให้เหลือค่าที่ต้องการ
+     - มีประวัติ (รายการกฎที่ตั้งไว้) แก้ไข และลบได้ ก่อนกด "บันทึก" เพื่อยืนยันพร้อมเกณฑ์เกรดอื่น ๆ
+     - นำคะแนนที่เฉลี่ยแล้วไปแทนที่คะแนนรวม/คะแนนเต็มของงานที่ถูกเลือก ก่อนคำนวณคะแนนรวมและเกรด ===== -->
+<script id="schoolhub-score-scale-rules" src="js2/139_schoolhub-score-scale-rules.js"></script>
+<!-- ===== END PATCH: Score Scale Rules ===== -->
