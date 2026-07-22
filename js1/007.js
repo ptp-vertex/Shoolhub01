@@ -2660,7 +2660,10 @@ async function submitPlanRequest(planId){
             document.getElementById('custom-alert-title').textContent = title;
             document.getElementById('custom-alert-title').className = `text-2xl font-bold mb-2 ${isError ? 'text-rose-600' : 'text-emerald-600'}`;
             document.getElementById('custom-alert-message').textContent = message;
+            document.getElementById('custom-alert-message').className = 'text-slate-500 mb-8 font-medium whitespace-pre-line';
             document.getElementById('custom-alert-icon').innerHTML = isError ? '<i class="fas fa-times-circle text-rose-500 drop-shadow-md"></i>' : '<i class="fas fa-check-circle text-emerald-500 drop-shadow-md"></i>';
+            const okBtn = document.getElementById('custom-alert-ok-btn');
+            if (okBtn) okBtn.className = 'w-full bg-primary hover:bg-indigo-700 text-white font-medium py-3.5 rounded-2xl transition shadow-lg shadow-indigo-200';
             document.body.appendChild(modal); modal.style.zIndex = '999999'; document.body.appendChild(modal); modal.style.zIndex = '999999'; modal.classList.remove('hidden');
             setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
         }
@@ -4691,11 +4694,14 @@ async function submitPlanRequest(planId){
             const titleEl = document.getElementById('custom-alert-title');
             const msgEl = document.getElementById('custom-alert-message');
             const iconEl = document.getElementById('custom-alert-icon');
+            const okBtn = document.getElementById('custom-alert-ok-btn');
 
             titleEl.textContent = `สัปดาห์ที่ ${plan.week}`;
             titleEl.className = 'text-2xl font-bold mb-2 text-emerald-600';
-            msgEl.innerHTML = `ชื่องาน: ${escapeHTML(plan.title || '')}<br>คะแนนเต็ม: ${escapeHTML(scoreText)}<div class="mt-4"><button type="button" onclick="closeCustomAlert(); jumpToScoreEntry('${courseId}', '${plan.week}');" class="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200"><i class="fas fa-pen mr-2"></i>ไปหน้ากรอกคะแนนสัปดาห์นี้</button></div>`;
+            msgEl.className = 'text-slate-500 mb-4 font-medium whitespace-pre-line';
+            msgEl.innerHTML = `ชื่องาน: ${escapeHTML(plan.title || '')}<br>คะแนนเต็ม: ${escapeHTML(scoreText)}<div class="mt-3"><button type="button" onclick="closeCustomAlert(); jumpToScoreEntry('${courseId}', '${plan.week}');" class="w-full bg-primary hover:bg-indigo-700 text-white font-bold py-3 rounded-xl transition shadow-lg shadow-indigo-200"><i class="fas fa-pen mr-2"></i>ไปหน้ากรอกคะแนนสัปดาห์นี้</button></div>`;
             iconEl.innerHTML = '<i class="fas fa-check-circle text-emerald-500 drop-shadow-md"></i>';
+            if (okBtn) okBtn.className = 'w-full bg-slate-100 hover:bg-slate-200 text-slate-500 font-medium py-3.5 rounded-2xl transition';
 
             document.body.appendChild(modal); modal.style.zIndex = '999999'; modal.classList.remove('hidden');
             setTimeout(() => { box.classList.remove('scale-95', 'opacity-0'); box.classList.add('scale-100', 'opacity-100'); }, 10);
