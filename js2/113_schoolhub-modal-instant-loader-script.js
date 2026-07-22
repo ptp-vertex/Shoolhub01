@@ -64,6 +64,34 @@
     // การตั้ง inline style ตรงนี้จะชนะทุก external stylesheet เสมอ
     sp.style.cssText = 'position:absolute!important;inset:0!important;top:0!important;left:0!important;right:0!important;bottom:0!important;display:flex!important;flex-direction:column!important;align-items:center!important;justify-content:center!important;gap:.6rem;background:transparent;pointer-events:none;z-index:0;margin:0!important;width:auto!important;height:auto!important;max-width:none!important;max-height:none!important;';
     sp.innerHTML = '<div class="sh-spin" style="width:34px;height:34px;border-radius:50%;border:3px solid rgba(255,255,255,.28);border-top-color:#fff;animation:schoolhubSpin .6s linear infinite;"></div><span style="font-size:.78rem;font-weight:700;color:#fff;text-shadow:0 1px 4px rgba(0,0,0,.4);">กำลังโหลด...</span>';
+
+    // ปุ่ม "ปิดหน้านี้" เผื่อค้างนานเกินไป (ค่อยๆ แสดงหลัง 10 วิ นับจากครั้งแรกที่ overlay นี้ค้าง
+    // ไม่ใช่นับใหม่ทุกครั้งที่สปินเนอร์ถูกสร้างซ้ำ เพราะบางกรณี modal ค้างเปิดอยู่นานแต่สปินเนอร์
+    // แต่ละรอบมีอายุแค่ ~6 วิ (SAFETY_MS) แล้วถูกสร้างใหม่ซ้ำไปเรื่อยๆ)
+    var stuckBtn = document.createElement('button');
+    stuckBtn.type = 'button';
+    stuckBtn.className = 'schoolhub-modal-mini-spinner-close-btn';
+    stuckBtn.style.cssText = 'pointer-events:auto;margin-top:.9rem;display:flex;flex-direction:column;align-items:center;gap:.3rem;background:none;border:0;color:rgba(255,255,255,.85);opacity:0;transition:opacity .7s ease;';
+    stuckBtn.innerHTML = '<i class="fas fa-circle-xmark" style="font-size:1.3rem;"></i><span style="font-size:.7rem;font-weight:700;">ปิดหน้านี้</span>';
+    stuckBtn.addEventListener('click', function(e){
+      e.preventDefault(); e.stopPropagation();
+      try{ modal.classList.add('hidden'); modal.style.display = 'none'; }catch(e2){}
+      removeSpinner(true);
+      modal.__schoolhubStuckSince = null;
+    });
+    sp.appendChild(stuckBtn);
+
+    if(!modal.__schoolhubStuckSince) modal.__schoolhubStuckSince = Date.now();
+    (function watchStuck(){
+      if(removed) return;
+      if(!modal.contains(sp)) return;
+      if(Date.now() - modal.__schoolhubStuckSince >= 10000){
+        stuckBtn.style.opacity = '1';
+        return;
+      }
+      setTimeout(watchStuck, 500);
+    })();
+
     // สำคัญ: ต้องอยู่ "ข้างใน" modal (ไม่ใช่ body) เพราะ modal มี backdrop-blur ของตัวเอง
     // ถ้าสปินเนอร์อยู่นอก/ข้างหลัง modal จะโดน backdrop-blur เบลอ/บังจนมองไม่เห็น
     // และต้องแทรกเป็น "ลูกตัวสุดท้าย" (ไม่ใช่ตัวแรก) เพื่อไม่ให้ modal.children[0] เพี้ยนไปเป็นสปินเนอร์
@@ -101,7 +129,7 @@
     safety = setTimeout(function(){ removeSpinner(true); }, SAFETY_MS);
 
     closeWatcher = new MutationObserver(function(){
-      if(modal.classList.contains('hidden')) removeSpinner(true);
+      if(modal.classList.contains('hidden')){ removeSpinner(true); modal.__schoolhubStuckSince = null; }
     });
     try{ closeWatcher.observe(modal, {attributes:true, attributeFilter:['class']}); }catch(e){}
 
