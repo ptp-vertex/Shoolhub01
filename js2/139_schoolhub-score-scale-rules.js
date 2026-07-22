@@ -161,8 +161,8 @@
   function ensureScoreScaleModal(){
     if(byId('schoolhub-score-scale-rule-modal')) return;
     document.body.insertAdjacentHTML('beforeend',
-      '<div id="schoolhub-score-scale-rule-modal-backdrop" class="hidden fixed inset-0 bg-black/40" style="z-index:2000"></div>' +
-      '<div id="schoolhub-score-scale-rule-modal" class="hidden fixed inset-0 flex items-center justify-center p-4" style="z-index:2001">' +
+      '<div id="schoolhub-score-scale-rule-modal-backdrop" class="hidden fixed inset-0 bg-black/40" style="z-index:900001"></div>' +
+      '<div id="schoolhub-score-scale-rule-modal" class="hidden fixed inset-0 flex items-center justify-center p-4" style="z-index:900002">' +
         '<div class="bg-white rounded-2xl shadow-xl w-full max-w-lg p-5" style="max-height:90vh;overflow-y:auto">' +
           '<div class="flex items-center justify-between mb-4">' +
             '<h3 id="schoolhub-score-scale-rule-modal-title" class="font-bold text-lg text-slate-800">เพิ่มกฎหารคะแนน</h3>' +
